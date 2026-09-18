@@ -1,9 +1,10 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://smartfinance-drive-platform.onrender.com'
 
 /**
- * Shared infrastructure API client base factory for all bounded contexts.
+ * Shared infrastructure API client base factory.
+ * Completely decoupled from specific bounded contexts.
  */
 export class BaseApi {
   private readonly _http: AxiosInstance
@@ -15,17 +16,6 @@ export class BaseApi {
         'Content-Type': 'application/json'
       }
     })
-
-    // Add JWT authorization header interceptor
-    this._http.interceptors.request.use((config) => {
-      const token = localStorage.getItem('access_token')
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-      return config
-    }, (error) => {
-      return Promise.reject(error)
-    })
   }
 
   /**
@@ -33,5 +23,25 @@ export class BaseApi {
    */
   public get http(): AxiosInstance {
     return this._http
+  }
+
+  /**
+   * Allows bounded contexts to register request interceptors dynamically.
+   */
+  public addRequestInterceptor(
+    onFulfilled?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>,
+    onRejected?: (error: AxiosError) => any
+  ): void {
+    this._http.interceptors.request.use(onFulfilled, onRejected)
+  }
+
+  /**
+   * Allows bounded contexts to register response interceptors dynamically.
+   */
+  public addResponseInterceptor(
+    onFulfilled?: (response: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>,
+    onRejected?: (error: AxiosError) => any
+  ): void {
+    this._http.interceptors.response.use(onFulfilled, onRejected)
   }
 }

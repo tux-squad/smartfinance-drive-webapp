@@ -1,7 +1,17 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/shared/presentation/views/app-layout.vue'
+import iamRoutes from '@/iam/presentation/iam-routes'
+import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
+  // Full-page standalone Authentication routes (outside AppLayout / sidebar)
+  {
+    path: '/iam',
+    redirect: { name: 'sign-in' },
+    children: iamRoutes
+  },
+
+  // Main application routes wrapped in AppLayout (with Header & Sidebar)
   {
     path: '/',
     component: AppLayout,
@@ -11,7 +21,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'home',
         name: 'home',
         component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Inicio' }
+        meta: { title: 'Inicio', public: true }
       },
       {
         path: 'vehicles',
@@ -57,11 +67,13 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
+
+  // Fallback 404
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/shared/presentation/views/not-found-view.vue'),
-    meta: { title: 'Página no encontrada' }
+    meta: { title: 'Página no encontrada', public: true }
   }
 ]
 
@@ -70,9 +82,10 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
+router.beforeEach((to, from, next) => {
   const baseTitle = 'SmartFinance Drive Platform'
   document.title = to.meta.title ? `${baseTitle} - ${to.meta.title}` : baseTitle
+  return authenticationGuard(to, from, next)
 })
 
 export default router
