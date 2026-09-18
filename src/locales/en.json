@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "SmartFinance Drive Platform",
+    "subtitle": "Vehicle Financial Portal"
+  },
+  "header": {
+    "buyerPanel": "Buyer Panel",
+    "alliesPortal": "Allies Portal",
+    "userRole": "Pre-approved Buyer"
+  },
+  "nav": {
+    "vehicles": "Search Vehicles",
+    "concessionaries": "Financial Entities",
+    "simulations": "Credit Simulations",
+    "scoring": "Scoring Evaluation",
+    "reports": "Depreciation Reports",
+    "user": "User Profile",
+    "billing": "Subscription & Plans"
+  },
+  "sidebar": {
+    "needHelp": "Need help?",
+    "helpDescription": "Contact a certified financial advisor in real time.",
+    "callSupport": "Call Support"
+  },
+  "home": {
+    "tag": "SmartFinance Drive Platform v1.0",
+    "welcomeTitle": "Welcome to the Vehicle Financial Portal",
+    "welcomeDescription": "Evaluate vehicle loans, analyze technical depreciation, manage vehicle catalog, and perform financial simulations with exact APR rates in real time.",
+    "catalogTitle": "Vehicle Catalog",
+    "catalogDesc": "Explore registered units with 3-layer fuzzy search engine.",
+    "catalogBtn": "View vehicles",
+    "simulationsTitle": "Credit Simulations",
+    "simulationsDesc": "Calculate down payment, loan balance, NPV, IRR, and French/German schedule.",
+    "simulationsBtn": "New simulation",
+    "scoringTitle": "Credit Scoring",
+    "scoringDesc": "Calculate payment capacity and client risk tier (Score from 300 to 850).",
+    "scoringBtn": "Evaluate profile"
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "description": "The page you are looking for does not exist or has been moved as part of the DDD modular migration.",
+    "goHome": "Return to Home"
+  }
+}

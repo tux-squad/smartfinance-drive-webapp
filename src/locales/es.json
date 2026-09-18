@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "SmartFinance Drive Platform",
+    "subtitle": "Portal Financiero de Vehículos"
+  },
+  "header": {
+    "buyerPanel": "Panel de Comprador",
+    "alliesPortal": "Portal Aliados",
+    "userRole": "Comprador Pre-aprobado"
+  },
+  "nav": {
+    "vehicles": "Buscar Vehículos",
+    "concessionaries": "Entidades Financieras",
+    "simulations": "Simulaciones Crédito",
+    "scoring": "Evaluación Scoring",
+    "reports": "Depreciación Reportes",
+    "user": "Perfil de Usuario",
+    "billing": "Suscripción & Planes"
+  },
+  "sidebar": {
+    "needHelp": "¿Necesitas ayuda?",
+    "helpDescription": "Contacta a un asesor financiero certificado en tiempo real.",
+    "callSupport": "Llamar Soporte"
+  },
+  "home": {
+    "tag": "SmartFinance Drive Platform v1.0",
+    "welcomeTitle": "Bienvenido al Portal Financiero de Vehículos",
+    "welcomeDescription": "Evalúa créditos vehiculares, analiza desvalorizaciones técnicas, gestiona el catálogo de vehículos y realiza simulaciones financieras con tasas TCEA exactas en tiempo real.",
+    "catalogTitle": "Catálogo de Vehículos",
+    "catalogDesc": "Explora unidades registradas con motor de búsqueda fuzzy de 3 capas.",
+    "catalogBtn": "Ver vehículos",
+    "simulationsTitle": "Simulaciones de Crédito",
+    "simulationsDesc": "Calcula la cuota inicial, saldo a financiar, VAN, TIR y cronograma francés/alemán.",
+    "simulationsBtn": "Nueva simulación",
+    "scoringTitle": "Scoring Crediticio",
+    "scoringDesc": "Calcula la capacidad de pago y el riesgo del cliente (Score de 300 a 850).",
+    "scoringBtn": "Evaluar perfil"
+  },
+  "notFound": {
+    "title": "404 - Página no encontrada",
+    "description": "La sección que buscas no existe o ha sido movida como parte de la migración modular a DDD.",
+    "goHome": "Volver al Inicio"
+  }
+}
