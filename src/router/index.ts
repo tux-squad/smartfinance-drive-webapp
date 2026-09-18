@@ -24,6 +24,12 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Inicio', public: true }
       },
       {
+        path: 'user',
+        name: 'user',
+        component: () => import('@/profiles/presentation/views/profile-view.vue'),
+        meta: { title: 'Perfil de Usuario' }
+      },
+      {
         path: 'vehicles',
         name: 'vehicles',
         component: () => import('@/shared/presentation/views/home-view.vue'),
@@ -52,12 +58,6 @@ const routes: Array<RouteRecordRaw> = [
         name: 'reports',
         component: () => import('@/shared/presentation/views/home-view.vue'),
         meta: { title: 'Depreciación y Reportes' }
-      },
-      {
-        path: 'user',
-        name: 'user',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Perfil de Usuario' }
       },
       {
         path: 'billing',
