@@ -7,6 +7,7 @@ const routes: Array<RouteRecordRaw> = [
   // Full-page standalone Authentication routes (outside AppLayout / sidebar)
   {
     path: '/iam',
+    redirect: { name: 'sign-in' },
     children: iamRoutes
   },
 

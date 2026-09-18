@@ -173,12 +173,11 @@ const handleSignUp = async () => {
     roles: [selectedRole.value]
   })
 
-  const success = await iamStore.signUp(command)
-  if (success) {
-    // If dealer or financial institution, submit RUC role request
+  const createdUser = await iamStore.signUp(command)
+  if (createdUser && createdUser.id) {
+    // If dealer or financial institution, submit RUC role request with the EXACT created user ID
     if (ruc.value && (selectedRole.value === 'ROLE_DEALER' || selectedRole.value === 'ROLE_FINANCIAL_INSTITUTION')) {
-      const userId = iamStore.currentUser?.id || 1
-      const roleCommand = new RoleRequestCommand({ userId, ruc: ruc.value })
+      const roleCommand = new RoleRequestCommand({ userId: createdUser.id, ruc: ruc.value })
       if (selectedRole.value === 'ROLE_DEALER') {
         await iamStore.requestDealerRole(roleCommand)
       } else {

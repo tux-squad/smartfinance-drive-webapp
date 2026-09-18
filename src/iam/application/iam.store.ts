@@ -8,6 +8,9 @@ import type { PasswordResetCommand } from '../domain/password-reset.command'
 import type { RoleRequestCommand } from '../domain/role-request.command'
 import { IamApi } from '../infrastructure/iam-api'
 import { UserAssembler } from '../infrastructure/user.assembler'
+import type { SignUpResponseResource } from '../infrastructure/sign-up.resource'
+import type { UserPaginatedResponseResource, UserResource } from '../infrastructure/user-management.resource'
+
 
 const iamApi = new IamApi()
 
@@ -18,13 +21,16 @@ export const useIamStore = defineStore('iam', () => {
   const isLoading = ref<boolean>(false)
   const error = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
+  const userList = ref<UserResource[]>([])
+  const totalUsers = ref<number>(0)
+  const totalPages = ref<number>(0)
 
   const isAuthenticated = computed(() => !!token.value && !!currentUser.value)
   const username = computed(() => currentUser.value?.username || 'Invitado')
   const roles = computed(() => currentUser.value?.roles || [])
 
   /**
-   * Restores user session from stored localStorage tokens.
+   * Restores user session from stored localStorage tokens and fetches updated profile.
    */
   const restoreSession = async () => {
     const savedToken = localStorage.getItem('access_token')
@@ -44,7 +50,7 @@ export const useIamStore = defineStore('iam', () => {
         refreshToken: savedRefreshToken || undefined
       })
 
-      // Fetch fresh profile & roles from API
+      // Fetch fresh user profile & roles from API
       try {
         const userRes = await iamApi.getUserById(savedUserId)
         if (userRes.data) {
@@ -58,7 +64,7 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Executes sign-in use case via IAM API (1.2), then fetches user profile & roles (1.9).
+   * Executes sign-in use case via IAM API (1.2) and populates actual roles via (1.9).
    */
   const signIn = async (command: SignInCommand): Promise<boolean> => {
     isLoading.value = true
@@ -76,7 +82,6 @@ export const useIamStore = defineStore('iam', () => {
       localStorage.setItem('user_name', data.username)
       localStorage.setItem('user_id', String(data.id))
 
-      // Fetch user profile to get actual roles (1.9)
       let userRoles = ['ROLE_USER']
       try {
         const userDetailsRes = await iamApi.getUserById(data.id)
@@ -84,7 +89,7 @@ export const useIamStore = defineStore('iam', () => {
           userRoles = userDetailsRes.data.roles
         }
       } catch {
-        // Fallback if role endpoint is offline
+        // Fallback
       }
 
       const user = UserAssembler.toUserEntityFromSignInResponse(data, userRoles)
@@ -101,18 +106,18 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Executes sign-up use case via IAM API (1.1).
+   * Executes sign-up use case (1.1) and returns the created user DTO (with real ID).
    */
-  const signUp = async (command: SignUpCommand): Promise<boolean> => {
+  const signUp = async (command: SignUpCommand): Promise<SignUpResponseResource | null> => {
     isLoading.value = true
     error.value = null
     try {
       const resourcePayload = UserAssembler.toSignUpRequestFromCommand(command)
-      await iamApi.signUp(resourcePayload)
-      return true
+      const response = await iamApi.signUp(resourcePayload)
+      return response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error al registrar usuario.'
-      return false
+      return null
     } finally {
       isLoading.value = false
     }
@@ -193,6 +198,44 @@ export const useIamStore = defineStore('iam', () => {
       return true
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error al restablecer contraseña.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Admin: Fetches paginated user list (1.8).
+   */
+  const fetchUsers = async (page: number = 0, size: number = 20): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const res = await iamApi.getUsers(page, size)
+      userList.value = res.data.content
+      totalUsers.value = res.data.totalElements
+      totalPages.value = res.data.totalPages
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al obtener la lista de usuarios.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Admin: Updates a user's security role (1.10).
+   */
+  const updateUserRole = async (userId: number | string, role: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await iamApi.updateUserRole(userId, { role })
+      await fetchUsers()
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar el rol de usuario.'
       return false
     } finally {
       isLoading.value = false
@@ -293,6 +336,9 @@ export const useIamStore = defineStore('iam', () => {
     isLoading,
     error,
     successMessage,
+    userList,
+    totalUsers,
+    totalPages,
     isAuthenticated,
     username,
     roles,
@@ -302,6 +348,8 @@ export const useIamStore = defineStore('iam', () => {
     signInWithGoogle,
     requestPasswordRecovery,
     resetPassword,
+    fetchUsers,
+    updateUserRole,
     requestDealerRole,
     requestFinancialInstitutionRole,
     refreshSession,

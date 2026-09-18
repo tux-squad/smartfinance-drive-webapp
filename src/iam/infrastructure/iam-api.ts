@@ -1,5 +1,6 @@
 import { BaseApi } from '@/shared/infrastructure/base-api'
 import type { AxiosResponse } from 'axios'
+import { iamRequestInterceptor, iamResponseErrorInterceptor } from './iam.interceptor'
 import type { SignInRequestResource, SignInResponseResource, RefreshTokenRequestResource } from './sign-in.resource'
 import type { SignUpRequestResource, SignUpResponseResource } from './sign-up.resource'
 import type { PasswordRecoveryRequestResource, PasswordRecoveryResponseResource, PasswordResetRequestResource, PasswordResetResponseResource } from './password.resource'
@@ -10,6 +11,13 @@ import type { UserResource, UserPaginatedResponseResource, UpdateUserRoleRequest
  * Infrastructure API Gateway covering all 12 IAM endpoints of the SmartFinance Drive Platform.
  */
 export class IamApi extends BaseApi {
+  constructor() {
+    super()
+    // Register IAM specific HTTP interceptors
+    this.addRequestInterceptor(iamRequestInterceptor, (error) => Promise.reject(error))
+    this.addResponseInterceptor((response) => response, iamResponseErrorInterceptor)
+  }
+
   /** 1.1 Registrar Nuevo Usuario */
   public signUp(resource: SignUpRequestResource): Promise<AxiosResponse<SignUpResponseResource>> {
     return this.http.post<SignUpResponseResource>('/api/v1/auth/registrations', resource)
