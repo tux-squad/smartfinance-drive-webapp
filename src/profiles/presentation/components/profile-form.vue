@@ -105,7 +105,7 @@
             min="0"
             required
             class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white transition-all font-mono"
-            placeholder="4500.00"
+            placeholder="0.00"
           />
         </div>
       </div>
@@ -128,7 +128,7 @@
         class="px-6 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center space-x-2 disabled:opacity-50"
       >
         <i v-if="isLoading" class="pi pi-spin pi-spinner text-sm"></i>
-        <span>{{ isLoading ? t('profiles.saving') : (isEditing ? t('profiles.updateBtn') : t('profiles.createBtn')) }}</span>
+        <span>{{ isLoading ? t('profiles.saving') : (isEditing ? t('profiles.updateProfileBtn') : t('profiles.createProfileBtn')) }}</span>
       </button>
     </div>
   </form>
@@ -169,7 +169,7 @@ const form = reactive<ProfileFormData>({
   email: props.initialProfile?.email || '',
   dni: props.initialProfile?.dni || '',
   phoneNumber: props.initialProfile?.phoneNumber || '',
-  monthlyIncomeAmount: props.initialProfile?.monthlyIncomeAmount || 4500,
+  monthlyIncomeAmount: props.initialProfile?.monthlyIncomeAmount || 0,
   currency: props.initialProfile?.currency || 'PEN'
 })
 

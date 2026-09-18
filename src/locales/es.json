@@ -94,7 +94,8 @@
     "emailPlaceholder": "juan.perez@example.com",
     "dni": "Documento de Identidad (DNI)",
     "phoneNumber": "Teléfono de Contacto",
-    "monthlyIncome": "Ingreso Mensual Declarado"
+    "monthlyIncome": "Ingreso Mensual Declarado",
+    "declaredCurrency": "Moneda Declarada"
   },
   "notFound": {
     "title": "404 - Página no encontrada",

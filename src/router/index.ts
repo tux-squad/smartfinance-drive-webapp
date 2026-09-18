@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/shared/presentation/views/app-layout.vue'
 import iamRoutes from '@/iam/presentation/iam-routes'
+import profilesRoutes from '@/profiles/presentation/profiles-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
@@ -25,9 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'user',
-        name: 'user',
-        component: () => import('@/profiles/presentation/views/profile-view.vue'),
-        meta: { title: 'Perfil de Usuario' }
+        children: profilesRoutes
       },
       {
         path: 'vehicles',

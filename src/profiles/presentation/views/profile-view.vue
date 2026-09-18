@@ -122,7 +122,7 @@
               </dd>
             </div>
             <div class="flex justify-between">
-              <dt class="text-gray-500">Moneda Declarada:</dt>
+              <dt class="text-gray-500">{{ t('profiles.declaredCurrency') }}:</dt>
               <dd class="font-bold text-gray-900">{{ profilesStore.currentProfile?.currency }}</dd>
             </div>
           </dl>
