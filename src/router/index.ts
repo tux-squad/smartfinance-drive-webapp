@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/shared/presentation/views/app-layout.vue'
 import iamRoutes from '@/iam/presentation/iam-routes'
 import profilesRoutes from '@/profiles/presentation/profiles-routes'
+import catalogRoutes from '@/catalog/presentation/catalog-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
@@ -30,9 +31,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'vehicles',
-        name: 'vehicles',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Catálogo de Vehículos' }
+        children: catalogRoutes
       },
       {
         path: 'concessionaries',
