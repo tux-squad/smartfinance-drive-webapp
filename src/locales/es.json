@@ -225,6 +225,28 @@
     "emptyHistorySubtitle": "Aún no has generado ninguna simulación de crédito vehicular. Completa el formulario para empezar.",
     "detailDialogHeader": "Detalle de Cronograma de Pagos"
   },
+  "scoring": {
+    "headerBadge": "Evaluación Inteligente de Riesgo",
+    "headerTitle": "Motor de Scoring Crediticio",
+    "headerSubtitle": "Calcula el puntaje de riesgo (300 a 850), categorización de perfil y monto máximo recomendado de crédito vehicular",
+    "formTitle": "Evaluación Crediticia de Cliente",
+    "formSubtitle": "Analiza la capacidad de pago y riesgo crediticio basándose en el perfil comercial registrado",
+    "activeProfileLabel": "Perfil Comercial Seleccionado",
+    "noProfileNotice": "Nota: No se detectó un perfil comercial activo. Puedes ingresar un UUID de perfil para ejecutar la evaluación.",
+    "evaluateBtn": "Ejecutar Evaluación de Score",
+    "resultTitle": "Resultado de Evaluación Crediticia",
+    "riskTierCategoryLabel": "Categoría de Riesgo Crediticio",
+    "maxRecommendedLoanLabel": "Monto Máximo Recomendado de Crédito",
+    "maxLoanNote": "Sujeto a verificación domiciliaria y presentación de sustento de ingresos.",
+    "lowRiskBenefit": "Perfil altamente confiable (LOW RISK): Apto para tasas preferenciales y financiamiento de hasta 90%.",
+    "mediumRiskNotice": "Perfil de riesgo moderado (MEDIUM RISK): Apto sujeto a cuota inicial mínima del 20%.",
+    "highRiskNotice": "Perfil de alto riesgo (HIGH RISK): Se requiere garante o aval comercial autorizado.",
+    "historyTitle": "Historial de Evaluaciones Crediticias",
+    "historySubtitle": "Registro de evaluaciones de score procesadas previamente",
+    "loadingText": "Calculando scoring crediticio en el servidor...",
+    "emptyTitle": "No hay evaluaciones registradas",
+    "emptySubtitle": "Selecciona tu perfil de cliente comercial y presiona 'Ejecutar Evaluación' para generar tu score."
+  },
   "notFound": {
     "title": "404 - Página no encontrada",
     "description": "La sección que buscas no existe o ha sido movida como parte de la migración modular a DDD.",
