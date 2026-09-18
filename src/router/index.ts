@@ -4,6 +4,7 @@ import iamRoutes from '@/iam/presentation/iam-routes'
 import profilesRoutes from '@/profiles/presentation/profiles-routes'
 import catalogRoutes from '@/catalog/presentation/catalog-routes'
 import partnersRoutes from '@/partners/presentation/partners-routes'
+import financingRoutes from '@/financing/presentation/financing-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
@@ -40,9 +41,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'simulations',
-        name: 'simulations',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Simulaciones de Crédito' }
+        children: financingRoutes
       },
       {
         path: 'scoring',
