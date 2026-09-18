@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
 import { EvaluateScoreCommand } from '../../domain/evaluate-score.command'
 import { useScoringStore } from '../../application/scoring.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
@@ -14,7 +14,7 @@ const scoringStore = useScoringStore()
 const profilesStore = useProfilesStore()
 const iamStore = useIamStore()
 
-const selectedProfileId = ref<string>('a1b2c3d4-e5f6-7a8b-9c0d-112233445566')
+const selectedProfileId = ref<string>('')
 
 onMounted(async () => {
   if (iamStore.currentUser?.id) {
