@@ -36,6 +36,27 @@
     "scoringDesc": "Calculate payment capacity and client risk tier (Score from 300 to 850).",
     "scoringBtn": "Evaluate profile"
   },
+  "iam": {
+    "signInTitle": "Sign In",
+    "signInSubtitle": "Enter your credentials to access the portal",
+    "signUpTitle": "Create Account",
+    "signUpSubtitle": "Register to access vehicle credit simulations",
+    "email": "Email / Username",
+    "emailPlaceholder": "juan.perez@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "selectRole": "Select Your Account Role",
+    "signInBtn": "Sign In",
+    "signingIn": "Signing in...",
+    "signUpBtn": "Register",
+    "registering": "Creating account...",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Register here",
+    "hasAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "signUpSuccess": "Account created successfully! Redirecting to sign in...",
+    "signOut": "Sign Out"
+  },
   "notFound": {
     "title": "404 - Page Not Found",
     "description": "The page you are looking for does not exist or has been moved as part of the DDD modular migration.",

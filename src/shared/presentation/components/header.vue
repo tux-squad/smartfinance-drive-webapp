@@ -11,14 +11,9 @@
         <!-- Language Switcher -->
         <LanguageSwitcher />
 
-        <div class="flex items-center space-x-3.5 pl-4 border-l border-gray-200">
-          <div class="text-right">
-            <p class="font-semibold text-gray-800 text-sm leading-tight">Carlos Mendoza</p>
-            <p class="text-xs text-gray-500">{{ t('header.userRole') }}</p>
-          </div>
-          <div class="w-9 h-9 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-            CM
-          </div>
+        <!-- User / Auth Section -->
+        <div class="pl-4 border-l border-gray-200">
+          <AuthenticationSection />
         </div>
       </div>
     </div>
@@ -28,6 +23,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from './language-switcher.vue'
+import AuthenticationSection from '@/iam/presentation/components/authentication-section.vue'
 
 const { t } = useI18n()
 </script>

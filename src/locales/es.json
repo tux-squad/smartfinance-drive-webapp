@@ -36,6 +36,27 @@
     "scoringDesc": "Calcula la capacidad de pago y el riesgo del cliente (Score de 300 a 850).",
     "scoringBtn": "Evaluar perfil"
   },
+  "iam": {
+    "signInTitle": "Iniciar Sesión",
+    "signInSubtitle": "Ingresa tus credenciales para acceder al portal",
+    "signUpTitle": "Crear Cuenta",
+    "signUpSubtitle": "Regístrate para acceder a simulaciones y créditos vehiculares",
+    "email": "Correo Electrónico / Usuario",
+    "emailPlaceholder": "juan.perez@example.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "selectRole": "Selecciona tu Rol de Usuario",
+    "signInBtn": "Iniciar Sesión",
+    "signingIn": "Iniciando sesión...",
+    "signUpBtn": "Registrarse",
+    "registering": "Creando cuenta...",
+    "noAccount": "¿No tienes una cuenta?",
+    "signUpLink": "Regístrate aquí",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "signInLink": "Inicia sesión",
+    "signUpSuccess": "¡Cuenta creada exitosamente! Redirigiendo a inicio de sesión...",
+    "signOut": "Cerrar Sesión"
+  },
   "notFound": {
     "title": "404 - Página no encontrada",
     "description": "La sección que buscas no existe o ha sido movida como parte de la migración modular a DDD.",
