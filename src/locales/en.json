@@ -151,6 +151,7 @@
     "searchRucBtn": "Search RUC",
     "sunatResultHeader": "Tax Verification Result",
     "businessNameLabel": "Declared Business Name",
+    "taxpayerStatusLabel": "Taxpayer Status",
     "statusActive": "ACTIVE",
     "statusInactive": "INACTIVE",
     "conditionLabel": "Fiscal Domicile",

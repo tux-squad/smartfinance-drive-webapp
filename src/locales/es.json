@@ -151,6 +151,7 @@
     "searchRucBtn": "Consultar RUC",
     "sunatResultHeader": "Resultado de Verificación Tributaria",
     "businessNameLabel": "Razón Social Declarada",
+    "taxpayerStatusLabel": "Estado Contribuyente",
     "statusActive": "ACTIVO",
     "statusInactive": "INACTIVO",
     "conditionLabel": "Domicilio Fiscal",

@@ -95,7 +95,7 @@ const handleClear = () => {
         <!-- Status Badge Card -->
         <div class="rounded-xl bg-white dark:bg-gray-800 p-3 border border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div>
-            <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.statusLabel') || 'Estado Contribuyente' }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('partners.taxpayerStatusLabel') }}</span>
             <span class="text-sm font-bold text-gray-900 dark:text-white">
               {{ partnersStore.sunatResult.status }}
             </span>
