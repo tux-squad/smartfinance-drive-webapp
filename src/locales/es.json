@@ -188,6 +188,8 @@
     "newSimulationBtn": "Nueva Simulación",
     "formTitle": "Parámetros del Crédito Vehicular",
     "formSubtitle": "Completa los montos, cuota inicial, plazo y tasas ofertadas por la entidad financiera",
+    "selectVehicleLabel": "Vehículo a Financiar",
+    "selectEntityLabel": "Entidad Financiera Aliada",
     "titleLabel": "Título de la Simulación",
     "currencyLabel": "Moneda",
     "vehiclePriceLabel": "Precio del Vehículo",

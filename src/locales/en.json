@@ -188,6 +188,8 @@
     "newSimulationBtn": "New Simulation",
     "formTitle": "Auto Loan Parameters",
     "formSubtitle": "Complete amounts, down payment %, loan term, and rates offered by the financial institution",
+    "selectVehicleLabel": "Vehicle to Finance",
+    "selectEntityLabel": "Partner Financial Entity",
     "titleLabel": "Simulation Title",
     "currencyLabel": "Currency",
     "vehiclePriceLabel": "Vehicle Price",
