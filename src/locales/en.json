@@ -225,6 +225,28 @@
     "emptyHistorySubtitle": "You haven't generated any vehicle credit simulations yet. Complete the form to get started.",
     "detailDialogHeader": "Payment Schedule Details"
   },
+  "scoring": {
+    "headerBadge": "Smart Risk Assessment",
+    "headerTitle": "Credit Scoring Engine",
+    "headerSubtitle": "Calculates risk score (300 to 850), profile categorization and maximum recommended auto loan amount",
+    "formTitle": "Client Credit Evaluation",
+    "formSubtitle": "Analyzes payment capacity and credit risk based on the registered commercial profile",
+    "activeProfileLabel": "Selected Commercial Profile",
+    "noProfileNotice": "Note: No active commercial profile detected. You can enter a profile UUID to run the evaluation.",
+    "evaluateBtn": "Run Score Evaluation",
+    "resultTitle": "Credit Evaluation Result",
+    "riskTierCategoryLabel": "Credit Risk Tier Category",
+    "maxRecommendedLoanLabel": "Maximum Recommended Loan Amount",
+    "maxLoanNote": "Subject to domicile verification and income proof submission.",
+    "lowRiskBenefit": "Highly reliable profile (LOW RISK): Eligible for preferential rates and up to 90% financing.",
+    "mediumRiskNotice": "Moderate risk profile (MEDIUM RISK): Eligible subject to a minimum 20% down payment.",
+    "highRiskNotice": "High risk profile (HIGH RISK): Authorized commercial guarantor or co-signer required.",
+    "historyTitle": "Credit Evaluations History",
+    "historySubtitle": "Record of previously processed credit score assessments",
+    "loadingText": "Calculating credit score on server...",
+    "emptyTitle": "No evaluations registered",
+    "emptySubtitle": "Select your commercial client profile and click 'Run Score Evaluation' to generate your score."
+  },
   "notFound": {
     "title": "404 - Page Not Found",
     "description": "The page you are looking for does not exist or has been moved as part of the DDD modular migration.",

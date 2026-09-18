@@ -5,6 +5,7 @@ import profilesRoutes from '@/profiles/presentation/profiles-routes'
 import catalogRoutes from '@/catalog/presentation/catalog-routes'
 import partnersRoutes from '@/partners/presentation/partners-routes'
 import financingRoutes from '@/financing/presentation/financing-routes'
+import scoringRoutes from '@/scoring/presentation/scoring-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
@@ -45,9 +46,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'scoring',
-        name: 'scoring',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Evaluación Scoring' }
+        children: scoringRoutes
       },
       {
         path: 'reports',
