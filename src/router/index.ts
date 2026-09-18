@@ -4,6 +4,13 @@ import iamRoutes from '@/iam/presentation/iam-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
+  // Full-page standalone Authentication routes (outside AppLayout / sidebar)
+  {
+    path: '/iam',
+    children: iamRoutes
+  },
+
+  // Main application routes wrapped in AppLayout (with Header & Sidebar)
   {
     path: '/',
     component: AppLayout,
@@ -14,11 +21,6 @@ const routes: Array<RouteRecordRaw> = [
         name: 'home',
         component: () => import('@/shared/presentation/views/home-view.vue'),
         meta: { title: 'Inicio', public: true }
-      },
-      {
-        path: 'iam',
-        name: 'iam',
-        children: iamRoutes
       },
       {
         path: 'vehicles',
@@ -64,6 +66,8 @@ const routes: Array<RouteRecordRaw> = [
       }
     ]
   },
+
+  // Fallback 404
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

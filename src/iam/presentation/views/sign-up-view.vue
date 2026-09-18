@@ -1,11 +1,12 @@
 <template>
-  <div class="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-gray-200 shadow-xl">
       <!-- Form Header -->
       <div class="text-center space-y-2">
-        <div class="w-14 h-14 bg-sky-600 text-white rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-md">
-          <i class="pi pi-user-plus"></i>
-        </div>
+        <router-link to="/home" class="inline-flex items-center space-x-2 text-sky-700 font-bold mb-2">
+          <i class="pi pi-car text-xl bg-sky-700 text-white p-2 rounded-lg"></i>
+          <span class="text-xl">SmartFinance Drive</span>
+        </router-link>
         <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">
           {{ t('iam.signUpTitle') }}
         </h2>
@@ -96,6 +97,30 @@
           </div>
         </div>
 
+        <!-- RUC Input (Visible for Dealer and Financial Institution) -->
+        <div v-if="selectedRole === 'ROLE_DEALER' || selectedRole === 'ROLE_FINANCIAL_INSTITUTION'">
+          <label for="reg-ruc" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+            {{ t('iam.rucNumber') }} (SUNAT)
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <i class="pi pi-building text-sm"></i>
+            </span>
+            <input
+              id="reg-ruc"
+              v-model="ruc"
+              type="text"
+              required
+              maxlength="11"
+              minlength="11"
+              pattern="[0-9]{11}"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:bg-white transition-all font-mono"
+              placeholder="20601234567"
+            />
+          </div>
+          <span class="text-[10px] text-gray-500 mt-1 block">RUC oficial de 11 dígitos a validar con SUNAT</span>
+        </div>
+
         <button
           type="submit"
           :disabled="iamStore.isLoading"
@@ -123,6 +148,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
+import { RoleRequestCommand } from '../../domain/role-request.command'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -130,6 +156,7 @@ const iamStore = useIamStore()
 
 const username = ref('')
 const password = ref('')
+const ruc = ref('')
 const selectedRole = ref('ROLE_USER')
 const successMessage = ref('')
 
@@ -148,6 +175,17 @@ const handleSignUp = async () => {
 
   const success = await iamStore.signUp(command)
   if (success) {
+    // If dealer or financial institution, submit RUC role request
+    if (ruc.value && (selectedRole.value === 'ROLE_DEALER' || selectedRole.value === 'ROLE_FINANCIAL_INSTITUTION')) {
+      const userId = iamStore.currentUser?.id || 1
+      const roleCommand = new RoleRequestCommand({ userId, ruc: ruc.value })
+      if (selectedRole.value === 'ROLE_DEALER') {
+        await iamStore.requestDealerRole(roleCommand)
+      } else {
+        await iamStore.requestFinancialInstitutionRole(roleCommand)
+      }
+    }
+
     successMessage.value = t('iam.signUpSuccess')
     setTimeout(() => {
       router.push('/iam/sign-in')

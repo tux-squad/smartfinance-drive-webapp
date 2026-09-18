@@ -3,6 +3,7 @@ import type { SignInCommand } from '../domain/sign-in.command'
 import type { SignUpCommand } from '../domain/sign-up.command'
 import type { SignInRequestResource, SignInResponseResource } from './sign-in.resource'
 import type { SignUpRequestResource, SignUpResponseResource } from './sign-up.resource'
+import type { UserResource } from './user-management.resource'
 
 /**
  * Assembler / Mapper responsible for transforming between API DTO Resources
@@ -32,12 +33,16 @@ export class UserAssembler {
 
   /**
    * Transforms a SignInResponseResource DTO to a User Domain Entity.
+   * If roles are provided (or fetched from user profile), maps them dynamically.
    */
-  public static toUserEntityFromSignInResponse(resource: SignInResponseResource): User {
+  public static toUserEntityFromSignInResponse(
+    resource: SignInResponseResource,
+    roles: string[] = ['ROLE_USER']
+  ): User {
     return new User({
       id: resource.id,
       username: resource.username,
-      roles: ['ROLE_USER'],
+      roles: roles,
       token: resource.token,
       refreshToken: resource.refreshToken
     })
@@ -50,7 +55,20 @@ export class UserAssembler {
     return new User({
       id: resource.id,
       username: resource.username,
-      roles: resource.roles
+      roles: resource.roles && resource.roles.length > 0 ? resource.roles : ['ROLE_USER']
+    })
+  }
+
+  /**
+   * Transforms a UserResource DTO (from GET /api/v1/users/{id}) to a User Domain Entity.
+   */
+  public static toUserEntityFromUserResource(resource: UserResource, token?: string, refreshToken?: string): User {
+    return new User({
+      id: resource.id,
+      username: resource.username,
+      roles: resource.roles || ['ROLE_USER'],
+      token: token,
+      refreshToken: refreshToken
     })
   }
 }

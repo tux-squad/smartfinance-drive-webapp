@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
+import { iamRequestInterceptor, iamResponseErrorInterceptor } from '@/iam/infrastructure/iam.interceptor'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://smartfinance-drive-platform.onrender.com'
 
@@ -16,16 +17,9 @@ export class BaseApi {
       }
     })
 
-    // Add JWT authorization header interceptor
-    this._http.interceptors.request.use((config) => {
-      const token = localStorage.getItem('access_token')
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-      return config
-    }, (error) => {
-      return Promise.reject(error)
-    })
+    // Attach IAM request and response interceptors
+    this._http.interceptors.request.use(iamRequestInterceptor, (error) => Promise.reject(error))
+    this._http.interceptors.response.use((response) => response, iamResponseErrorInterceptor)
   }
 
   /**

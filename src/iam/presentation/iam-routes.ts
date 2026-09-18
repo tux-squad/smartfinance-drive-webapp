@@ -12,6 +12,18 @@ const iamRoutes: Array<RouteRecordRaw> = [
     name: 'sign-up',
     component: () => import('./views/sign-up-view.vue'),
     meta: { title: 'Registrarse', guestOnly: true }
+  },
+  {
+    path: 'forgot-password',
+    name: 'forgot-password',
+    component: () => import('./views/forgot-password-view.vue'),
+    meta: { title: 'Recuperar Contraseña', guestOnly: true }
+  },
+  {
+    path: 'reset-password',
+    name: 'reset-password',
+    component: () => import('./views/reset-password-view.vue'),
+    meta: { title: 'Restablecer Contraseña', guestOnly: true }
   }
 ]
 

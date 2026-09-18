@@ -11,7 +11,7 @@
         <!-- Language Switcher -->
         <LanguageSwitcher />
 
-        <!-- User / Auth Section -->
+        <!-- Dynamic User / Auth Section -->
         <div class="pl-4 border-l border-gray-200">
           <AuthenticationSection />
         </div>
