@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -18,6 +18,10 @@ const minPriceInput = ref<number | undefined>(catalogStore.filters.minPrice)
 const maxPriceInput = ref<number | undefined>(catalogStore.filters.maxPrice)
 const minYearInput = ref<number | undefined>(catalogStore.filters.minYear)
 const maxYearInput = ref<number | undefined>(catalogStore.filters.maxYear)
+
+onMounted(() => {
+  catalogStore.fetchBrands()
+})
 
 const conditionOptions = [
   { label: t('catalog.allConditions'), value: '' },
@@ -97,15 +101,19 @@ watch(
 
     <!-- Filter Form Controls Grid -->
     <form @submit.prevent="handleSearch" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 items-end">
-      <!-- Brand Input -->
+      <!-- Brand Input with Brands Datalist from GET /api/v1/vehicles/brands -->
       <div class="flex flex-col gap-1.5">
         <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ t('catalog.brandLabel') }}</label>
         <span class="p-input-icon-left w-full">
           <InputText
             v-model="brandInput"
+            list="vehicle-brands-list"
             :placeholder="t('catalog.brandPlaceholder')"
             class="w-full !rounded-xl !text-sm"
           />
+          <datalist id="vehicle-brands-list">
+            <option v-for="brand in catalogStore.brands" :key="brand" :value="brand" />
+          </datalist>
         </span>
       </div>
 

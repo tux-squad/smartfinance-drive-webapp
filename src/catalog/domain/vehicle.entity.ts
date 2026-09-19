@@ -12,7 +12,9 @@ export class Vehicle {
     public readonly condition: 'NEW' | 'USED' | string,
     public readonly priceAmount: number,
     public readonly currency: string,
-    public readonly imagePath?: string
+    public readonly imagePath?: string,
+    public readonly status: string = 'ACTIVE',
+    public readonly images: string[] = []
   ) {}
 
   /**

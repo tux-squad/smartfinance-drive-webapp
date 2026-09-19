@@ -6,9 +6,15 @@ import Message from 'primevue/message'
 import { UploadVehicleImageCommand } from '../../domain/upload-vehicle-image.command'
 import { useCatalogStore } from '../../application/catalog.store'
 
-const props = defineProps<{
-  vehicleId: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    vehicleId: string
+    isGallery?: boolean
+  }>(),
+  {
+    isGallery: false
+  }
+)
 
 const emit = defineEmits<{
   (e: 'uploaded'): void
@@ -67,10 +73,19 @@ const clearSelection = () => {
 const handleUpload = async () => {
   if (!selectedFile.value || !props.vehicleId) return
 
-  const command = new UploadVehicleImageCommand(props.vehicleId, selectedFile.value)
-  const success = await catalogStore.uploadVehicleImage(command)
-  if (success) {
-    emit('uploaded')
+  if (props.isGallery) {
+    const success = await catalogStore.uploadGalleryImage(props.vehicleId, selectedFile.value)
+    if (success) {
+      clearSelection()
+      emit('uploaded')
+    }
+  } else {
+    const command = new UploadVehicleImageCommand(props.vehicleId, selectedFile.value)
+    const success = await catalogStore.uploadVehicleImage(command)
+    if (success) {
+      clearSelection()
+      emit('uploaded')
+    }
   }
 }
 </script>

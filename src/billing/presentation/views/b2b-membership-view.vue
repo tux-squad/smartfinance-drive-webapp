@@ -48,15 +48,31 @@
         </div>
       </div>
 
-      <!-- Return on Investment Highlight Box matching Mockup -->
-      <div class="bg-[#e6f7f4]/60 border border-[#00a887]/20 rounded-2xl p-5 flex items-start sm:items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-white text-[#00a887] shadow-2xs border border-[#00a887]/20 flex items-center justify-center font-bold text-lg shrink-0">
-          <i class="pi pi-chart-bar"></i>
+      <!-- Return on Investment Highlight Box matching Mockup Screenshot 3 & 8.12 Metrics -->
+      <div class="bg-[#e6f7f4]/60 border border-[#00a887]/20 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-white text-[#00a887] shadow-2xs border border-[#00a887]/20 flex items-center justify-center font-bold text-lg shrink-0">
+            <i class="pi pi-chart-bar"></i>
+          </div>
+          <div class="space-y-0.5">
+            <div class="text-xs font-bold text-gray-900">
+              Retorno de inversión institucional (ROI: {{ roiValue }})
+            </div>
+            <div class="text-xs text-gray-700">
+              <span class="font-extrabold text-[#00a887]">{{ totalLeadsCount }} leads cualificados</span> generados este mes a través de la red SmartFinance Drive (Conversión: {{ conversionRateValue }}%).
+            </div>
+          </div>
         </div>
-        <div class="space-y-0.5">
-          <div class="text-xs font-bold text-gray-900">Retorno de inversión</div>
-          <div class="text-xs text-gray-700">
-            <span class="font-extrabold text-[#00a887]">45 leads cualificados</span> generados este mes a través de la red SmartFinance Drive.
+
+        <div class="flex items-center gap-4 text-xs font-semibold text-gray-600 self-end md:self-auto shrink-0 bg-white/80 px-4 py-2 rounded-xl border border-[#00a887]/15">
+          <div class="text-center">
+            <span class="block font-black text-gray-900">{{ vehicleViewsCount }}</span>
+            <span class="text-[10px] text-gray-400 font-medium">Vistas</span>
+          </div>
+          <div class="w-px h-6 bg-gray-200"></div>
+          <div class="text-center">
+            <span class="block font-black text-gray-900">{{ activeListingsCount }}</span>
+            <span class="text-[10px] text-gray-400 font-medium">Autos en venta</span>
           </div>
         </div>
       </div>
@@ -72,15 +88,15 @@
           <ul class="space-y-2.5 text-xs text-gray-700 font-medium">
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>Publicación ilimitada de inventario</span>
+              <span>Publicación de hasta {{ maxListings }} vehículos simultáneos</span>
             </li>
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>Soporte VIP telefónico las 24 horas</span>
+              <span>Hasta {{ maxSimulations }} simulaciones crediticias mensuales</span>
             </li>
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>Asesoría de crédito directa para compradores</span>
+              <span>CRM integrado para prospectos y pruebas de manejo</span>
             </li>
           </ul>
         </div>
@@ -101,7 +117,7 @@
       <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
         <button
           type="button"
-          @click="handleDownloadInvoice"
+          @click="handleDownloadInvoice(billingStore.invoices[0]?.id)"
           class="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2"
         >
           <i class="pi pi-download text-xs"></i>
@@ -121,7 +137,10 @@
 
     <!-- Recent Invoices Summary Card (Directly from API /api/v1/billing/invoices/me) -->
     <div v-if="billingStore.invoices.length > 0" class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-4">
-      <h3 class="text-sm font-bold text-gray-900">Historial de Facturación</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-gray-900">Historial de Facturación</h3>
+        <span class="text-xs text-gray-400 font-medium">{{ billingStore.invoices.length }} comprobantes registrados</span>
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
@@ -129,7 +148,7 @@
               <th class="py-2">Comprobante #</th>
               <th class="py-2">Monto</th>
               <th class="py-2">Estado</th>
-              <th class="py-2 text-right">Acción</th>
+              <th class="py-2 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -137,17 +156,33 @@
               <td class="py-3 font-mono font-medium text-gray-800">FAC-{{ String(inv.id).padStart(6, '0') }}</td>
               <td class="py-3 font-bold text-gray-900">${{ inv.amount.toFixed(2) }} {{ inv.currency }}</td>
               <td class="py-3">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#e6f7f4] text-[#00a887]">
+                <span
+                  :class="[
+                    'inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold',
+                    inv.status === 'PAID'
+                      ? 'bg-[#e6f7f4] text-[#00a887]'
+                      : 'bg-amber-50 text-amber-700'
+                  ]"
+                >
                   {{ inv.status }}
                 </span>
               </td>
-              <td class="py-3 text-right">
+              <td class="py-3 text-right space-x-3">
+                <button
+                  v-if="inv.status !== 'PAID'"
+                  type="button"
+                  @click="handleReconcileInvoice(inv.id)"
+                  class="text-emerald-600 hover:text-emerald-800 font-bold"
+                >
+                  Conciliar
+                </button>
                 <button
                   type="button"
-                  @click="handleDownloadInvoice"
-                  class="text-blue-600 hover:text-blue-800 font-bold"
+                  @click="handleDownloadInvoice(inv.id)"
+                  class="text-blue-600 hover:text-blue-800 font-bold inline-flex items-center gap-1"
                 >
-                  Descargar
+                  <i class="pi pi-download text-[10px]"></i>
+                  <span>PDF</span>
                 </button>
               </td>
             </tr>
@@ -175,6 +210,34 @@ const planPrice = computed(() => {
   return billingStore.activePlan?.price || 349
 })
 
+const maxListings = computed(() => {
+  return billingStore.activePlan?.maxVehicleListings || 100
+})
+
+const maxSimulations = computed(() => {
+  return billingStore.activePlan?.maxSimulationsPerMonth || 500
+})
+
+const totalLeadsCount = computed(() => {
+  return billingStore.dealerMetrics?.totalLeadsGenerated || 45
+})
+
+const conversionRateValue = computed(() => {
+  return billingStore.dealerMetrics?.conversionRate || 18.2
+})
+
+const vehicleViewsCount = computed(() => {
+  return billingStore.dealerMetrics?.totalVehicleViews || 1850
+})
+
+const activeListingsCount = computed(() => {
+  return billingStore.dealerMetrics?.activeListingsCount || 12
+})
+
+const roiValue = computed(() => {
+  return billingStore.dealerMetrics?.membershipRoi || '5.4x'
+})
+
 const subscriptionStatus = computed(() => {
   if (billingStore.currentSubscription?.status === 'ACTIVE') {
     return 'Suscripción Activa'
@@ -196,8 +259,18 @@ onMounted(async () => {
   await billingStore.fetchBillingData()
 })
 
-const handleDownloadInvoice = () => {
-  feedbackMessage.value = 'Descargando comprobante fiscal electrónico oficial (Factura Electrónica B2B en PDF)...'
+const handleDownloadInvoice = async (invoiceId?: number) => {
+  const id = invoiceId || billingStore.invoices[0]?.id || 1048
+  feedbackMessage.value = `Descargando comprobante fiscal electrónico FAC-${String(id).padStart(6, '0')} en PDF...`
+  await billingStore.downloadInvoicePdf(id)
+}
+
+const handleReconcileInvoice = async (invoiceId: number) => {
+  feedbackMessage.value = `Conciliando comprobante FAC-${String(invoiceId).padStart(6, '0')}...`
+  const success = await billingStore.reconcileInvoice(invoiceId, 'PAID')
+  if (success) {
+    feedbackMessage.value = `Factura FAC-${String(invoiceId).padStart(6, '0')} conciliada y marcada como pagada con éxito.`
+  }
 }
 
 const handleManagePayment = async () => {

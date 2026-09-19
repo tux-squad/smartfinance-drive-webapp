@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useProjectionsStore } from '../../application/projections.store'
@@ -8,6 +9,18 @@ import DepreciationTable from '../components/depreciation-table.vue'
 
 const { t } = useI18n()
 const projectionsStore = useProjectionsStore()
+
+onMounted(async () => {
+  await projectionsStore.fetchHistory()
+})
+
+const handleSelectHistoryItem = async (id: string) => {
+  await projectionsStore.fetchProjectionById(id)
+}
+
+const handleDeleteHistoryItem = async (id: string) => {
+  await projectionsStore.deleteProjection(id)
+}
 </script>
 
 <template>
@@ -67,5 +80,71 @@ const projectionsStore = useProjectionsStore()
         </div>
       </div>
     </div>
+
+    <!-- Historical Calculations Section (7.2, 7.3, 7.5) -->
+    <div v-if="projectionsStore.history.length > 0" class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 p-6 sm:p-8 shadow-xs space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-gray-900 dark:text-white">Historial de Proyecciones Guardadas</h2>
+          <p class="text-xs text-gray-500">Consulta o elimina cálculos técnicos de depreciación realizados.</p>
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+          {{ projectionsStore.history.length }} registros
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-gray-100 dark:border-gray-800 text-gray-400 font-bold pb-2">
+              <th class="py-2.5">Fecha</th>
+              <th class="py-2.5">Valor Inicial</th>
+              <th class="py-2.5">Horizonte</th>
+              <th class="py-2.5">Tasa Anual</th>
+              <th class="py-2.5">Valor Residual</th>
+              <th class="py-2.5 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tr v-for="proj in projectionsStore.history" :key="proj.id" class="hover:bg-gray-50/60 dark:hover:bg-gray-800/50 transition-colors">
+              <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">
+                {{ new Date(proj.calculatedAt).toLocaleDateString() }}
+              </td>
+              <td class="py-3 font-bold text-gray-900 dark:text-white">
+                {{ proj.formattedInitialValue }}
+              </td>
+              <td class="py-3 text-gray-700 dark:text-gray-300">
+                {{ proj.projectionYears }} años
+              </td>
+              <td class="py-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700">
+                  {{ proj.annualDepreciationRatePct }}%
+                </span>
+              </td>
+              <td class="py-3 font-bold text-emerald-600">
+                {{ proj.formattedResidualValue }}
+              </td>
+              <td class="py-3 text-right space-x-2">
+                <button
+                  type="button"
+                  @click="handleSelectHistoryItem(proj.id)"
+                  class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 text-[11px] font-semibold text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  Ver
+                </button>
+                <button
+                  type="button"
+                  @click="handleDeleteHistoryItem(proj.id)"
+                  class="px-2.5 py-1 rounded-lg border border-red-200 hover:bg-red-50 text-[11px] font-semibold text-red-600 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
+

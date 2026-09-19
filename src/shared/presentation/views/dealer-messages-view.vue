@@ -189,9 +189,11 @@
 import { ref, reactive, nextTick, onMounted } from 'vue'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
+import { useMessagingStore } from '@/shared/application/messaging.store'
 
 const catalogStore = useCatalogStore()
 const financingStore = useFinancingStore()
+const messagingStore = useMessagingStore()
 
 const inputMessage = ref('')
 const chatContainerRef = ref<HTMLElement | null>(null)
@@ -306,8 +308,14 @@ const conversations = reactive<ChatConversation[]>([
 
 const activeChat = ref<ChatConversation>(conversations[0]!)
 
-const selectChat = (chat: ChatConversation) => {
+const selectChat = async (chat: ChatConversation) => {
   activeChat.value = chat
+  if (messagingStore.conversations.some(c => c.id === chat.id)) {
+    const apiConv = messagingStore.conversations.find(c => c.id === chat.id)
+    if (apiConv) {
+      await messagingStore.selectConversation(apiConv)
+    }
+  }
   scrollToBottom()
 }
 
@@ -318,30 +326,62 @@ const scrollToBottom = async () => {
   }
 }
 
-const handleSendMessage = () => {
+const handleSendMessage = async () => {
   if (!inputMessage.value.trim()) return
 
   const now = new Date()
   const timeStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+  const textToSend = inputMessage.value.trim()
 
   activeChat.value.messages.push({
     sender: 'dealer',
-    text: inputMessage.value.trim(),
+    text: textToSend,
     time: timeStr
   })
 
-  activeChat.value.lastMessage = inputMessage.value.trim()
+  activeChat.value.lastMessage = textToSend
   activeChat.value.lastTime = timeStr
   inputMessage.value = ''
 
   scrollToBottom()
+
+  // If chat is linked to API conversation, invoke sendMessage
+  if (messagingStore.conversations.some(c => c.id === activeChat.value.id)) {
+    await messagingStore.sendMessage(textToSend)
+  }
 }
 
 onMounted(async () => {
   await Promise.all([
+    messagingStore.fetchConversations(),
     catalogStore.fetchVehicles(),
     financingStore.fetchSimulations()
   ])
+
+  if (messagingStore.conversations.length > 0) {
+    const mapped: ChatConversation[] = messagingStore.conversations.map((c) => ({
+      id: c.id,
+      name: c.dealerName || 'Prospecto Web',
+      isOnline: true,
+      vehicleOfInterest: c.vehicleTitle || 'Vehículo de Interés',
+      statusBadge: 'Crédito Evaluado',
+      lastTime: c.lastActivity,
+      lastMessage: c.lastMessageContent || 'Mensaje recibido del cliente.',
+      messages: [
+        {
+          sender: 'buyer' as const,
+          text: c.lastMessageContent || 'Hola, deseo recibir información adicional.',
+          time: c.lastActivity
+        }
+      ]
+    }))
+    conversations.splice(0, conversations.length, ...mapped)
+    if (conversations[0]) {
+      activeChat.value = conversations[0]
+      await messagingStore.selectConversation(messagingStore.conversations[0]!)
+    }
+  }
+
   scrollToBottom()
 })
 </script>

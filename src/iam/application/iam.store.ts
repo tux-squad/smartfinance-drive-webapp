@@ -8,6 +8,9 @@ import type { PasswordResetCommand } from '../domain/password-reset.command'
 import type { RoleRequestCommand } from '../domain/role-request.command'
 import { IamApi } from '../infrastructure/iam-api'
 import { UserAssembler } from '../infrastructure/user.assembler'
+import { SalesAgent } from '../domain/sales-agent.entity'
+import { SalesAgentAssembler } from '../infrastructure/sales-agent.assembler'
+import type { CreateSalesAgentResource, UpdateSalesAgentResource } from '../infrastructure/sales-agent.resource'
 import type { SignUpResponseResource } from '../infrastructure/sign-up.resource'
 import type { UserPaginatedResponseResource, UserResource } from '../infrastructure/user-management.resource'
 
@@ -416,6 +419,84 @@ export const useIamStore = defineStore('iam', () => {
     }
   }
 
+  const salesAgents = ref<SalesAgent[]>([])
+
+  /**
+   * Fetches sales agents of the dealership (1.13).
+   */
+  const fetchSalesAgents = async (): Promise<void> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await iamApi.getSalesAgents()
+      salesAgents.value = (response.data || []).map(r => SalesAgentAssembler.toEntity(r))
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar los asesores de ventas.'
+      salesAgents.value = []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Creates a new sales agent (1.14).
+   */
+  const createSalesAgent = async (resource: CreateSalesAgentResource): Promise<SalesAgent | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await iamApi.createSalesAgent(resource)
+      const newAgent = SalesAgentAssembler.toEntity(response.data)
+      salesAgents.value.push(newAgent)
+      return newAgent
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al crear el asesor de ventas.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Updates sales agent information (1.15).
+   */
+  const updateSalesAgent = async (id: string, resource: UpdateSalesAgentResource): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await iamApi.updateSalesAgent(id, resource)
+      const updated = SalesAgentAssembler.toEntity(response.data)
+      const idx = salesAgents.value.findIndex(a => a.id === id)
+      if (idx !== -1) {
+        salesAgents.value[idx] = updated
+      }
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar el asesor.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Reassigns leads from one agent to another (1.16).
+   */
+  const reassignSalesAgentLeads = async (id: string, targetAgentId: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await iamApi.reassignLeads(id, targetAgentId)
+      await fetchSalesAgents()
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al reasignar prospectos.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     currentUser,
     token,
@@ -426,6 +507,7 @@ export const useIamStore = defineStore('iam', () => {
     userList,
     totalUsers,
     totalPages,
+    salesAgents,
     isAuthenticated,
     username,
     roles,
@@ -440,7 +522,12 @@ export const useIamStore = defineStore('iam', () => {
     updateUserRole,
     requestDealerRole,
     requestFinancialInstitutionRole,
+    fetchSalesAgents,
+    createSalesAgent,
+    updateSalesAgent,
+    reassignSalesAgentLeads,
     refreshSession,
     signOut
   }
 })
+

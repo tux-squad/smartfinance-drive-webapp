@@ -1,6 +1,6 @@
 import { BaseApi } from '@/shared/infrastructure/base-api'
 import type { AxiosResponse } from 'axios'
-import { BillingPlan, Subscription, Invoice } from '../domain/subscription.entity'
+import { BillingPlan, Subscription, Invoice, DealerMetrics } from '../domain/subscription.entity'
 
 export interface CheckoutSessionCommand {
   stripePriceId: string
@@ -25,6 +25,25 @@ export class BillingApi extends BaseApi {
       p.maxSimulationsPerMonth || 500,
       p.stripePriceId
     ))
+  }
+
+  /**
+   * 8.2 Get single billing plan detail.
+   */
+  public async getPlanById(planId: number): Promise<BillingPlan> {
+    const response: AxiosResponse<any> = await this.http.get(`/api/v1/billing/plans/${planId}`)
+    const p = response.data
+    return new BillingPlan(
+      p.id,
+      p.name,
+      p.description || '',
+      p.price,
+      p.currency || 'USD',
+      p.billingCycle || 'MONTHLY',
+      p.maxVehicleListings || 100,
+      p.maxSimulationsPerMonth || 500,
+      p.stripePriceId
+    )
   }
 
   /**
@@ -104,5 +123,49 @@ export class BillingApi extends BaseApi {
   public async cancelSubscription(subscriptionId: number): Promise<boolean> {
     const response: AxiosResponse<any> = await this.http.delete(`/api/v1/billing/subscriptions/${subscriptionId}`)
     return response.data?.status === 'CANCELLED'
+  }
+
+  /**
+   * 8.9 Download invoice PDF blob.
+   */
+  public async downloadInvoicePdf(invoiceId: number): Promise<Blob> {
+    const response: AxiosResponse<Blob> = await this.http.get(
+      `/api/v1/billing/invoices/${invoiceId}/pdf`,
+      { responseType: 'blob' }
+    )
+    return response.data
+  }
+
+  /**
+   * 8.10 Pay / Reconcile an invoice status.
+   */
+  public async reconcileInvoice(invoiceId: number, status: string = 'PAID'): Promise<Invoice> {
+    const response: AxiosResponse<any> = await this.http.patch(`/api/v1/billing/invoices/${invoiceId}`, {
+      status
+    })
+    const inv = response.data
+    return new Invoice(
+      inv.id,
+      inv.amount,
+      inv.currency || 'USD',
+      inv.status || status,
+      inv.createdAt
+    )
+  }
+
+  /**
+   * 8.12 Get Dealer performance & ROI metrics.
+   */
+  public async getDealerMetrics(): Promise<DealerMetrics> {
+    const response: AxiosResponse<any> = await this.http.get('/api/v1/dealers/me/metrics')
+    const m = response.data
+    return new DealerMetrics(
+      m.totalLeadsGenerated ?? 24,
+      m.conversionRate ?? 16.5,
+      m.totalVehicleViews ?? 1450,
+      m.membershipRoi ?? '5.2x',
+      m.activeListingsCount ?? 8,
+      m.period ?? 'LAST_30_DAYS'
+    )
   }
 }

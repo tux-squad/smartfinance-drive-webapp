@@ -77,4 +77,25 @@ export class IamApi extends BaseApi {
   public requestFinancialInstitutionRole(userId: number | string, resource: RucRoleRequestResource): Promise<AxiosResponse<UserResource>> {
     return this.http.post<UserResource>(`/api/v1/users/${userId}/financial-institution-role-requests`, resource)
   }
+
+  /** 1.13 Listar Asesores de Ventas del Concesionario */
+  public getSalesAgents(): Promise<AxiosResponse<import('./sales-agent.resource').SalesAgentResource[]>> {
+    return this.http.get<import('./sales-agent.resource').SalesAgentResource[]>('/api/v1/dealers/me/sales-agents')
+  }
+
+  /** 1.14 Crear Asesor de Ventas */
+  public createSalesAgent(resource: import('./sales-agent.resource').CreateSalesAgentResource): Promise<AxiosResponse<import('./sales-agent.resource').SalesAgentResource>> {
+    return this.http.post<import('./sales-agent.resource').SalesAgentResource>('/api/v1/dealers/me/sales-agents', resource)
+  }
+
+  /** 1.15 Actualizar Asesor de Ventas */
+  public updateSalesAgent(id: string, resource: import('./sales-agent.resource').UpdateSalesAgentResource): Promise<AxiosResponse<import('./sales-agent.resource').SalesAgentResource>> {
+    return this.http.put<import('./sales-agent.resource').SalesAgentResource>(`/api/v1/dealers/me/sales-agents/${id}`, resource)
+  }
+
+  /** 1.16 Reasignar Prospects entre Asesores de Ventas */
+  public reassignLeads(id: string, targetAgentId: string): Promise<AxiosResponse<void>> {
+    return this.http.post<void>(`/api/v1/dealers/me/sales-agents/${id}/reassign-leads`, { targetAgentId })
+  }
 }
+
