@@ -1,36 +1,35 @@
 <template>
-  <div class="max-w-4xl mx-auto space-y-6">
-    <!-- View Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">
-          {{ t('profiles.viewTitle') }}
-        </h1>
-        <p class="text-sm text-gray-500">
-          {{ t('profiles.viewSubtitle') }}
-        </p>
-      </div>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Header matching Mockup Image 4 -->
+    <div class="border-b border-gray-100 pb-6 space-y-1">
+      <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
+        Mi Perfil
+      </h1>
+      <p class="text-sm text-gray-500">
+        Gestiona tu información personal y datos financieros para tus pre-evaluaciones de crédito vehicular.
+      </p>
+    </div>
 
-      <button
-        v-if="profilesStore.hasProfile && !isEditing"
-        @click="isEditing = true"
-        class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors self-start md:self-auto"
-      >
-        <i class="pi pi-user-edit"></i>
-        <span>{{ t('profiles.editProfileBtn') }}</span>
+    <!-- Alert / Toast Messages -->
+    <div
+      v-if="saveSuccessMessage"
+      class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-sm text-emerald-800 flex items-center justify-between"
+    >
+      <div class="flex items-center space-x-2">
+        <i class="pi pi-check-circle text-emerald-600 text-lg"></i>
+        <span class="font-medium">{{ saveSuccessMessage }}</span>
+      </div>
+      <button type="button" @click="saveSuccessMessage = null" class="text-emerald-500 hover:text-emerald-700">
+        <i class="pi pi-times text-xs"></i>
       </button>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="profilesStore.isLoading && !profilesStore.hasProfile" class="bg-white p-12 rounded-2xl border border-gray-200 text-center space-y-3">
-      <i class="pi pi-spin pi-spinner text-3xl text-blue-900"></i>
-      <p class="text-sm text-gray-500 font-medium">{{ t('profiles.loading') }}</p>
-    </div>
-
-    <!-- Error Alert (Non-blocking notification) -->
-    <div v-if="profilesStore.error" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg text-sm text-red-700 flex items-start justify-between">
-      <div class="flex items-start space-x-2">
-        <i class="pi pi-exclamation-circle text-red-500 text-base mt-0.5"></i>
+    <div
+      v-if="profilesStore.error"
+      class="bg-red-50 border border-red-200 p-4 rounded-2xl text-sm text-red-800 flex items-center justify-between"
+    >
+      <div class="flex items-center space-x-2">
+        <i class="pi pi-exclamation-circle text-red-600 text-lg"></i>
         <span>{{ profilesStore.error }}</span>
       </div>
       <button type="button" @click="profilesStore.error = null" class="text-red-400 hover:text-red-700">
@@ -38,174 +37,285 @@
       </button>
     </div>
 
-    <!-- Edit / Create Form View -->
-    <div v-if="!profilesStore.isLoading && (isEditing || !profilesStore.hasProfile)" class="bg-white p-8 rounded-2xl border border-gray-200 shadow-md space-y-6">
-      <div class="border-b border-gray-100 pb-4">
-        <h2 class="text-lg font-bold text-gray-900">
-          {{ profilesStore.hasProfile ? t('profiles.editProfileFormTitle') : t('profiles.createProfileFormTitle') }}
-        </h2>
-        <p class="text-xs text-gray-500">
-          {{ t('profiles.formDescription') }}
-        </p>
-      </div>
-
-      <ProfileForm
-        :initial-profile="profilesStore.currentProfile"
-        :is-editing="profilesStore.hasProfile"
-        :is-loading="profilesStore.isLoading"
-        :error="profilesStore.error"
-        @submit="handleSubmitForm"
-        @cancel="isEditing = false"
-      />
-    </div>
-
-    <!-- Profile Display View -->
-    <div v-else-if="!profilesStore.isLoading && profilesStore.hasProfile" class="space-y-6">
-      <!-- Profile Header Summary Card -->
-      <div class="bg-gradient-to-r from-blue-950 via-sky-900 to-indigo-900 rounded-2xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
-        <div class="w-20 h-20 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0">
-          {{ initials }}
-        </div>
-        <div class="space-y-1 text-center sm:text-left">
-          <h2 class="text-2xl font-bold tracking-tight">
-            {{ profilesStore.currentProfile?.fullName }}
-          </h2>
-          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs">
-            <span class="px-2.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 font-semibold border border-sky-400/30">
-              DNI: {{ profilesStore.currentProfile?.dni }}
-            </span>
-            <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-400/30">
-              Perfil Verificado
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detail Info Cards Grid -->
+    <!-- 2-Column Form matching Mockup Image 4 -->
+    <form @submit.prevent="handleSaveProfile" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Personal Information -->
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-          <div class="flex items-center space-x-2 text-blue-900 font-bold border-b border-gray-100 pb-3">
-            <i class="pi pi-id-card text-lg"></i>
-            <span>{{ t('profiles.personalInfoSection') }}</span>
+        <!-- Column 1: Información Personal -->
+        <div class="bg-white p-6 sm:p-7 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+          <div class="flex items-center gap-2.5 pb-4 border-b border-gray-100">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <i class="pi pi-id-card text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-gray-900">Información Personal</h2>
+              <p class="text-xs text-gray-500">Datos oficiales de identificación del comprador</p>
+            </div>
           </div>
-          <dl class="space-y-3 text-sm">
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.firstName') }}:</dt>
-              <dd class="font-semibold text-gray-900">{{ profilesStore.currentProfile?.firstName }}</dd>
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Nombres -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-gray-700">Nombres</label>
+                <input
+                  v-model="form.firstName"
+                  type="text"
+                  required
+                  placeholder="Carlos"
+                  class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+                />
+              </div>
+
+              <!-- Apellidos -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-gray-700">Apellidos</label>
+                <input
+                  v-model="form.lastName"
+                  type="text"
+                  required
+                  placeholder="Mendoza"
+                  class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+                />
+              </div>
             </div>
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.lastName') }}:</dt>
-              <dd class="font-semibold text-gray-900">{{ profilesStore.currentProfile?.lastName }}</dd>
+
+            <!-- DNI -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">DNI / Documento de Identidad</label>
+              <input
+                v-model="form.dni"
+                type="text"
+                maxlength="8"
+                required
+                placeholder="72345678"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-mono text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
             </div>
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.dni') }}:</dt>
-              <dd class="font-mono font-semibold text-gray-900">{{ profilesStore.currentProfile?.dni }}</dd>
+
+            <!-- Correo Electrónico -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Correo Electrónico</label>
+              <input
+                v-model="form.email"
+                type="email"
+                required
+                placeholder="carlos.mendoza@email.com"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
             </div>
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.email') }}:</dt>
-              <dd class="font-semibold text-gray-900">{{ profilesStore.currentProfile?.email }}</dd>
+
+            <!-- Teléfono -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Teléfono / Celular</label>
+              <input
+                v-model="form.phoneNumber"
+                type="tel"
+                placeholder="+51 987 654 321"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
             </div>
-          </dl>
+          </div>
         </div>
 
-        <!-- Financial & Contact Information -->
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-          <div class="flex items-center space-x-2 text-blue-900 font-bold border-b border-gray-100 pb-3">
-            <i class="pi pi-wallet text-lg"></i>
-            <span>{{ t('profiles.financialInfoSection') }}</span>
+        <!-- Column 2: Perfil Financiero -->
+        <div class="bg-white p-6 sm:p-7 rounded-2xl border border-gray-200 shadow-xs space-y-5">
+          <div class="flex items-center gap-2.5 pb-4 border-b border-gray-100">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <i class="pi pi-wallet text-sm"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-gray-900">Perfil Financiero</h2>
+              <p class="text-xs text-gray-500">Datos para evaluar capacidad de pago y tasas preferenciales</p>
+            </div>
           </div>
-          <dl class="space-y-3 text-sm">
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.phoneNumber') }}:</dt>
-              <dd class="font-semibold text-gray-900">{{ profilesStore.currentProfile?.phoneNumber || 'No especificado' }}</dd>
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Ingreso Mensual -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-gray-700">Ingreso Mensual Neto</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold">
+                    {{ form.currency === 'USD' ? '$' : 'S/' }}
+                  </span>
+                  <input
+                    v-model.number="form.monthlyIncomeAmount"
+                    type="number"
+                    min="0"
+                    step="100"
+                    required
+                    placeholder="3500.00"
+                    class="w-full pl-8 pr-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-mono font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <!-- Moneda Declarada -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-gray-700">Moneda de Ingresos</label>
+                <select
+                  v-model="form.currency"
+                  class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs cursor-pointer"
+                >
+                  <option value="PEN">Soles (PEN - S/)</option>
+                  <option value="USD">Dólares (USD - $)</option>
+                </select>
+              </div>
             </div>
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.monthlyIncome') }}:</dt>
-              <dd class="font-mono font-extrabold text-emerald-700 text-base">
-                {{ formattedIncome }}
-              </dd>
+
+            <!-- Situación Laboral -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Situación Laboral</label>
+              <select
+                v-model="form.employmentStatus"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs cursor-pointer"
+              >
+                <option value="dependent">Dependiente - Tiempo Completo (Planilla)</option>
+                <option value="independent">Independiente con RUC (4ta / 5ta categoría)</option>
+                <option value="business">Empresario / Accionista (3ra categoría)</option>
+              </select>
             </div>
-            <div class="flex justify-between">
-              <dt class="text-gray-500">{{ t('profiles.declaredCurrency') }}:</dt>
-              <dd class="font-bold text-gray-900">{{ profilesStore.currentProfile?.currency }}</dd>
+
+            <!-- Acreditación Crediticia Badge Box -->
+            <div class="p-4 rounded-xl bg-gray-50 border border-gray-200/80 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-700">Historial Crediticio</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <i class="pi pi-check-circle mr-1 text-[10px]"></i>
+                  Acreditado SBS
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-relaxed">
+                Tus datos financieros te permiten acceder a pre-aprobaciones automáticas en menos de 24 horas a través de nuestras entidades bancarias aliadas.
+              </p>
             </div>
-          </dl>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Business Role Request / Elevation Section (IAM SUNAT RBAC) is always rendered at the bottom -->
+      <!-- Action Button: Guardar cambios matching Mockup Image 4 -->
+      <div class="flex justify-start">
+        <button
+          type="submit"
+          :disabled="isSaving"
+          class="px-6 py-2.5 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-semibold text-xs text-center shadow-xs transition-colors flex items-center gap-2"
+        >
+          <i v-if="isSaving" class="pi pi-spin pi-spinner text-xs"></i>
+          <i v-else class="pi pi-save text-xs"></i>
+          <span>Guardar cambios</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Business Role Request / Elevation Section (IAM SUNAT RBAC) is cleanly retained at bottom -->
     <DealerRoleRequestCard />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, reactive, onMounted } from 'vue'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '../../application/profiles.store'
 import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
-import ProfileForm from '../components/profile-form.vue'
 import DealerRoleRequestCard from '@/iam/presentation/components/dealer-role-request-card.vue'
 
-const { t } = useI18n()
 const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
 
-const isEditing = ref(false)
+const isSaving = ref(false)
+const saveSuccessMessage = ref<string | null>(null)
 
-const initials = computed(() => {
-  const p = profilesStore.currentProfile
-  if (!p) return 'U'
-  return `${p.firstName.charAt(0)}${p.lastName.charAt(0)}`.toUpperCase()
+const form = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  dni: '',
+  phoneNumber: '',
+  monthlyIncomeAmount: 3500,
+  currency: 'PEN',
+  employmentStatus: 'dependent'
 })
 
-const formattedIncome = computed(() => {
+const populateFormData = () => {
   const p = profilesStore.currentProfile
-  if (!p) return '-'
-  const symbol = p.currency === 'USD' ? '$' : 'S/'
-  return `${symbol} ${p.monthlyIncomeAmount.toFixed(2)}`
-})
+  if (p) {
+    form.firstName = p.firstName || ''
+    form.lastName = p.lastName || ''
+    form.email = p.email || ''
+    form.dni = p.dni || ''
+    form.phoneNumber = p.phoneNumber || ''
+    form.monthlyIncomeAmount = p.monthlyIncomeAmount || 3500
+    form.currency = p.currency || 'PEN'
+  } else {
+    // Fill defaults if new user
+    const username = iamStore.username || ''
+    if (username.includes('@')) {
+      form.email = username
+      const rawName = (username.split('@')[0] || '').replace(/[._-]/g, ' ')
+      const parts = rawName.split(' ')
+      form.firstName = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Carlos'
+      form.lastName = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : 'Mendoza'
+    } else {
+      form.firstName = 'Carlos'
+      form.lastName = 'Mendoza'
+      form.email = 'carlos.mendoza@email.com'
+    }
+    form.dni = '72345678'
+    form.phoneNumber = '+51 987 654 321'
+  }
+}
 
 onMounted(async () => {
   const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
   if (userId) {
     await profilesStore.fetchProfileByUserId(userId)
   }
+  populateFormData()
 })
 
-const handleSubmitForm = async (formData: any) => {
-  if (profilesStore.hasProfile && profilesStore.currentProfile) {
-    const command = new UpdateProfileCommand({
-      profileId: profilesStore.currentProfile.id,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      dni: formData.dni,
-      phoneNumber: formData.phoneNumber,
-      monthlyIncomeAmount: formData.monthlyIncomeAmount,
-      currency: formData.currency
-    })
-    const success = await profilesStore.updateProfile(command)
-    if (success) {
-      isEditing.value = false
+const handleSaveProfile = async () => {
+  isSaving.value = true
+  saveSuccessMessage.value = null
+
+  try {
+    if (profilesStore.hasProfile && profilesStore.currentProfile) {
+      const command = new UpdateProfileCommand({
+        profileId: profilesStore.currentProfile.id,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        dni: form.dni,
+        phoneNumber: form.phoneNumber,
+        monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
+        currency: form.currency
+      })
+      const success = await profilesStore.updateProfile(command)
+      if (success) {
+        saveSuccessMessage.value = 'Información de perfil actualizada con éxito.'
+      }
+    } else {
+      const command = new CreateProfileCommand({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        dni: form.dni,
+        phoneNumber: form.phoneNumber,
+        monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
+        currency: form.currency
+      })
+      const success = await profilesStore.createProfile(command)
+      if (success) {
+        saveSuccessMessage.value = 'Perfil de comprador guardado con éxito.'
+      }
     }
-  } else {
-    const command = new CreateProfileCommand({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      dni: formData.dni,
-      phoneNumber: formData.phoneNumber,
-      monthlyIncomeAmount: formData.monthlyIncomeAmount,
-      currency: formData.currency
-    })
-    const success = await profilesStore.createProfile(command)
-    if (success) {
-      isEditing.value = false
-    }
+  } catch {
+    // Error is handled in store
+  } finally {
+    isSaving.value = false
+    setTimeout(() => {
+      saveSuccessMessage.value = null
+    }, 4000)
   }
 }
 </script>
