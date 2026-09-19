@@ -276,6 +276,47 @@
     "emptyTitle": "No evaluations registered",
     "emptySubtitle": "Select your commercial client profile and click 'Run Score Evaluation' to generate your score."
   },
+  "projections": {
+    "headerBadge": "Vehicle Financial Analysis",
+    "headerTitle": "Vehicle Depreciation Projection (5 Years)",
+    "headerSubtitle": "Calculates annual technical depreciation, commercial value loss, and estimated residual value percentage year by year",
+    "loadingText": "Calculating technical depreciation projection...",
+    "emptyTitle": "No Projection Calculated",
+    "emptySubtitle": "Enter vehicle parameters or select a unit from the catalog to generate the 5-year depreciation calculation.",
+    "form": {
+      "title": "Depreciation Parameters",
+      "subtitle": "Enter initial value, annual rate %, and projection horizon",
+      "selectVehicleLabel": "Select Vehicle from Catalog",
+      "initialValueLabel": "Initial Vehicle Value",
+      "currencyLabel": "Currency",
+      "manufactureYearLabel": "Manufacture Year",
+      "annualRateLabel": "Annual Depreciation Rate (%)",
+      "projectionYearsLabel": "Projection Horizon",
+      "calculateBtn": "Calculate Technical Depreciation",
+      "errorInvalidAmount": "Please enter a valid initial amount greater than zero.",
+      "errorInvalidRate": "Please enter a valid depreciation rate."
+    },
+    "chart": {
+      "title": "Residual Value & Loss Curve",
+      "subtitle": "Estimated evolution of value preservation year after year",
+      "residualPercentageLabel": "Preserved Residual Value",
+      "initialValueLabel": "Initial Value",
+      "residualValueLabel": "Final Residual Value",
+      "totalDepreciationLabel": "Total Accumulated Depreciation",
+      "visualProgressionTitle": "Year by Year Residual Value Progression"
+    },
+    "table": {
+      "title": "Year by Year Depreciation Table",
+      "subtitle": "Technical breakdown of initial value, period depreciation, and final residual value",
+      "colYearNumber": "Year",
+      "colCalendarYear": "Calendar Year",
+      "colStartValue": "Start Value",
+      "colDepreciationAmount": "Annual Depreciation",
+      "colAccumulatedDepreciation": "Accumulated Depreciation",
+      "colEndValue": "Final Residual Value",
+      "colRemainingPct": "% Preserved"
+    }
+  },
   "notFound": {
     "title": "404 - Page Not Found",
     "description": "The page you are looking for does not exist or has been moved as part of the DDD modular migration.",
