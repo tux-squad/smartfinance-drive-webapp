@@ -202,11 +202,13 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
+import { useCrmStore } from '@/financing/application/crm.store'
 
 const route = useRoute()
 const router = useRouter()
 const catalogStore = useCatalogStore()
 const financingStore = useFinancingStore()
+const crmStore = useCrmStore()
 
 const prospectName = ref('Carlos Mendoza')
 const prospectStatus = ref('Pre-evaluado')
@@ -223,7 +225,7 @@ const financialData = reactive({
   downPaymentAmount: 5380
 })
 
-const activityLogs = ref([
+const defaultLogs = [
   {
     time: 'Hoy, 10:30 AM',
     content: 'Contacto telefónico realizado por el asesor. Cliente interesado en agendar cita para ver el vehículo.'
@@ -236,16 +238,36 @@ const activityLogs = ref([
     time: '18 Sep, 02:00 PM',
     content: 'Solicitud web recibida a través del portal SmartFinance Drive.'
   }
-])
+]
+
+const activityLogs = computed(() => {
+  if (crmStore.timelineNotes.length > 0) {
+    return crmStore.timelineNotes.map(n => ({
+      time: new Date(n.createdAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+      content: n.content
+    }))
+  }
+  return defaultLogs
+})
 
 onMounted(async () => {
+  const paramId = String(route.params.id || '')
   await Promise.all([
     catalogStore.fetchVehicles(),
-    financingStore.fetchSimulations()
+    financingStore.fetchSimulations(),
+    paramId ? crmStore.fetchProspectById(paramId) : Promise.resolve(),
+    paramId ? crmStore.fetchProspectTimeline(paramId) : Promise.resolve()
   ])
 
+  if (crmStore.currentProspect) {
+    prospectName.value = crmStore.currentProspect.fullName
+    prospectStatus.value = crmStore.currentProspect.statusLabel
+    financialData.monthlyIncome = crmStore.currentProspect.monthlyIncome || 3500
+    financialData.downPaymentAmount = crmStore.currentProspect.downPayment || 5380
+    return
+  }
+
   // If a specific simulation ID was passed, customize prospect name and amounts
-  const paramId = String(route.params.id || '')
   if (paramId && paramId !== 'carlos-mendoza') {
     const simulation = financingStore.simulations.find(s => s.id === paramId)
     if (simulation) {
@@ -269,26 +291,37 @@ const goToVehicleDetail = () => {
   }
 }
 
-const handleAddNote = () => {
-  if (!newNote.value.trim()) return
+const handleAddNote = async () => {
+  const noteContent = newNote.value.trim()
+  if (!noteContent) return
 
-  const now = new Date()
-  const timeStr = `Hoy, ${now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`
-
-  activityLogs.value.unshift({
-    time: timeStr,
-    content: newNote.value.trim()
-  })
+  const paramId = String(route.params.id || 'carlos-mendoza')
+  await crmStore.addProspectNote(paramId, noteContent)
 
   newNote.value = ''
   actionSuccessMessage.value = 'Nota guardada exitosamente en la bitácora del prospecto.'
 }
 
-const handleScheduleTestDrive = () => {
+const handleScheduleTestDrive = async () => {
+  const paramId = String(route.params.id || '')
+  const vId = vehicle.value?.id || 'v-1'
+  const targetDate = new Date(Date.now() + 86400000 * 2).toISOString()
+
+  await crmStore.scheduleTestDrive({
+    vehicleId: vId,
+    dealershipId: 'dealership-1',
+    scheduledDateTime: targetDate,
+    notes: `Prueba de manejo para ${prospectName.value}`
+  })
+
   actionSuccessMessage.value = '¡Test Drive agendado exitosamente! Se notificó al cliente por correo y SMS.'
 }
 
-const handleMarkAsLost = () => {
+const handleMarkAsLost = async () => {
+  const paramId = String(route.params.id || '')
+  if (paramId) {
+    await crmStore.updateProspectStatus(paramId, 'LOST')
+  }
   prospectStatus.value = 'Perdido'
   actionSuccessMessage.value = 'El prospecto fue archivado como perdido.'
 }
