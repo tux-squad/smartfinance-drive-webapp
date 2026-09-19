@@ -116,12 +116,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
+import { useConsultationsStore } from '@/financing/application/consultations.store'
 
 const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
+const consultationsStore = useConsultationsStore()
+
+onMounted(async () => {
+  await Promise.all([
+    consultationsStore.fetchHistory(),
+    consultationsStore.fetchRecommendations()
+  ])
+
+  if (consultationsStore.history.length > 0) {
+    consultationsStore.history.forEach(item => {
+      messages.value.push({
+        role: 'user',
+        text: item.prompt,
+        time: item.formattedTime
+      })
+      messages.value.push({
+        role: 'assistant',
+        text: item.recommendationText,
+        time: item.formattedTime
+      })
+    })
+    await scrollToBottom()
+  }
+})
 
 const userDisplayName = computed(() => {
   if (profilesStore.currentProfile?.fullName) {
@@ -164,7 +189,7 @@ const formatTime = () => {
 const messages = ref<ChatMessage[]>([
   {
     role: 'assistant',
-    text: `¡Hola ${userDisplayName.value.split(' ')[0]}! Soy tu Asesor Financiero IA de SmartFinance Drive. 🚗💡\n\nPuedo orientarte con el cálculo de cuotas, explicación de TCEA, requisitos de aprobación bancaria o recomendaciones según tus ingresos. ¿En qué te puedo ayudar hoy?`,
+    text: `¡Hola! Soy tu Asesor Financiero IA de SmartFinance Drive. 🚗💡\n\nPuedo orientarte con el cálculo de cuotas, explicación de TCEA, requisitos de aprobación bancaria o recomendaciones según tus ingresos. ¿En qué te puedo ayudar hoy?`,
     time: formatTime()
   }
 ])
@@ -219,17 +244,46 @@ const handleSend = async () => {
   isThinking.value = true
   await scrollToBottom()
 
-  setTimeout(async () => {
-    const responseText = getBotResponse(text)
+  try {
+    const consultation = await consultationsStore.askAdvisor({
+      prompt: text,
+      monthlyIncome: 4500,
+      currency: 'PEN'
+    })
+
+    if (consultation && consultation.recommendationText) {
+      let finalAnswer = consultation.recommendationText
+      if (consultation.recommendedCategory) {
+        finalAnswer += `\n\n🚗 Categoría sugerida: ${consultation.recommendedCategory}`
+      }
+      if (consultation.estimatedMaxMonthlyFee > 0) {
+        finalAnswer += `\n💳 Cuota mensual máxima estimada: ${consultation.formattedMaxFee}`
+      }
+
+      messages.value.push({
+        role: 'assistant',
+        text: finalAnswer,
+        time: formatTime()
+      })
+    } else {
+      messages.value.push({
+        role: 'assistant',
+        text: getBotResponse(text),
+        time: formatTime()
+      })
+    }
+  } catch {
     messages.value.push({
       role: 'assistant',
-      text: responseText,
+      text: getBotResponse(text),
       time: formatTime()
     })
+  } finally {
     isThinking.value = false
     await scrollToBottom()
-  }, 700)
+  }
 }
+
 </script>
 
 <style scoped>

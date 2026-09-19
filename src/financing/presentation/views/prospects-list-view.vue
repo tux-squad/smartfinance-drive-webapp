@@ -125,21 +125,42 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
+import { useCrmStore } from '@/financing/application/crm.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 
+const crmStore = useCrmStore()
 const financingStore = useFinancingStore()
 const catalogStore = useCatalogStore()
 
 onMounted(async () => {
   await Promise.all([
+    crmStore.fetchDealerProspects(),
     financingStore.fetchSimulations(),
     catalogStore.fetchVehicles()
   ])
 })
 
 const prospectsList = computed(() => {
-  // Map simulations or default leads based on real data
+  // If CRM backend returns prospects from GET /api/v1/dealers/me/prospects
+  if (crmStore.prospects.length > 0) {
+    return crmStore.prospects.map((p) => {
+      const v = catalogStore.vehicles.find(car => car.id === p.interestedVehicleId)
+      return {
+        id: p.id,
+        name: p.fullName,
+        email: p.email,
+        vehicleName: v?.displayName || p.vehicleName || 'Vehículo de Interés',
+        vehiclePrice: v?.priceAmount || 25000,
+        status: p.statusLabel,
+        monthlyIncome: p.monthlyIncome || 3500,
+        downPayment: p.downPayment || 5000,
+        downPaymentPercent: 20
+      }
+    })
+  }
+
+  // Fallback from simulations or default leads based on real data
   const defaultLeads = [
     {
       id: 'carlos-mendoza',

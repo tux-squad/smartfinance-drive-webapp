@@ -74,6 +74,15 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
+   * 3.3 List available vehicle brands.
+   * GET /api/v1/vehicles/brands
+   */
+  public async getBrands(): Promise<string[]> {
+    const response: AxiosResponse<string[]> = await this.http.get<string[]>('/api/v1/vehicles/brands')
+    return response.data || []
+  }
+
+  /**
    * 3.5 Update Vehicle specifications by UUID.
    */
   public async updateVehicle(vehicleId: string, resource: import('./vehicle.resource').UpdateVehicleResource): Promise<Vehicle> {
@@ -82,14 +91,26 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
-   * 3.6 Delete Vehicle by UUID.
+   * 3.7 Update Vehicle status (ACTIVE, RESERVED, SOLD).
+   * PATCH /api/v1/vehicles/{vehicleId}/status
+   */
+  public async updateVehicleStatus(vehicleId: string, status: string): Promise<Vehicle> {
+    const response: AxiosResponse<VehicleResource> = await this.http.patch<VehicleResource>(
+      `/api/v1/vehicles/${vehicleId}/status`,
+      { status }
+    )
+    return VehicleAssembler.toEntity(response.data)
+  }
+
+  /**
+   * 3.8 Delete Vehicle by UUID.
    */
   public async deleteVehicle(vehicleId: string): Promise<void> {
     await this.http.delete(`/api/v1/vehicles/${vehicleId}`)
   }
 
   /**
-   * 3.7 Upload image for a Vehicle (multipart/form-data).
+   * 3.9 Upload primary/cover image for a Vehicle (multipart/form-data).
    */
   public async uploadVehicleImage(command: UploadVehicleImageCommand): Promise<Vehicle> {
     const formData = new FormData()
@@ -107,4 +128,37 @@ export class CatalogApi extends BaseApi {
 
     return VehicleAssembler.toEntity(response.data)
   }
+
+  /**
+   * 3.10 Upload additional image to vehicle gallery (multipart/form-data).
+   * POST /api/v1/vehicles/{vehicleId}/images
+   */
+  public async uploadVehicleGalleryImage(vehicleId: string, file: File): Promise<Vehicle> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>(
+      `/api/v1/vehicles/${vehicleId}/images`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    return VehicleAssembler.toEntity(response.data)
+  }
+
+  /**
+   * 3.11 Delete specific gallery image by index.
+   * DELETE /api/v1/vehicles/{vehicleId}/images/{imageIndex}
+   */
+  public async deleteVehicleGalleryImage(vehicleId: string, imageIndex: number): Promise<Vehicle> {
+    const response: AxiosResponse<VehicleResource> = await this.http.delete<VehicleResource>(
+      `/api/v1/vehicles/${vehicleId}/images/${imageIndex}`
+    )
+    return VehicleAssembler.toEntity(response.data)
+  }
 }
+

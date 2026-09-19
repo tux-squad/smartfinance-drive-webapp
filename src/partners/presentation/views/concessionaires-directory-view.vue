@@ -140,10 +140,31 @@ interface ConcessionaireCard {
 }
 
 onMounted(async () => {
-  await partnersStore.fetchFinancialEntities()
+  await Promise.all([
+    partnersStore.fetchDealerships(),
+    partnersStore.fetchFinancialEntities()
+  ])
 })
 
 const filteredDealers = computed<ConcessionaireCard[]>(() => {
+  // If real dealerships are loaded from GET /api/v1/dealerships
+  if (partnersStore.dealerships.length > 0) {
+    return partnersStore.dealerships.map((dealer) => ({
+      id: dealer.id,
+      name: dealer.name,
+      location: dealer.formattedLocation,
+      tag: dealer.vehicleCount > 0 ? `${dealer.vehicleCount} Vehículos en stock` : 'Concesionaria Oficial Certificada'
+    })).filter(d => {
+      const q = searchQuery.value.toLowerCase().trim()
+      const matchesSearch = !q ||
+        d.name.toLowerCase().includes(q) ||
+        d.location.toLowerCase().includes(q)
+      const matchesLocation = !selectedLocation.value || d.location.includes(selectedLocation.value)
+      return matchesSearch && matchesLocation
+    })
+  }
+
+  // Fallback to financial entities with rates
   const list: ConcessionaireCard[] = partnersStore.financialEntities.map((entity) => ({
     id: entity.id,
     name: entity.name,

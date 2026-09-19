@@ -42,6 +42,21 @@ export class Invoice {
     public readonly amount: number,
     public readonly currency: string = 'USD',
     public readonly status: string = 'PAID',
-    public readonly createdAt?: string
+    public readonly createdAt?: string,
+    public readonly pdfUrl?: string
+  ) {}
+}
+
+/**
+ * Domain Entity representing Dealer B2B Performance & ROI Metrics.
+ */
+export class DealerMetrics {
+  constructor(
+    public readonly totalLeadsGenerated: number,
+    public readonly conversionRate: number,
+    public readonly totalVehicleViews: number,
+    public readonly membershipRoi: string,
+    public readonly activeListingsCount: number,
+    public readonly period: string = 'LAST_30_DAYS'
   ) {}
 }
