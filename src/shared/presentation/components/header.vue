@@ -88,6 +88,29 @@ const breadcrumbTrail = computed<string[]>(() => {
   const panel = currentPanelTitle.value
   const path = $route.path
 
+  // Dealership portal breadcrumbs matching mockups
+  if (path === '/dealer/inventory/new') {
+    return [panel, 'Inventario', 'Añadir Vehículo']
+  }
+  if (path === '/dealer/inventory') {
+    return [panel, 'Gestión de Inventario']
+  }
+  if (path.startsWith('/dealer/prospects/') && path !== '/dealer/prospects') {
+    return [panel, 'Prospectos', 'Detalle del Prospecto']
+  }
+  if (path === '/dealer/prospects') {
+    return [panel, 'Prospectos']
+  }
+  if (path === '/dealer/messages') {
+    return [panel, 'Mensajes']
+  }
+  if (path.startsWith('/dealer/settings')) {
+    return [panel, 'Configuración', 'Apariencia']
+  }
+  if (path === '/home' && iamStore.roles.includes('ROLE_DEALER')) {
+    return [panel, 'Dashboard']
+  }
+
   if (path === '/messages') {
     return [panel, 'Mensajes']
   }

@@ -11,7 +11,7 @@
     "myProfile": "Mi Perfil",
     "settings": "Configuración",
     "aiConsultation": "Consulta IA",
-    "dealerPanel": "Portal Concesionario",
+    "dealerPanel": "Panel de Concesionaria",
     "dealerSubtitle": "Gestión de Inventario Automotriz",
     "bankPanel": "Portal Entidad Financiera",
     "bankSubtitle": "Gestión de Tasas y Productos",
@@ -21,6 +21,11 @@
     "userRole": "Comprador Pre-aprobado"
   },
   "nav": {
+    "dashboard": "Dashboard",
+    "dealerInventory": "Inventario",
+    "dealerProspects": "Prospectos",
+    "dealerMembership": "Membresía",
+    "dealerSettings": "Configuración",
     "buyerVehicles": "Vehículos a buscar",
     "buyerConcessionaires": "Concesionarias a buscar",
     "buyerMessages": "Mensajes",

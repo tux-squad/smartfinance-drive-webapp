@@ -112,6 +112,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'dealer-messages',
         component: () => import('@/shared/presentation/views/dealer-messages-view.vue'),
         meta: { title: 'Bandeja de Entrada' }
+      },
+      {
+        path: 'dealer/settings/appearance',
+        name: 'dealer-settings-appearance',
+        component: () => import('@/partners/presentation/views/store-appearance-view.vue'),
+        meta: { title: 'Apariencia de la Tienda' }
       }
     ]
   },

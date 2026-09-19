@@ -21,6 +21,11 @@
     "userRole": "Pre-approved Buyer"
   },
   "nav": {
+    "dashboard": "Dashboard",
+    "dealerInventory": "Inventory",
+    "dealerProspects": "Prospects",
+    "dealerMembership": "Membership",
+    "dealerSettings": "Settings",
     "buyerVehicles": "Search Vehicles",
     "buyerConcessionaires": "Search Dealerships",
     "buyerMessages": "Messages",

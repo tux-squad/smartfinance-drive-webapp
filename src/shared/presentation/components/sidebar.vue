@@ -2,7 +2,7 @@
   <aside class="w-64 bg-[#0a1936] border-r border-blue-950/60 p-4 min-h-screen flex flex-col justify-between text-white shrink-0">
     <div>
       <!-- Brand Logo matching mockup -->
-      <router-link to="/vehicles" class="flex items-center space-x-3 mb-8 mt-2 px-2">
+      <router-link :to="isDealer ? '/dealer/inventory' : '/vehicles'" class="flex items-center space-x-3 mb-8 mt-2 px-2">
         <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shrink-0 shadow-sm">
           <i class="pi pi-car"></i>
         </div>
@@ -12,7 +12,7 @@
         </div>
       </router-link>
 
-      <!-- Navigation Items for Buyer Flow -->
+      <!-- Navigation Items -->
       <nav class="space-y-1">
         <router-link
           v-for="item in navItems"
@@ -80,11 +80,44 @@ const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTIO
 const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
 const isCurrentRoute = (targetPath: string): boolean => {
-  if (targetPath === '/vehicles' && ($route.path === '/vehicles' || $route.path === '/home')) return true
+  if (targetPath === '/home') return $route.path === '/home'
+  if (targetPath === '/dealer/settings/appearance') return $route.path.startsWith('/dealer/settings')
+  if (targetPath === '/vehicles' && ($route.path === '/vehicles' || (!isDealer.value && $route.path === '/home'))) return true
   return $route.path.startsWith(targetPath)
 }
 
 const navItems = computed<NavItem[]>(() => {
+  // If user is Dealer (ROLE_DEALER) -> exactly the 5 links from the dealership mockups
+  if (isDealer.value) {
+    return [
+      {
+        labelKey: 'nav.dashboard',
+        to: '/home',
+        icon: 'pi-th-large'
+      },
+      {
+        labelKey: 'nav.dealerInventory',
+        to: '/dealer/inventory',
+        icon: 'pi-car'
+      },
+      {
+        labelKey: 'nav.dealerProspects',
+        to: '/dealer/prospects',
+        icon: 'pi-users'
+      },
+      {
+        labelKey: 'nav.dealerMembership',
+        to: '/billing',
+        icon: 'pi-id-card'
+      },
+      {
+        labelKey: 'nav.dealerSettings',
+        to: '/dealer/settings/appearance',
+        icon: 'pi-cog'
+      }
+    ]
+  }
+
   // If user is Buyer (ROLE_USER, not dealer, not bank, not admin) -> exactly the 6 mockup links
   if (!isDealer.value && !isBank.value && !isAdmin.value) {
     return [
