@@ -1,237 +1,342 @@
+<template>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Loading State -->
+    <div v-if="catalogStore.isLoading" class="flex flex-col items-center justify-center py-24 gap-3">
+      <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
+      <p class="text-sm text-gray-500 font-medium">Cargando detalles oficiales del vehículo...</p>
+    </div>
+
+    <!-- Error State -->
+    <div
+      v-else-if="catalogStore.error || !vehicle"
+      class="rounded-3xl border border-red-200 bg-red-50/60 p-12 text-center max-w-2xl mx-auto space-y-4"
+    >
+      <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+        <i class="pi pi-exclamation-triangle text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900">
+        Vehículo no encontrado
+      </h3>
+      <p class="text-xs text-gray-600">
+        {{ catalogStore.error || 'La unidad vehicular solicitada no se encuentra disponible en la base de datos.' }}
+      </p>
+      <router-link
+        to="/vehicles"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0a1936] text-white text-xs font-semibold hover:bg-blue-900 transition-colors"
+      >
+        <i class="pi pi-arrow-left text-xs"></i>
+        <span>Volver a Vehículos a buscar</span>
+      </router-link>
+    </div>
+
+    <!-- Main Detail Content matching Mockup Image 2 -->
+    <template v-else>
+      <!-- Header Bar matching Mockup Image 2 -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 pb-6">
+        <div class="space-y-1">
+          <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
+            Detalle del Vehículo
+          </h1>
+          <p class="text-sm text-gray-500">
+            Revisa el auto seleccionado y continúa con tu solicitud.
+          </p>
+        </div>
+
+        <div>
+          <span class="inline-flex items-center px-4 py-1.5 rounded-xl text-xs font-mono font-semibold bg-gray-100 text-gray-700 border border-gray-200 shadow-2xs">
+            Código SF-{{ vehicle.manufactureYear }}-{{ vehicle.model.toUpperCase().replace(/\s+/g, '') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- 2-Column Layout matching Mockup Image 2 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Left Column: Media & Highlights (approx 7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          <!-- Hero Image -->
+          <div class="relative rounded-3xl overflow-hidden border border-gray-200 bg-gray-100 h-96 shadow-xs flex items-center justify-center">
+            <!-- Verified Badge -->
+            <span class="absolute top-4 left-4 z-10 inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold bg-[#00a887] text-white shadow-sm">
+              Vehículo Verificado
+            </span>
+
+            <img
+              v-if="vehicle.imagePath"
+              :src="vehicle.imagePath"
+              :alt="vehicle.displayName"
+              class="w-full h-full object-cover"
+            />
+            <div v-else class="flex flex-col items-center justify-center text-gray-300 space-y-2">
+              <i class="pi pi-car text-6xl text-blue-900/20"></i>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ vehicle.brand }}</span>
+            </div>
+          </div>
+
+          <!-- Thumbnail Gallery Row -->
+          <div class="grid grid-cols-4 gap-3">
+            <div
+              v-for="index in 4"
+              :key="index"
+              :class="[
+                'h-20 rounded-2xl border-2 overflow-hidden flex items-center justify-center bg-gray-50 transition-all cursor-pointer',
+                index === 1 ? 'border-blue-600 shadow-xs' : 'border-gray-200 hover:border-gray-300'
+              ]"
+            >
+              <img
+                v-if="vehicle.imagePath"
+                :src="vehicle.imagePath"
+                :alt="`Vista ${index}`"
+                class="w-full h-full object-cover"
+              />
+              <i v-else class="pi pi-image text-gray-300 text-lg"></i>
+            </div>
+          </div>
+
+          <!-- Equipamiento Destacado matching Mockup Image 2 -->
+          <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs space-y-4">
+            <div>
+              <h2 class="text-base font-bold text-gray-950">Equipamiento Destacado</h2>
+              <p class="text-xs text-gray-500">Lo mejor del auto en mini-cards visuales.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Airbags -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-shield text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Airbags</div>
+                  <div class="text-[11px] text-gray-500">7 airbags de serie</div>
+                </div>
+              </div>
+
+              <!-- Pantalla -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-desktop text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Pantalla</div>
+                  <div class="text-[11px] text-gray-500">Pantalla táctil 9"</div>
+                </div>
+              </div>
+
+              <!-- Conectividad -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-wifi text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Conectividad</div>
+                  <div class="text-[11px] text-gray-500">Apple CarPlay y Android Auto</div>
+                </div>
+              </div>
+
+              <!-- Híbrido / Motor -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-bolt text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">{{ isHybridOrEfficient ? 'Híbrido' : 'Motor Eficiente' }}</div>
+                  <div class="text-[11px] text-gray-500">Inyección electrónica de alto rendimiento</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confianza y Transparencia matching Mockup Image 2 -->
+          <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs space-y-4">
+            <div>
+              <h2 class="text-base font-bold text-gray-950">Confianza y transparencia</h2>
+              <p class="text-xs text-gray-500">Todo lo que necesitas para tomar una decisión segura.</p>
+            </div>
+
+            <div class="space-y-3 text-xs text-gray-700">
+              <div class="flex items-start gap-2.5">
+                <i class="pi pi-check-circle text-[#00a887] text-base shrink-0 mt-0.5"></i>
+                <span>Inspección legal y mecánica realizada por SmartFinance.</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <i class="pi pi-check-circle text-[#00a887] text-base shrink-0 mt-0.5"></i>
+                <span>Documentación y origen del vehículo verificados ante registros públicos.</span>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <i class="pi pi-check-circle text-[#00a887] text-base shrink-0 mt-0.5"></i>
+                <span>Soporte financiero y acompañamiento bancario durante todo el proceso.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Pricing, Loan Simulation & Concessionaire (approx 5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-6">
+            <!-- Vehicle Main Title & Spec Line -->
+            <div class="space-y-1">
+              <h2 class="text-2xl font-extrabold text-gray-950 tracking-tight">
+                {{ vehicle.brand }} {{ vehicle.model }} {{ vehicle.manufactureYear }}
+              </h2>
+              <p class="text-xs text-gray-500 font-medium">
+                {{ vehicle.condition === 'NEW' ? '0 km' : 'Certificado' }} · Automática · {{ vehicle.condition === 'NEW' ? 'Nuevo' : 'Seminuevo' }}
+              </p>
+            </div>
+
+            <!-- Price -->
+            <div class="space-y-0.5">
+              <div class="text-3xl font-black text-gray-950">
+                {{ vehicle.formattedPrice }}
+              </div>
+              <div class="text-xs font-semibold text-[#eb8f47]">
+                Cuota desde ${{ estimatedMonthlyPayment }}/mes
+              </div>
+            </div>
+
+            <!-- Simulador de Cuota Card matching Mockup Image 2 -->
+            <div class="rounded-2xl bg-gray-50/70 border border-gray-200 p-4 space-y-3">
+              <div class="text-xs font-bold text-gray-900">Simulador de cuota</div>
+
+              <div class="space-y-2 text-xs">
+                <div class="flex justify-between text-gray-600">
+                  <span>Plazo</span>
+                  <span class="font-bold text-gray-900">48 meses</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>Enganche</span>
+                  <span class="font-bold text-gray-900">10%</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                  <span>Tasa estimada</span>
+                  <span class="font-bold text-gray-900">8.9% anual</span>
+                </div>
+              </div>
+
+              <div class="pt-1">
+                <div class="w-full py-2 px-3 rounded-xl bg-[#f7ab6d] text-white text-center font-bold text-xs shadow-2xs">
+                  ${{ estimatedMonthlyPayment }}/mes
+                </div>
+              </div>
+            </div>
+
+            <!-- Concessionaire Card matching Mockup Image 2 -->
+            <div class="rounded-2xl border border-gray-200 p-4 flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-xl bg-[#1e40af] text-white font-black text-sm flex items-center justify-center shrink-0">
+                {{ dealerInitials }}
+              </div>
+              <div class="space-y-0.5">
+                <div class="text-xs text-gray-400 font-medium">Concesionario</div>
+                <div class="text-xs font-bold text-gray-900">{{ dealerName }}</div>
+                <div class="text-[11px] text-gray-500">Lima, Perú · 4.9/5</div>
+              </div>
+            </div>
+
+            <!-- Action Buttons matching Mockup Image 2 -->
+            <div class="space-y-2.5 pt-2">
+              <button
+                type="button"
+                @click="goToPreEvaluation"
+                class="w-full py-3 px-4 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-semibold text-xs text-center shadow-xs transition-colors"
+              >
+                Solicitar Pre-evaluación
+              </button>
+
+              <button
+                type="button"
+                @click="goToScheduleVisit"
+                class="w-full py-2.5 px-4 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold text-xs text-center transition-colors"
+              >
+                Agendar Visita
+              </button>
+            </div>
+
+            <!-- Disclaimer note -->
+            <p class="text-[11px] text-gray-400 leading-relaxed pt-1">
+              Tu solicitud se envía directamente al concesionario y un asesor financiero te contacta para confirmar disponibilidad y condiciones.
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import Button from 'primevue/button'
-import Tag from 'primevue/tag'
-import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useCatalogStore } from '../../application/catalog.store'
-import VehicleImageUploader from '../components/vehicle-image-uploader.vue'
+import { usePartnersStore } from '@/partners/application/partners.store'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
 const catalogStore = useCatalogStore()
+const partnersStore = usePartnersStore()
 
-const isImageModalOpen = ref<boolean>(false)
 const vehicleId = computed(() => route.params.id as string)
+const vehicle = computed(() => catalogStore.selectedVehicle)
 
 onMounted(async () => {
   if (vehicleId.value) {
-    await catalogStore.fetchVehicleById(vehicleId.value)
+    await Promise.all([
+      catalogStore.fetchVehicleById(vehicleId.value),
+      partnersStore.fetchFinancialEntities()
+    ])
   }
 })
 
-const defaultImage = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'
-const vehicle = computed(() => catalogStore.selectedVehicle)
-const imageUrl = computed(() => vehicle.value?.imagePath || defaultImage)
-const isNew = computed(() => vehicle.value?.condition === 'NEW')
+const isHybridOrEfficient = computed(() => {
+  if (!vehicle.value) return false
+  const text = `${vehicle.value.brand} ${vehicle.value.model}`.toLowerCase()
+  return text.includes('hybrid') || text.includes('híbrido') || text.includes('rav4') || text.includes('corolla')
+})
 
-const goBack = () => {
-  router.push({ name: 'vehicle-catalog' })
-}
+const estimatedMonthlyPayment = computed(() => {
+  if (!vehicle.value) return '250'
+  const price = vehicle.value.priceAmount
+  // Standard 48 months with 10% down payment and ~8.9% rate:
+  const financed = price * 0.9
+  const monthlyRate = 0.089 / 12
+  const months = 48
+  const pmt = (financed * (monthlyRate * Math.pow(1 + monthlyRate, months))) / (Math.pow(1 + monthlyRate, months) - 1)
+  return Math.round(pmt).toLocaleString('en-US')
+})
 
-const goToSimulation = () => {
+const dealerEntity = computed(() => {
+  if (!vehicle.value?.financialEntityId) return undefined
+  return partnersStore.financialEntities.find(e => e.id === vehicle.value?.financialEntityId)
+})
+
+const dealerName = computed(() => {
+  return dealerEntity.value?.name || 'AutoPlaza Oficial'
+})
+
+const dealerInitials = computed(() => {
+  const parts = dealerName.value.split(' ')
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+  }
+  return dealerName.value.substring(0, 2).toUpperCase()
+})
+
+const goToPreEvaluation = () => {
   if (vehicle.value) {
-    router.push({ name: 'simulations', query: { vehicleId: vehicle.value.id } })
+    router.push(`/vehicles/${vehicle.value.id}/pre-evaluation`)
   }
 }
 
-const onImageUploaded = async () => {
-  isImageModalOpen.value = false
-  if (vehicleId.value) {
-    await catalogStore.fetchVehicleById(vehicleId.value)
+const goToScheduleVisit = () => {
+  if (vehicle.value) {
+    router.push({
+      path: '/messages',
+      query: {
+        vehicleId: vehicle.value.id,
+        dealerId: vehicle.value.financialEntityId || undefined
+      }
+    })
   }
 }
 </script>
 
-<template>
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-    <!-- Back Button Bar -->
-    <div>
-      <Button
-        :label="t('catalog.backToCatalog')"
-        icon="pi pi-arrow-left"
-        text
-        severity="secondary"
-        class="!text-sm hover:text-emerald-600"
-        @click="goBack"
-      />
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="catalogStore.isLoading" class="flex flex-col items-center justify-center py-24 gap-3">
-      <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-      <p class="text-sm text-gray-500 font-medium">{{ t('catalog.loadingDetailText') }}</p>
-    </div>
-
-    <!-- Error / Not Found State -->
-    <div
-      v-else-if="catalogStore.error || !vehicle"
-      class="rounded-2xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-900/30 dark:bg-red-950/20"
-    >
-      <i class="pi pi-exclamation-triangle text-3xl text-red-500 mb-2"></i>
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-        {{ t('catalog.vehicleNotFoundTitle') }}
-      </h3>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {{ catalogStore.error || t('catalog.vehicleNotFoundSubtitle') }}
-      </p>
-      <Button
-        :label="t('catalog.backToCatalog')"
-        icon="pi pi-arrow-left"
-        severity="success"
-        class="mt-4 rounded-xl !text-xs"
-        @click="goBack"
-      />
-    </div>
-
-    <!-- Main Detail Layout -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      <!-- Left Column: Image Preview & Technical Specs -->
-      <div class="lg:col-span-7 space-y-6">
-        <!-- Vehicle Hero Image -->
-        <div class="relative overflow-hidden rounded-3xl border border-gray-100 bg-gray-900 shadow-lg dark:border-gray-800">
-          <img
-            :src="imageUrl"
-            :alt="vehicle.displayName"
-            class="h-96 w-full object-cover"
-            @error="(e: Event) => ((e.target as HTMLImageElement).src = defaultImage)"
-          />
-          <div class="absolute top-4 left-4 flex gap-2">
-            <Tag
-              :value="isNew ? t('catalog.conditionNew') : t('catalog.conditionUsed')"
-              :severity="isNew ? 'success' : 'warn'"
-              class="!text-xs font-bold px-3 py-1.5 rounded-full shadow-md"
-            />
-            <span class="rounded-full bg-black/70 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-white shadow-md">
-              {{ vehicle.manufactureYear }}
-            </span>
-          </div>
-
-          <!-- Upload Image Overlay Button -->
-          <div class="absolute bottom-4 right-4">
-            <Button
-              :label="t('catalog.imageUpload.changeImageBtn')"
-              icon="pi pi-camera"
-              severity="secondary"
-              class="!rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white font-bold !text-xs border border-white/20"
-              @click="isImageModalOpen = true"
-            />
-          </div>
-        </div>
-
-        <!-- Technical Specs Card -->
-        <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 space-y-4">
-          <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <i class="pi pi-list text-emerald-600"></i>
-            {{ t('catalog.technicalSpecsTitle') }}
-          </h3>
-
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
-              <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.brandLabel') }}</span>
-              <span class="font-bold text-gray-900 dark:text-white">{{ vehicle.brand }}</span>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
-              <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.modelLabel') }}</span>
-              <span class="font-bold text-gray-900 dark:text-white">{{ vehicle.model }}</span>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
-              <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.yearLabel') }}</span>
-              <span class="font-bold text-gray-900 dark:text-white">{{ vehicle.manufactureYear }}</span>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
-              <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.conditionLabel') }}</span>
-              <span class="font-bold text-gray-900 dark:text-white">
-                {{ isNew ? t('catalog.conditionNew') : t('catalog.conditionUsed') }}
-              </span>
-            </div>
-
-            <div class="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3 col-span-2">
-              <span class="text-xs text-gray-500 dark:text-gray-400 block">{{ t('catalog.vehicleIdLabel') }}</span>
-              <span class="font-mono text-xs text-gray-700 dark:text-gray-300 break-all">{{ vehicle.id }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Financing & Pricing Action Box -->
-      <div class="lg:col-span-5 space-y-6">
-        <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900 space-y-6">
-          <div>
-            <span class="inline-block rounded-full bg-emerald-50 dark:bg-emerald-950 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-2">
-              {{ t('catalog.financingAvailableBadge') }}
-            </span>
-            <h1 class="text-2xl font-black text-gray-900 dark:text-white">
-              {{ vehicle.brand }} {{ vehicle.model }}
-            </h1>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {{ t('catalog.yearLabel') }}: {{ vehicle.manufactureYear }}
-            </p>
-          </div>
-
-          <!-- Price Box -->
-          <div class="rounded-2xl bg-emerald-500/10 p-5 border border-emerald-500/20">
-            <span class="text-xs text-emerald-800 dark:text-emerald-300 uppercase tracking-wider font-bold block mb-1">
-              {{ t('catalog.cashPriceLabel') }}
-            </span>
-            <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400">
-              {{ vehicle.formattedPrice }}
-            </div>
-            <p class="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-1">
-              * {{ t('catalog.priceNote') }}
-            </p>
-          </div>
-
-          <!-- Feature Bullets -->
-          <div class="space-y-3 pt-2 text-xs text-gray-600 dark:text-gray-300">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-check-circle text-emerald-500"></i>
-              <span>{{ t('catalog.benefit1') }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-check-circle text-emerald-500"></i>
-              <span>{{ t('catalog.benefit2') }}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-check-circle text-emerald-500"></i>
-              <span>{{ t('catalog.benefit3') }}</span>
-            </div>
-          </div>
-
-          <!-- Main CTA: Simulate Loan -->
-          <Button
-            :label="t('catalog.simulateLoanBtn')"
-            icon="pi pi-calculator"
-            severity="success"
-            size="large"
-            class="w-full !rounded-2xl !py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 border-none hover:from-emerald-700 hover:to-teal-700 text-white font-bold shadow-lg shadow-emerald-600/30"
-            @click="goToSimulation"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Upload Image Modal -->
-    <Dialog
-      v-model:visible="isImageModalOpen"
-      modal
-      :header="t('catalog.imageUpload.dialogTitle')"
-      :style="{ width: '90vw', maxWidth: '500px' }"
-      class="!rounded-3xl p-dialog-custom"
-    >
-      <div class="pt-2">
-        <VehicleImageUploader
-          v-if="vehicle"
-          :vehicleId="vehicle.id"
-          @uploaded="onImageUploaded"
-        />
-      </div>
-    </Dialog>
-  </div>
-</template>
+<style scoped>
+</style>

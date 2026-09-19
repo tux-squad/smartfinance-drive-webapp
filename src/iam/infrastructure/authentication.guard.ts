@@ -1,4 +1,4 @@
-import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 import { useIamStore } from '../application/iam.store'
 
 /**
@@ -6,8 +6,7 @@ import { useIamStore } from '../application/iam.store'
  */
 export const authenticationGuard = (
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
-  next?: NavigationGuardNext
+  from: RouteLocationNormalized
 ) => {
   const iamStore = useIamStore()
   
@@ -21,22 +20,13 @@ export const authenticationGuard = (
 
   if (!iamStore.isAuthenticated && !isPublicRoute && !isGuestOnlyRoute) {
     // If attempting to access a protected route without auth, redirect to sign-in
-    if (next) {
-      return next({ name: 'sign-in', query: { redirect: to.fullPath } })
-    }
     return { name: 'sign-in', query: { redirect: to.fullPath } }
   }
 
   if (iamStore.isAuthenticated && isGuestOnlyRoute) {
     // If authenticated user tries to visit login/register, redirect to home
-    if (next) {
-      return next({ name: 'home' })
-    }
     return { name: 'home' }
   }
 
-  if (next) {
-    return next()
-  }
   return true
 }

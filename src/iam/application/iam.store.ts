@@ -14,6 +14,38 @@ import type { UserPaginatedResponseResource, UserResource } from '../infrastruct
 
 const iamApi = new IamApi()
 
+const formatIamErrorMessage = (rawMsg?: string): string => {
+  if (!rawMsg) return ''
+  if (rawMsg.includes('missingUppercase')) {
+    return 'La contraseña debe incluir al menos una letra mayúscula (ej: Password123!).'
+  }
+  if (rawMsg.includes('alreadyExists') || rawMsg.includes('duplicate') || rawMsg.includes('exists')) {
+    return 'El correo electrónico ya se encuentra registrado.'
+  }
+  if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
+    return 'Credenciales incorrectas. Verifique su correo y contraseña.'
+  }
+  if (rawMsg.includes('rucNotFound')) {
+    return 'El RUC ingresado no existe en el padrón oficial de SUNAT.'
+  }
+  if (rawMsg.includes('rucNotActiveOrHabido')) {
+    return 'El RUC ingresado no se encuentra en estado ACTIVO y condición HABIDO ante SUNAT.'
+  }
+  if (rawMsg.includes('notFinancialInstitution')) {
+    return 'El RUC consultado ante SUNAT no registra actividad económica de intermediación financiera (CIIU 64 o 66) en los registros del padrón tributario.'
+  }
+  if (rawMsg.includes('notAutomotive') || rawMsg.includes('notDealer')) {
+    return 'El RUC consultado ante SUNAT no registra actividad económica automotriz (CIIU 451).'
+  }
+  if (rawMsg.includes('invalidCiiu') || rawMsg.includes('ciiu') || rawMsg.includes('economicActivity')) {
+    return 'La actividad económica (CIIU) registrada en SUNAT para este RUC no corresponde a la categoría requerida (Automotriz CIIU 451 o Financiera CIIU 64/66).'
+  }
+  if (rawMsg.includes('notFound')) {
+    return 'Usuario no encontrado. Registre una cuenta antes de iniciar sesión.'
+  }
+  return rawMsg
+}
+
 export const useIamStore = defineStore('iam', () => {
   const currentUser = ref<User | null>(null)
   const token = ref<string | null>(localStorage.getItem('access_token'))
@@ -39,13 +71,23 @@ export const useIamStore = defineStore('iam', () => {
     const savedUserId = localStorage.getItem('user_id')
     const savedRoles = localStorage.getItem('user_roles')
 
-    if (savedToken && savedUserId) {
+    if (savedToken && savedUserId && savedUserId !== 'undefined' && savedUserId !== 'null') {
       token.value = savedToken
       refreshTokenValue.value = savedRefreshToken
+
+      let initialRoles: string[] = ['ROLE_USER']
+      if (savedRoles && savedRoles !== 'undefined') {
+        try {
+          initialRoles = JSON.parse(savedRoles)
+        } catch {
+          initialRoles = ['ROLE_USER']
+        }
+      }
+
       currentUser.value = new User({
         id: savedUserId,
         username: savedUsername || '',
-        roles: savedRoles ? JSON.parse(savedRoles) : ['ROLE_USER'],
+        roles: initialRoles,
         token: savedToken,
         refreshToken: savedRefreshToken || undefined
       })
@@ -53,13 +95,22 @@ export const useIamStore = defineStore('iam', () => {
       // Fetch fresh user profile & roles from API
       try {
         const userRes = await iamApi.getUserById(savedUserId)
-        if (userRes.data) {
+        if (userRes.data && userRes.data.roles) {
           currentUser.value.roles = userRes.data.roles
           localStorage.setItem('user_roles', JSON.stringify(userRes.data.roles))
         }
       } catch {
         // Fallback to cached roles
       }
+    } else {
+      currentUser.value = null
+      token.value = null
+      refreshTokenValue.value = null
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user_name')
+      localStorage.removeItem('user_id')
+      localStorage.removeItem('user_roles')
     }
   }
 
@@ -98,8 +149,41 @@ export const useIamStore = defineStore('iam', () => {
 
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al iniciar sesión. Verifique sus credenciales.'
+      const rawMsg = err.response?.data?.message
+      error.value = formatIamErrorMessage(rawMsg) || 'Error al iniciar sesión. Verifique sus credenciales.'
       return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fast demo sign-in simulation (allows instant guest/demo login).
+   */
+  const signInDemo = async (demoUsername = 'demo_user_1@smartfinance.com', demoRole = 'ROLE_USER'): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const demoToken = 'demo_access_token_' + Date.now()
+      const demoRefreshToken = 'demo_refresh_token_' + Date.now()
+      token.value = demoToken
+      refreshTokenValue.value = demoRefreshToken
+
+      localStorage.setItem('access_token', demoToken)
+      localStorage.setItem('refresh_token', demoRefreshToken)
+      localStorage.setItem('user_name', demoUsername)
+      localStorage.setItem('user_id', '1')
+      localStorage.setItem('user_roles', JSON.stringify([demoRole]))
+
+      currentUser.value = new User({
+        id: '1',
+        username: demoUsername,
+        roles: [demoRole],
+        token: demoToken,
+        refreshToken: demoRefreshToken
+      })
+
+      return true
     } finally {
       isLoading.value = false
     }
@@ -116,7 +200,8 @@ export const useIamStore = defineStore('iam', () => {
       const response = await iamApi.signUp(resourcePayload)
       return response.data
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al registrar usuario.'
+      const rawMsg = err.response?.data?.message
+      error.value = formatIamErrorMessage(rawMsg) || 'Error al registrar usuario.'
       return null
     } finally {
       isLoading.value = false
@@ -257,7 +342,8 @@ export const useIamStore = defineStore('iam', () => {
       }
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al solicitar el rol de Concesionario.'
+      const rawMsg = err.response?.data?.message
+      error.value = formatIamErrorMessage(rawMsg) || 'Error al solicitar el rol de Concesionario.'
       return false
     } finally {
       isLoading.value = false
@@ -279,7 +365,8 @@ export const useIamStore = defineStore('iam', () => {
       }
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al solicitar el rol de Entidad Financiera.'
+      const rawMsg = err.response?.data?.message
+      error.value = formatIamErrorMessage(rawMsg) || 'Error al solicitar el rol de Entidad Financiera.'
       return false
     } finally {
       isLoading.value = false
@@ -344,6 +431,7 @@ export const useIamStore = defineStore('iam', () => {
     roles,
     restoreSession,
     signIn,
+    signInDemo,
     signUp,
     signInWithGoogle,
     requestPasswordRecovery,

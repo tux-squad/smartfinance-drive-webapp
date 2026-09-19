@@ -1,48 +1,57 @@
 <template>
-  <aside class="w-64 bg-blue-950 border-r border-blue-900 p-4 min-h-screen flex flex-col justify-between text-white shrink-0">
+  <aside class="w-64 bg-[#0a1936] border-r border-blue-950/60 p-4 min-h-screen flex flex-col justify-between text-white shrink-0">
     <div>
-      <!-- Brand Logo -->
-      <router-link to="/home" class="flex items-center space-x-3 mb-8 mt-4 px-2">
-        <i class="pi pi-car text-blue-950 bg-gray-200 rounded-lg p-2.5 text-xl"></i>
+      <!-- Brand Logo matching mockup -->
+      <router-link :to="isDealer ? '/dealer/inventory' : '/vehicles'" class="flex items-center space-x-3 mb-8 mt-2 px-2">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shrink-0 shadow-sm">
+          <i class="pi pi-car"></i>
+        </div>
         <div>
-          <div class="text-xl font-bold leading-tight tracking-wide">SmartFinance</div>
-          <div class="text-sky-400 text-xs font-semibold tracking-wider uppercase">Drive Platform</div>
+          <div class="text-base font-bold leading-tight tracking-wide text-white">SmartFinance</div>
+          <div class="text-gray-400 text-xs font-normal">Drive</div>
         </div>
       </router-link>
 
       <!-- Navigation Items -->
-      <nav class="space-y-1.5">
+      <nav class="space-y-1">
         <router-link
           v-for="item in navItems"
           :key="item.to"
           :to="item.to"
-          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all"
           :class="[
-            $route.path.startsWith(item.to)
-              ? 'bg-sky-600 text-white shadow-xs font-semibold'
-              : 'text-gray-300 hover:bg-blue-900/60 hover:text-white'
+            isCurrentRoute(item.to)
+              ? 'bg-blue-600 text-white shadow-sm font-semibold'
+              : 'text-gray-300 hover:bg-blue-900/40 hover:text-white'
           ]"
         >
-          <i :class="['pi', item.icon, 'text-lg']"></i>
-          <span>{{ t(item.labelKey) }}</span>
+          <div class="flex items-center space-x-3 truncate">
+            <i :class="['pi', item.icon, 'text-base shrink-0']"></i>
+            <span class="truncate">{{ t(item.labelKey) }}</span>
+          </div>
+
+          <span
+            v-if="item.badgeKey"
+            class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-sky-400/20 text-sky-300 border border-sky-400/30"
+          >
+            {{ t(item.badgeKey) }}
+          </span>
         </router-link>
       </nav>
     </div>
 
-    <!-- Help & Support Card -->
-    <div class="mt-auto bg-sky-900/40 border border-sky-800/50 rounded-xl p-4 space-y-3">
-      <div class="flex items-center space-x-2 text-sky-300 font-semibold text-sm">
-        <i class="pi pi-headphones text-base"></i>
-        <span>{{ t('sidebar.needHelp') }}</span>
+    <!-- Help & Support Card matching mockup -->
+    <div class="mt-auto bg-[#122347] border border-blue-900/50 rounded-2xl p-4 space-y-2.5">
+      <div class="text-white font-bold text-xs">
+        {{ t('sidebar.needHelp') }}
       </div>
-      <p class="text-xs text-gray-300 leading-relaxed">
+      <p class="text-[11px] text-gray-300 leading-relaxed">
         {{ t('sidebar.helpDescription') }}
       </p>
       <a
         href="tel:+51987654321"
-        class="flex items-center justify-center space-x-2 w-full py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-xs shadow-xs transition-colors"
+        class="flex items-center justify-center space-x-1.5 w-full py-2 px-3 rounded-xl bg-[#00a887] hover:bg-[#009275] text-white font-bold text-xs shadow-xs transition-colors"
       >
-        <i class="pi pi-phone text-xs"></i>
         <span>{{ t('sidebar.callSupport') }}</span>
       </a>
     </div>
@@ -50,27 +59,186 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useIamStore } from '@/iam/application/iam.store'
 
 const $route = useRoute()
 const { t } = useI18n()
+const iamStore = useIamStore()
 
 interface NavItem {
   labelKey: string
   to: string
   icon: string
+  badgeKey?: string
 }
 
-const navItems: NavItem[] = [
-  { labelKey: 'nav.vehicles', to: '/vehicles', icon: 'pi-car' },
-  { labelKey: 'nav.concessionaries', to: '/concessionaries', icon: 'pi-building' },
-  { labelKey: 'nav.simulations', to: '/simulations', icon: 'pi-calculator' },
-  { labelKey: 'nav.scoring', to: '/scoring', icon: 'pi-shield' },
-  { labelKey: 'nav.reports', to: '/reports/depreciation', icon: 'pi-chart-line' },
-  { labelKey: 'nav.user', to: '/user', icon: 'pi-user' },
-  { labelKey: 'nav.billing', to: '/billing', icon: 'pi-credit-card' },
-]
+const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
+const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
+const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
+
+const isCurrentRoute = (targetPath: string): boolean => {
+  if (targetPath === '/home') return $route.path === '/home'
+  if (targetPath === '/dealer/settings/appearance') return $route.path.startsWith('/dealer/settings')
+  if (targetPath === '/vehicles' && ($route.path === '/vehicles' || (!isDealer.value && $route.path === '/home'))) return true
+  return $route.path.startsWith(targetPath)
+}
+
+const navItems = computed<NavItem[]>(() => {
+  // If user is Dealer (ROLE_DEALER) -> exactly the 5 links from the dealership mockups
+  if (isDealer.value) {
+    return [
+      {
+        labelKey: 'nav.dashboard',
+        to: '/home',
+        icon: 'pi-th-large'
+      },
+      {
+        labelKey: 'nav.dealerInventory',
+        to: '/dealer/inventory',
+        icon: 'pi-car'
+      },
+      {
+        labelKey: 'nav.dealerProspects',
+        to: '/dealer/prospects',
+        icon: 'pi-users'
+      },
+      {
+        labelKey: 'nav.dealerMembership',
+        to: '/billing',
+        icon: 'pi-id-card'
+      },
+      {
+        labelKey: 'nav.dealerSettings',
+        to: '/dealer/settings/appearance',
+        icon: 'pi-cog'
+      }
+    ]
+  }
+
+  // If user is Buyer (ROLE_USER, not dealer, not bank, not admin) -> exactly the 6 mockup links
+  if (!isDealer.value && !isBank.value && !isAdmin.value) {
+    return [
+      {
+        labelKey: 'nav.buyerVehicles',
+        to: '/vehicles',
+        icon: 'pi-car'
+      },
+      {
+        labelKey: 'nav.buyerConcessionaires',
+        to: '/concessionaries',
+        icon: 'pi-building'
+      },
+      {
+        labelKey: 'nav.buyerMessages',
+        to: '/messages',
+        icon: 'pi-comment'
+      },
+      {
+        labelKey: 'nav.buyerAiConsultation',
+        to: '/consultation',
+        icon: 'pi-comments'
+      },
+      {
+        labelKey: 'nav.buyerReport',
+        to: '/reports/applications',
+        icon: 'pi-file'
+      },
+      {
+        labelKey: 'nav.buyerProfile',
+        to: '/user',
+        icon: 'pi-user'
+      },
+      {
+        labelKey: 'nav.buyerSettings',
+        to: '/settings',
+        icon: 'pi-cog'
+      }
+    ]
+  }
+
+  // If user is Bank / Financial Institution (ROLE_FINANCIAL_INSTITUTION) -> Bank dedicated tools
+  if (isBank.value) {
+    return [
+      {
+        labelKey: 'nav.dashboard',
+        to: '/home',
+        icon: 'pi-th-large'
+      },
+      {
+        labelKey: 'nav.bankEntities',
+        to: '/concessionaries/entities',
+        icon: 'pi-building-columns'
+      },
+      {
+        labelKey: 'nav.commercialSimulations',
+        to: '/simulations',
+        icon: 'pi-calculator'
+      },
+      {
+        labelKey: 'nav.riskScoring',
+        to: '/scoring',
+        icon: 'pi-shield'
+      },
+      {
+        labelKey: 'nav.reports',
+        to: '/reports/depreciation',
+        icon: 'pi-chart-line'
+      },
+      {
+        labelKey: 'nav.bankProfile',
+        to: '/user',
+        icon: 'pi-user'
+      },
+      {
+        labelKey: 'nav.buyerSettings',
+        to: '/settings',
+        icon: 'pi-cog'
+      }
+    ]
+  }
+
+  // Fallback for Admin or mixed roles
+  return [
+    {
+      labelKey: 'nav.vehicles',
+      to: '/vehicles',
+      icon: 'pi-car'
+    },
+    {
+      labelKey: 'nav.bankEntities',
+      to: '/concessionaries/entities',
+      icon: 'pi-building'
+    },
+    {
+      labelKey: 'nav.commercialSimulations',
+      to: '/simulations',
+      icon: 'pi-calculator'
+    },
+    {
+      labelKey: 'nav.riskScoring',
+      to: '/scoring',
+      icon: 'pi-shield'
+    },
+    {
+      labelKey: 'nav.reports',
+      to: '/reports/depreciation',
+      icon: 'pi-chart-line'
+    },
+    {
+      labelKey: 'nav.user',
+      to: '/user',
+      icon: 'pi-user'
+    },
+    {
+      labelKey: 'nav.buyerSettings',
+      to: '/settings',
+      icon: 'pi-cog'
+    }
+  ]
+})
 </script>
 
 <style scoped>
