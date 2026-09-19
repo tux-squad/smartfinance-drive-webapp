@@ -203,17 +203,23 @@ const savedMessage = ref<string | null>(null)
 const storeData = reactive({
   name: 'AutoSur Motors SAC',
   address: 'Av. Javier Prado Este 4520, Surco, Lima',
+  phone: '+51987654321',
+  email: 'contacto@autosur.pe',
   hours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
   description: 'Concesionaria oficial multimarca líder en vehículos nuevos y seminuevos garantizados. Brindamos asesoría en financiamiento directo con las mejores entidades bancarias del país.'
 })
 
 onMounted(async () => {
-  await partnersStore.fetchFinancialEntities()
-  if (partnersStore.financialEntities.length > 0) {
-    const entity = partnersStore.financialEntities[0]
-    if (entity?.name) {
-      storeData.name = entity.name
-    }
+  const myDealership = await partnersStore.fetchMyDealership()
+  if (myDealership) {
+    storeData.name = myDealership.name || storeData.name
+    storeData.address = myDealership.address || storeData.address
+    storeData.phone = myDealership.phone || storeData.phone
+    storeData.email = myDealership.email || storeData.email
+    storeData.hours = myDealership.hours || storeData.hours
+    storeData.description = myDealership.description || storeData.description
+    if (myDealership.logoUrl) logoPreview.value = myDealership.logoUrl
+    if (myDealership.bannerUrl) bannerPreview.value = myDealership.bannerUrl
   }
 })
 
@@ -225,17 +231,21 @@ const triggerBannerUpload = () => {
   bannerInputRef.value?.click()
 }
 
-const handleLogoChange = (e: Event) => {
+const handleLogoChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files && target.files[0]) {
-    logoPreview.value = URL.createObjectURL(target.files[0])
+    const file = target.files[0]
+    logoPreview.value = URL.createObjectURL(file)
+    await partnersStore.uploadDealershipLogo(file)
   }
 }
 
-const handleBannerChange = (e: Event) => {
+const handleBannerChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files && target.files[0]) {
-    bannerPreview.value = URL.createObjectURL(target.files[0])
+    const file = target.files[0]
+    bannerPreview.value = URL.createObjectURL(file)
+    await partnersStore.uploadDealershipBanner(file)
   }
 }
 
@@ -243,11 +253,21 @@ const handleSaveAppearance = async () => {
   isSaving.value = true
   savedMessage.value = null
 
-  // Simulate or execute persistence with API
-  await new Promise(resolve => setTimeout(resolve, 600))
+  const success = await partnersStore.updateMyDealership({
+    name: storeData.name,
+    address: storeData.address,
+    phone: storeData.phone,
+    email: storeData.email,
+    hours: storeData.hours,
+    description: storeData.description
+  })
 
   isSaving.value = false
-  savedMessage.value = '¡Configuración de apariencia guardada exitosamente! Los cambios ya son visibles en tu tienda pública.'
+  if (success) {
+    savedMessage.value = '¡Configuración de apariencia guardada exitosamente! Los cambios ya son visibles en tu tienda pública.'
+  } else {
+    savedMessage.value = 'Cambios guardados localmente para la sesión actual.'
+  }
 }
 </script>
 
