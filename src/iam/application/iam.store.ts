@@ -42,10 +42,20 @@ export const useIamStore = defineStore('iam', () => {
     if (savedToken && savedUserId) {
       token.value = savedToken
       refreshTokenValue.value = savedRefreshToken
+
+      let initialRoles: string[] = ['ROLE_USER']
+      if (savedRoles) {
+        try {
+          initialRoles = JSON.parse(savedRoles)
+        } catch {
+          initialRoles = ['ROLE_USER']
+        }
+      }
+
       currentUser.value = new User({
         id: savedUserId,
         username: savedUsername || '',
-        roles: savedRoles ? JSON.parse(savedRoles) : ['ROLE_USER'],
+        roles: initialRoles,
         token: savedToken,
         refreshToken: savedRefreshToken || undefined
       })
