@@ -115,7 +115,7 @@ const breadcrumbTrail = computed<string[]>(() => {
     return [panel, 'Concesionarias a buscar']
   }
   if (path === '/vehicles' || path === '/home') {
-    return [panel, 'Vehículos a buscar']
+    return [panel, 'Catálogo General de Vehículos']
   }
   if (path === '/user') {
     return [panel, t('header.myProfile')]
