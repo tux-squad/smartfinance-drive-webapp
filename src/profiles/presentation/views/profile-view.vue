@@ -128,6 +128,9 @@
           </dl>
         </div>
       </div>
+
+      <!-- Dealer Role Request / Elevation Section (IAM SUNAT RBAC) -->
+      <DealerRoleRequestCard />
     </div>
   </div>
 </template>
@@ -140,6 +143,7 @@ import { useProfilesStore } from '../../application/profiles.store'
 import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
 import ProfileForm from '../components/profile-form.vue'
+import DealerRoleRequestCard from '@/iam/presentation/components/dealer-role-request-card.vue'
 
 const { t } = useI18n()
 const iamStore = useIamStore()
