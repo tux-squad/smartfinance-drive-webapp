@@ -1,3 +1,11 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 @import "primeicons/primeicons.css";
+
+/* Hide PrimeUI license badge overlay */
+div[class*="Invalid PrimeUI License"],
+div[class*="PrimeUI License"],
+.p-license-banner,
+.p-license-error {
+  display: none !important;
+}
