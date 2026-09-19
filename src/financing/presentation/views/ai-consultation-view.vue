@@ -132,7 +132,7 @@ const userDisplayName = computed(() => {
     const clean = raw.replace(/[._-]/g, ' ')
     if (clean) return clean.charAt(0).toUpperCase() + clean.slice(1)
   }
-  return 'Carlos Mendoza'
+  return iamStore.username || 'Usuario'
 })
 
 const userInitials = computed(() => {

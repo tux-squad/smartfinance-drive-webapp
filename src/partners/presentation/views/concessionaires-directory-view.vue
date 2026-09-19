@@ -20,7 +20,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Buscar concesionaria..."
+          placeholder="Buscar concesionaria por nombre o RUC..."
           class="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent shadow-xs transition-all"
         />
       </div>
@@ -35,9 +35,8 @@
           class="w-full pl-9 pr-8 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent shadow-xs transition-all appearance-none cursor-pointer"
         >
           <option value="">Todas las ubicaciones</option>
-          <option value="Lima">Lima, Perú</option>
-          <option value="Santiago">Santiago, Chile</option>
-          <option value="Bogotá">Bogotá, Colombia</option>
+          <option value="Perú">Perú</option>
+          <option value="Lima">Lima</option>
         </select>
         <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-400">
           <i class="pi pi-chevron-down text-xs"></i>
@@ -45,8 +44,30 @@
       </div>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="partnersStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
+      <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
+      <p class="text-sm text-gray-500 font-medium">Cargando concesionarias y entidades aliadas...</p>
+    </div>
+
+    <!-- Empty State when API has no partners -->
+    <div
+      v-else-if="filteredDealers.length === 0"
+      class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white p-12 text-center"
+    >
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-4">
+        <i class="pi pi-building text-2xl"></i>
+      </div>
+      <h3 class="text-base font-bold text-gray-900">
+        No se encontraron concesionarias
+      </h3>
+      <p class="mt-1 text-xs text-gray-500 max-w-md">
+        Actualmente no hay concesionarias o entidades aliadas registradas en el sistema que coincidan con tu búsqueda.
+      </p>
+    </div>
+
     <!-- Concesionarias Cards Grid matching Mockup Image 2 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="dealer in filteredDealers"
         :key="dealer.id"
@@ -57,7 +78,7 @@
           <div class="relative h-40 bg-gray-200/80 rounded-xl flex items-center justify-center overflow-hidden border border-gray-100">
             <!-- Top Left Decorative Icon from Mockup -->
             <div class="absolute top-3 left-3 w-7 h-7 rounded-full bg-white/90 shadow-xs flex items-center justify-center text-gray-700">
-              <i class="pi pi-times-circle text-base text-gray-600"></i>
+              <i class="pi pi-building text-xs text-gray-700"></i>
             </div>
             <i class="pi pi-building text-4xl text-gray-400/60"></i>
           </div>
@@ -75,7 +96,7 @@
               <span>{{ dealer.location }}</span>
             </div>
 
-            <!-- Tag: Autos Nuevos y Usados -->
+            <!-- Tag -->
             <div class="pt-1">
               <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#e6f7f4] text-[#00a887] border border-[#b3ebe1]">
                 {{ dealer.tag }}
@@ -100,60 +121,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import ProgressSpinner from 'primevue/progressspinner'
+import { usePartnersStore } from '../../application/partners.store'
 
 const router = useRouter()
+const partnersStore = usePartnersStore()
 
 const searchQuery = ref<string>('')
 const selectedLocation = ref<string>('')
 
-interface Concessionaire {
+interface ConcessionaireCard {
   id: string
   name: string
   location: string
-  country: string
   tag: string
 }
 
-const mockDealers: Concessionaire[] = [
-  {
-    id: 'deal-1',
-    name: 'AutoPlaza Lima',
-    location: 'Lima, Perú',
-    country: 'Lima',
-    tag: 'Autos Nuevos y Usados'
-  },
-  {
-    id: 'deal-2',
-    name: 'MegaMotors Santiago',
-    location: 'Santiago, Chile',
-    country: 'Santiago',
-    tag: 'Autos Nuevos y Usados'
-  },
-  {
-    id: 'deal-3',
-    name: 'DriveCenter Bogotá',
-    location: 'Bogotá, Colombia',
-    country: 'Bogotá',
-    tag: 'Autos Nuevos y Usados'
-  }
-]
+onMounted(async () => {
+  await partnersStore.fetchFinancialEntities()
+})
 
-const filteredDealers = computed(() => {
-  return mockDealers.filter(d => {
-    const matchesSearch = !searchQuery.value.trim() ||
-      d.name.toLowerCase().includes(searchQuery.value.toLowerCase().trim()) ||
-      d.location.toLowerCase().includes(searchQuery.value.toLowerCase().trim())
-    const matchesLocation = !selectedLocation.value || d.country.includes(selectedLocation.value)
+const filteredDealers = computed<ConcessionaireCard[]>(() => {
+  const list: ConcessionaireCard[] = partnersStore.financialEntities.map((entity) => ({
+    id: entity.id,
+    name: entity.name,
+    location: entity.ruc ? `RUC: ${entity.ruc} · Perú` : 'Lima, Perú',
+    tag: entity.rateBenchmarks.length > 0 ? `${entity.rateBenchmarks.length} Planes de tasa disponibles` : 'Entidad Verificada'
+  }))
+
+  return list.filter(d => {
+    const q = searchQuery.value.toLowerCase().trim()
+    const matchesSearch = !q ||
+      d.name.toLowerCase().includes(q) ||
+      d.location.toLowerCase().includes(q)
+    const matchesLocation = !selectedLocation.value || d.location.includes(selectedLocation.value)
     return matchesSearch && matchesLocation
   })
 })
 
-const handleViewInventory = (dealer: Concessionaire) => {
+const handleViewInventory = (dealer: ConcessionaireCard) => {
   router.push({
     path: '/vehicles',
-    query: { concessionaire: dealer.name }
+    query: { entityId: dealer.id, entityName: dealer.name }
   })
 }
 </script>

@@ -232,7 +232,7 @@ const form = reactive({
   email: '',
   dni: '',
   phoneNumber: '',
-  monthlyIncomeAmount: 3500,
+  monthlyIncomeAmount: 0,
   currency: 'PEN',
   employmentStatus: 'dependent'
 })
@@ -245,24 +245,13 @@ const populateFormData = () => {
     form.email = p.email || ''
     form.dni = p.dni || ''
     form.phoneNumber = p.phoneNumber || ''
-    form.monthlyIncomeAmount = p.monthlyIncomeAmount || 3500
+    form.monthlyIncomeAmount = p.monthlyIncomeAmount || 0
     form.currency = p.currency || 'PEN'
   } else {
-    // Fill defaults if new user
     const username = iamStore.username || ''
     if (username.includes('@')) {
       form.email = username
-      const rawName = (username.split('@')[0] || '').replace(/[._-]/g, ' ')
-      const parts = rawName.split(' ')
-      form.firstName = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Carlos'
-      form.lastName = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : 'Mendoza'
-    } else {
-      form.firstName = 'Carlos'
-      form.lastName = 'Mendoza'
-      form.email = 'carlos.mendoza@email.com'
     }
-    form.dni = '72345678'
-    form.phoneNumber = '+51 987 654 321'
   }
 }
 

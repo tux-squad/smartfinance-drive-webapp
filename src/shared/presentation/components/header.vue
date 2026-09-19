@@ -88,7 +88,7 @@ const userDisplayName = computed(() => {
       return name.charAt(0).toUpperCase() + name.slice(1)
     }
   }
-  return 'Carlos Mendoza'
+  return iamStore.username || 'Usuario'
 })
 
 const userInitials = computed(() => {

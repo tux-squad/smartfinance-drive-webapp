@@ -54,7 +54,21 @@
         <p class="text-sm text-gray-500 font-medium">{{ t('catalog.loadingText') }}</p>
       </div>
 
-      <!-- Vehicles Grid matching Mockup Cards -->
+      <!-- Empty State when API has no vehicles -->
+      <div
+        v-else-if="displayVehicles.length === 0"
+        class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white p-12 text-center"
+      >
+        <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+          <i class="pi pi-car text-2xl"></i>
+        </div>
+        <h3 class="text-base font-bold text-gray-900">No se encontraron vehículos</h3>
+        <p class="text-xs text-gray-500 mt-1 max-w-sm">
+          No hay unidades vehiculares disponibles en el catálogo oficial en este momento.
+        </p>
+      </div>
+
+      <!-- Vehicles Grid from Backend API -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           v-for="car in displayVehicles"
@@ -158,46 +172,6 @@ interface DisplayVehicle {
   imageUrl?: string
 }
 
-// Demo curated vehicles matching Mockup Image 1
-const mockRecommendedVehicles: DisplayVehicle[] = [
-  {
-    id: 'rec-1',
-    title: 'Toyota Corolla 2023',
-    brand: 'Toyota',
-    model: 'Corolla',
-    year: 2023,
-    price: 18500,
-    formattedPrice: '$18,500 USD',
-    location: 'Lima, Perú',
-    mileage: '15,000 km',
-    isRecommended: true
-  },
-  {
-    id: 'rec-2',
-    title: 'Honda Civic 2022',
-    brand: 'Honda',
-    model: 'Civic',
-    year: 2022,
-    price: 16200,
-    formattedPrice: '$16,200 USD',
-    location: 'Santiago, Chile',
-    mileage: '22,400 km',
-    isRecommended: true
-  },
-  {
-    id: 'rec-3',
-    title: 'Mazda 3 2024',
-    brand: 'Mazda',
-    model: '3',
-    year: 2024,
-    price: 22800,
-    formattedPrice: '$22,800 USD',
-    location: 'Bogotá, Colombia',
-    mileage: '8,900 km',
-    isRecommended: true
-  }
-]
-
 const isDealerOrAdmin = computed(() => {
   return iamStore.roles.includes('ROLE_DEALER') || iamStore.roles.includes('ROLE_ADMIN')
 })
@@ -211,29 +185,23 @@ const userFirstName = computed(() => {
     const clean = raw.replace(/[._-]/g, ' ')
     if (clean) return clean.split(' ')[0]
   }
-  return 'Carlos'
+  return 'Comprador'
 })
 
 const displayVehicles = computed<DisplayVehicle[]>(() => {
-  // If backend catalog has vehicles, transform them; otherwise fallback to mock recommendations
-  let list: DisplayVehicle[] = []
-  if (catalogStore.vehicles.length > 0) {
-    list = catalogStore.vehicles.map((v, index) => ({
-      id: v.id,
-      title: `${v.brand} ${v.model} ${v.manufactureYear}`,
-      brand: v.brand,
-      model: v.model,
-      year: v.manufactureYear,
-      price: v.priceAmount,
-      formattedPrice: v.formattedPrice || `$${v.priceAmount.toLocaleString()} USD`,
-      location: 'Lima, Perú',
-      mileage: `${(index + 1) * 7500} km`,
-      isRecommended: true,
-      imageUrl: v.imagePath
-    }))
-  } else {
-    list = mockRecommendedVehicles
-  }
+  let list: DisplayVehicle[] = catalogStore.vehicles.map((v) => ({
+    id: v.id,
+    title: `${v.brand} ${v.model} ${v.manufactureYear}`,
+    brand: v.brand,
+    model: v.model,
+    year: v.manufactureYear,
+    price: v.priceAmount,
+    formattedPrice: v.formattedPrice || `$${v.priceAmount.toLocaleString()} USD`,
+    location: 'Perú',
+    mileage: v.condition === 'NEW' ? '0 km (Nuevo)' : 'Certificado',
+    isRecommended: true,
+    imageUrl: v.imagePath
+  }))
 
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase().trim()
