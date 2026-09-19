@@ -28,6 +28,9 @@ const formatIamErrorMessage = (rawMsg?: string): string => {
   if (rawMsg.includes('rucNotFound')) {
     return 'El RUC ingresado no existe o no está activo en el padrón oficial de SUNAT.'
   }
+  if (rawMsg.includes('invalidCiiu') || rawMsg.includes('ciiu') || rawMsg.includes('economicActivity')) {
+    return 'La actividad económica (CIIU) registrada en SUNAT para este RUC no corresponde a la categoría requerida (Automotriz CIIU 451 o Financiera CIIU 64/66).'
+  }
   if (rawMsg.includes('notFound')) {
     return 'Usuario no encontrado. Registre una cuenta antes de iniciar sesión.'
   }
