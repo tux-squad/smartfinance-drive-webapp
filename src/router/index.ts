@@ -94,6 +94,24 @@ const routes: Array<RouteRecordRaw> = [
         name: 'dealer-inventory-new',
         component: () => import('@/catalog/presentation/views/publish-vehicle-view.vue'),
         meta: { title: 'Publicar Nuevo Vehículo' }
+      },
+      {
+        path: 'dealer/prospects',
+        name: 'dealer-prospects',
+        component: () => import('@/financing/presentation/views/prospects-list-view.vue'),
+        meta: { title: 'Prospectos de Concesionaria' }
+      },
+      {
+        path: 'dealer/prospects/:id',
+        name: 'dealer-prospect-detail',
+        component: () => import('@/financing/presentation/views/prospect-detail-view.vue'),
+        meta: { title: 'Detalle del Prospecto' }
+      },
+      {
+        path: 'dealer/messages',
+        name: 'dealer-messages',
+        component: () => import('@/shared/presentation/views/dealer-messages-view.vue'),
+        meta: { title: 'Bandeja de Entrada' }
       }
     ]
   },
