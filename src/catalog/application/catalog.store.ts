@@ -80,7 +80,9 @@ export const useCatalogStore = defineStore('catalog', () => {
       totalElements.value++
       return newVehicle
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al registrar el vehículo.'
+      const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message
+      const status = err.response?.status ? ` [HTTP ${err.response.status}]` : ''
+      error.value = serverMsg ? `${serverMsg}${status}` : 'Error al registrar el vehículo.'
       return null
     } finally {
       isLoading.value = false
