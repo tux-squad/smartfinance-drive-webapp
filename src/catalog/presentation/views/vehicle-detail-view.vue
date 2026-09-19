@@ -61,10 +61,11 @@
             </span>
 
             <img
-              v-if="vehicle.imagePath"
-              :src="vehicle.imagePath"
+              v-if="currentHeroImage"
+              :src="currentHeroImage"
               :alt="vehicle.displayName"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover transition-all duration-300"
+              @error="onImageError($event, vehicle.brand)"
             />
             <div v-else class="flex flex-col items-center justify-center text-gray-300 space-y-2">
               <i class="pi pi-car text-6xl text-blue-900/20"></i>
@@ -75,20 +76,20 @@
           <!-- Thumbnail Gallery Row -->
           <div class="grid grid-cols-4 gap-3">
             <div
-              v-for="index in 4"
+              v-for="(imgUrl, index) in galleryImages"
               :key="index"
+              @click="activeThumbnailIndex = index"
               :class="[
                 'h-20 rounded-2xl border-2 overflow-hidden flex items-center justify-center bg-gray-50 transition-all cursor-pointer',
-                index === 1 ? 'border-blue-600 shadow-xs' : 'border-gray-200 hover:border-gray-300'
+                activeThumbnailIndex === index ? 'border-blue-600 shadow-xs ring-2 ring-blue-400/30' : 'border-gray-200 hover:border-gray-300'
               ]"
             >
               <img
-                v-if="vehicle.imagePath"
-                :src="vehicle.imagePath"
-                :alt="`Vista ${index}`"
+                :src="imgUrl"
+                :alt="`Vista ${index + 1}`"
                 class="w-full h-full object-cover"
+                @error="onImageError($event, vehicle.brand)"
               />
-              <i v-else class="pi pi-image text-gray-300 text-lg"></i>
             </div>
           </div>
 
@@ -262,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useCatalogStore } from '../../application/catalog.store'
@@ -275,6 +276,37 @@ const partnersStore = usePartnersStore()
 
 const vehicleId = computed(() => route.params.id as string)
 const vehicle = computed(() => catalogStore.selectedVehicle)
+const activeThumbnailIndex = ref<number>(0)
+
+const galleryImages = computed<string[]>(() => {
+  if (!vehicle.value) return []
+  if (vehicle.value.images && vehicle.value.images.length > 0) {
+    return vehicle.value.images.slice(0, 4)
+  }
+  if (vehicle.value.imagePath) {
+    return [vehicle.value.imagePath, vehicle.value.imagePath, vehicle.value.imagePath, vehicle.value.imagePath]
+  }
+  return []
+})
+
+const currentHeroImage = computed<string>(() => {
+  if (galleryImages.value.length > 0 && galleryImages.value[activeThumbnailIndex.value]) {
+    return galleryImages.value[activeThumbnailIndex.value]!
+  }
+  return vehicle.value?.imagePath || ''
+})
+
+const onImageError = (event: Event, brand?: string) => {
+  const target = event.target as HTMLImageElement
+  const b = (brand || '').toLowerCase()
+  if (b.includes('toyota')) {
+    target.src = 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=1200&q=80'
+  } else if (b.includes('honda')) {
+    target.src = 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80'
+  } else {
+    target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
+  }
+}
 
 onMounted(async () => {
   if (vehicleId.value) {

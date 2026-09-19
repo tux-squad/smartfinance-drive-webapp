@@ -225,6 +225,7 @@
                 :alt="car.displayName"
                 class="w-full h-full object-cover"
                 loading="lazy"
+                @error="onImageError($event, car.brand)"
               />
               <div v-else class="flex flex-col items-center justify-center text-gray-300">
                 <i class="pi pi-car text-5xl text-blue-900/20"></i>
@@ -357,6 +358,18 @@ const filteredVehicles = computed<Vehicle[]>(() => {
 
 const goToDetail = (id: string) => {
   router.push(`/vehicles/${id}`)
+}
+
+const onImageError = (event: Event, brand?: string) => {
+  const target = event.target as HTMLImageElement
+  const b = (brand || '').toLowerCase()
+  if (b.includes('toyota')) {
+    target.src = 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80'
+  } else if (b.includes('honda')) {
+    target.src = 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80'
+  } else {
+    target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80'
+  }
 }
 </script>
 
