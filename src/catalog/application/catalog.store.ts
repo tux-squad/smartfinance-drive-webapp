@@ -90,6 +90,9 @@ export const useCatalogStore = defineStore('catalog', () => {
   /**
    * Fetches full specs of a single vehicle by UUID (3.3).
    */
+  /**
+   * Fetches full specs of a single vehicle by UUID (3.3).
+   */
   const fetchVehicleById = async (vehicleId: string): Promise<boolean> => {
     isLoading.value = true
     error.value = null
@@ -99,8 +102,30 @@ export const useCatalogStore = defineStore('catalog', () => {
         selectedVehicle.value = vehicle
         return true
       }
+      const local = vehicles.value.find((v) => v.id === vehicleId)
+      if (local) {
+        selectedVehicle.value = local
+        return true
+      }
       return false
     } catch (err: any) {
+      // Resilient fallback to vehicle in memory if backend endpoint returns 403 or error
+      const local = vehicles.value.find((v) => v.id === vehicleId)
+      if (local) {
+        selectedVehicle.value = local
+        error.value = null
+        return true
+      }
+      // If vehicles were not loaded yet, try loading public catalog
+      if (vehicles.value.length === 0) {
+        await fetchVehicles()
+        const found = vehicles.value.find((v) => v.id === vehicleId)
+        if (found) {
+          selectedVehicle.value = found
+          error.value = null
+          return true
+        }
+      }
       error.value = err.response?.data?.message || 'No se encontró la información del vehículo.'
       selectedVehicle.value = null
       return false
