@@ -149,6 +149,91 @@ export const useCatalogStore = defineStore('catalog', () => {
     }
   }
 
+  const brands = ref<string[]>([])
+
+  /**
+   * Fetches available brands from the backend (3.3).
+   */
+  const fetchBrands = async (): Promise<void> => {
+    try {
+      brands.value = await catalogApi.getBrands()
+    } catch {
+      brands.value = []
+    }
+  }
+
+  /**
+   * Updates vehicle status (3.7).
+   */
+  const updateVehicleStatus = async (vehicleId: string, status: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await catalogApi.updateVehicleStatus(vehicleId, status)
+      const index = vehicles.value.findIndex(v => v.id === vehicleId)
+      if (index !== -1) {
+        vehicles.value[index] = updated
+      }
+      if (selectedVehicle.value?.id === vehicleId) {
+        selectedVehicle.value = updated
+      }
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar el estado del vehículo.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Uploads an additional image to vehicle gallery (3.10).
+   */
+  const uploadGalleryImage = async (vehicleId: string, file: File): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await catalogApi.uploadVehicleGalleryImage(vehicleId, file)
+      if (selectedVehicle.value?.id === vehicleId) {
+        selectedVehicle.value = updated
+      }
+      const index = vehicles.value.findIndex(v => v.id === vehicleId)
+      if (index !== -1) {
+        vehicles.value[index] = updated
+      }
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar imagen adicional a la galería.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Deletes an image from gallery by index (3.11).
+   */
+  const deleteGalleryImage = async (vehicleId: string, imageIndex: number): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await catalogApi.deleteVehicleGalleryImage(vehicleId, imageIndex)
+      if (selectedVehicle.value?.id === vehicleId) {
+        selectedVehicle.value = updated
+      }
+      const index = vehicles.value.findIndex(v => v.id === vehicleId)
+      if (index !== -1) {
+        vehicles.value[index] = updated
+      }
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al eliminar foto de la galería.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const clearSelectedVehicle = () => {
     selectedVehicle.value = null
   }
@@ -171,6 +256,7 @@ export const useCatalogStore = defineStore('catalog', () => {
   return {
     vehicles,
     selectedVehicle,
+    brands,
     totalElements,
     totalPages,
     currentPage,
@@ -182,10 +268,15 @@ export const useCatalogStore = defineStore('catalog', () => {
     activeFiltersCount,
     fetchVehicles,
     fetchVehiclesByUserId,
+    fetchBrands,
     createVehicle,
     fetchVehicleById,
+    updateVehicleStatus,
     uploadVehicleImage,
+    uploadGalleryImage,
+    deleteGalleryImage,
     clearSelectedVehicle,
     resetFilters
   }
 })
+

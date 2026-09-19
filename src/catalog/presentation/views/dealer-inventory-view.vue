@@ -121,16 +121,22 @@
 
               <!-- Estado -->
               <td class="py-4 px-6">
-                <span
+                <select
+                  :value="car.status || 'ACTIVE'"
+                  @change="handleStatusChange(car, ($event.target as HTMLSelectElement).value)"
+                  class="text-xs font-semibold px-2.5 py-1 rounded-full border cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors"
                   :class="[
-                    'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold',
-                    idx === 4
-                      ? 'bg-gray-100 text-gray-600'
-                      : 'bg-[#e6f7f4] text-[#00a887]'
+                    car.status === 'SOLD'
+                      ? 'bg-gray-100 text-gray-700 border-gray-200'
+                      : car.status === 'RESERVED'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-[#e6f7f4] text-[#00a887] border-emerald-200'
                   ]"
                 >
-                  {{ idx === 4 ? 'Vendido' : 'Activo' }}
-                </span>
+                  <option value="ACTIVE">Activo</option>
+                  <option value="RESERVED">Reservado</option>
+                  <option value="SOLD">Vendido</option>
+                </select>
               </td>
             </tr>
           </tbody>
@@ -187,6 +193,10 @@ const getDaysPublished = (index: number): string => {
   const days = [4, 14, 28, 2, 45, 11, 7, 19]
   const val = days[index % days.length] ?? 5
   return `${val} días`
+}
+
+const handleStatusChange = async (car: Vehicle, newStatus: string) => {
+  await catalogStore.updateVehicleStatus(car.id, newStatus)
 }
 </script>
 

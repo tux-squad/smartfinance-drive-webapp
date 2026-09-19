@@ -20,7 +20,9 @@ export class VehicleAssembler {
       resource.condition || 'NEW',
       resource.priceAmount || 0,
       resource.currency || 'USD',
-      resource.imagePath || ''
+      resource.imagePath || '',
+      resource.status || 'ACTIVE',
+      Array.isArray(resource.images) ? resource.images : []
     )
   }
 

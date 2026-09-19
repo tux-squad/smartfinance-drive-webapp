@@ -12,6 +12,8 @@ export interface VehicleResource {
   priceAmount: number
   currency: string
   imagePath?: string
+  status?: string
+  images?: string[]
 }
 
 /**
