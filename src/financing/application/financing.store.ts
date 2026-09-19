@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Simulation } from '../domain/simulation.entity'
 import type { CreateSimulationCommand } from '../domain/create-simulation.command'
+import { CreditApplication } from '../domain/credit-application.entity'
+import type { CreateCreditApplicationCommand, UpdateCreditApplicationStatusCommand } from '../domain/create-credit-application.command'
 import { FinancingApi } from '../infrastructure/financing-api'
 
 const financingApi = new FinancingApi()
@@ -9,6 +11,8 @@ const financingApi = new FinancingApi()
 export const useFinancingStore = defineStore('financing', () => {
   const simulations = ref<Simulation[]>([])
   const currentSimulation = ref<Simulation | null>(null)
+  const creditApplications = ref<CreditApplication[]>([])
+  const currentApplication = ref<CreditApplication | null>(null)
   const totalElements = ref<number>(0)
   const totalPages = ref<number>(0)
   const currentPage = ref<number>(0)
@@ -18,6 +22,7 @@ export const useFinancingStore = defineStore('financing', () => {
 
   const hasSimulations = computed(() => simulations.value.length > 0)
   const hasCurrentSimulation = computed(() => !!currentSimulation.value && !!currentSimulation.value.id)
+  const hasCreditApplications = computed(() => creditApplications.value.length > 0)
 
   /**
    * Generates a new credit simulation (5.1).
@@ -99,6 +104,100 @@ export const useFinancingStore = defineStore('financing', () => {
     }
   }
 
+  /**
+   * Converts a simulation directly into a formal credit application (5.5).
+   */
+  const applySimulation = async (simulationId: string): Promise<CreditApplication | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const app = await financingApi.applySimulation(simulationId)
+      currentApplication.value = app
+      await fetchMyCreditApplications()
+      return app
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al promover la simulación a solicitud formal.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Creates a new formal credit application (5.6).
+   */
+  const createCreditApplication = async (command: CreateCreditApplicationCommand): Promise<CreditApplication | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const app = await financingApi.createCreditApplication(command)
+      currentApplication.value = app
+      await fetchMyCreditApplications()
+      return app
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al enviar la solicitud de crédito al banco.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetches user's formal credit applications (5.7).
+   */
+  const fetchMyCreditApplications = async (): Promise<void> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      creditApplications.value = await financingApi.getMyCreditApplications()
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar las solicitudes de crédito.'
+      creditApplications.value = []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetches single credit application by ID (5.8).
+   */
+  const fetchCreditApplicationById = async (id: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      currentApplication.value = await financingApi.getCreditApplicationById(id)
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar el detalle de la solicitud.'
+      currentApplication.value = null
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Updates application status (5.9).
+   */
+  const updateCreditApplicationStatus = async (
+    id: string,
+    command: UpdateCreditApplicationStatusCommand
+  ): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await financingApi.updateCreditApplicationStatus(id, command)
+      currentApplication.value = updated
+      await fetchMyCreditApplications()
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar el estado de la solicitud.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const clearCurrentSimulation = () => {
     currentSimulation.value = null
   }
@@ -106,6 +205,8 @@ export const useFinancingStore = defineStore('financing', () => {
   return {
     simulations,
     currentSimulation,
+    creditApplications,
+    currentApplication,
     totalElements,
     totalPages,
     currentPage,
@@ -114,10 +215,17 @@ export const useFinancingStore = defineStore('financing', () => {
     error,
     hasSimulations,
     hasCurrentSimulation,
+    hasCreditApplications,
     createSimulation,
     fetchSimulations,
     fetchSimulationById,
     deleteSimulation,
+    applySimulation,
+    createCreditApplication,
+    fetchMyCreditApplications,
+    fetchCreditApplicationById,
+    updateCreditApplicationStatus,
     clearCurrentSimulation
   }
 })
+

@@ -162,9 +162,11 @@ import { ref, computed, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useCatalogStore } from '@/catalog/application/catalog.store'
 
 const financingStore = useFinancingStore()
 const partnersStore = usePartnersStore()
+const catalogStore = useCatalogStore()
 
 const searchFilter = ref<string>('')
 const statusFilter = ref<string>('')
@@ -174,29 +176,52 @@ interface ApplicationRow {
   vehicle: string
   concessionaire: string
   date: string
-  status: 'Aprobado' | 'En evaluación'
+  status: string
+  isSimulationPromotion?: boolean
 }
 
 onMounted(async () => {
   await Promise.all([
+    financingStore.fetchMyCreditApplications(),
     financingStore.fetchSimulations(0, 50),
-    partnersStore.fetchFinancialEntities()
+    partnersStore.fetchFinancialEntities(),
+    catalogStore.fetchVehicles()
   ])
 })
 
 const applications = computed<ApplicationRow[]>(() => {
+  // If user has formal credit applications from API /api/v1/credit-applications/me
+  if (financingStore.creditApplications.length > 0) {
+    return financingStore.creditApplications.map((app) => {
+      const entity = partnersStore.financialEntities.find(e => e.id === app.financialEntityId)
+      const vehicle = catalogStore.vehicles.find(v => v.id === app.vehicleId)
+      const entityName = entity ? entity.name : 'Entidad Financiera Aliada'
+      const vehicleName = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.manufactureYear})` : (app.vehicleTitle || 'Crédito Vehicular Solicitado')
+
+      return {
+        id: app.id,
+        vehicle: vehicleName,
+        concessionaire: entityName,
+        date: app.formattedDate,
+        status: app.statusLabel
+      }
+    })
+  }
+
+  // Fallback: list existing credit simulations
   return financingStore.simulations.map((sim) => {
     const entity = partnersStore.financialEntities.find(e => e.id === sim.financialEntityId)
     const entityName = entity ? entity.name : 'Entidad Financiera Aliada'
     const dateFormatted = sim.startDate ? new Date(sim.startDate).toLocaleDateString('es-PE') : 'Reciente'
-    const statusVal: 'Aprobado' | 'En evaluación' = sim.tcea > 0 ? 'Aprobado' : 'En evaluación'
+    const statusVal = sim.tcea > 0 ? 'Pre-evaluado' : 'En evaluación'
 
     return {
       id: sim.id,
       vehicle: sim.title || `Simulación Crédito (${sim.currency} ${sim.vehiclePriceAmount.toLocaleString()})`,
       concessionaire: entityName,
       date: dateFormatted,
-      status: statusVal
+      status: statusVal,
+      isSimulationPromotion: true
     }
   })
 })
