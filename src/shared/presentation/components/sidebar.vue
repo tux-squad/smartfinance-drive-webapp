@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
   { labelKey: 'nav.concessionaries', to: '/concessionaries', icon: 'pi-building' },
   { labelKey: 'nav.simulations', to: '/simulations', icon: 'pi-calculator' },
   { labelKey: 'nav.scoring', to: '/scoring', icon: 'pi-shield' },
-  { labelKey: 'nav.reports', to: '/reports', icon: 'pi-chart-line' },
+  { labelKey: 'nav.reports', to: '/reports/depreciation', icon: 'pi-chart-line' },
   { labelKey: 'nav.user', to: '/user', icon: 'pi-user' },
   { labelKey: 'nav.billing', to: '/billing', icon: 'pi-credit-card' },
 ]

@@ -276,6 +276,47 @@
     "emptyTitle": "No hay evaluaciones registradas",
     "emptySubtitle": "Selecciona tu perfil de cliente comercial y presiona 'Ejecutar Evaluación' para generar tu score."
   },
+  "projections": {
+    "headerBadge": "Análisis Financiero de Vehículos",
+    "headerTitle": "Proyección de Depreciación Vehicular (5 Años)",
+    "headerSubtitle": "Calcula la depreciación técnica anual, pérdida de valor comercial y porcentaje de valor residual estimado año a año",
+    "loadingText": "Calculando proyección de depreciación técnica...",
+    "emptyTitle": "Sin Proyección Calculada",
+    "emptySubtitle": "Ingresa los parámetros del vehículo o selecciona una unidad del catálogo para generar el cálculo de depreciación a 5 años.",
+    "form": {
+      "title": "Parámetros de Depreciación",
+      "subtitle": "Ingresa el valor inicial, tasa técnica anual y horizonte de proyección",
+      "selectVehicleLabel": "Seleccionar Vehículo del Catálogo",
+      "initialValueLabel": "Valor Inicial del Vehículo",
+      "currencyLabel": "Moneda",
+      "manufactureYearLabel": "Año de Fabricación",
+      "annualRateLabel": "Tasa de Depreciación Anual (%)",
+      "projectionYearsLabel": "Horizonte de Proyección",
+      "calculateBtn": "Calcular Depreciación Tecnológica",
+      "errorInvalidAmount": "Por favor ingresa un monto inicial válido mayor a cero.",
+      "errorInvalidRate": "Por favor ingresa una tasa de depreciación válida."
+    },
+    "chart": {
+      "title": "Curva de Valor Residual y Pérdida Comercial",
+      "subtitle": "Evolución estimada de la conservación de valor año tras año",
+      "residualPercentageLabel": "Valor Residual Conservado",
+      "initialValueLabel": "Valor Inicial",
+      "residualValueLabel": "Valor Residual Final",
+      "totalDepreciationLabel": "Depreciación Acumulada Total",
+      "visualProgressionTitle": "Progreso de Valor Residual Año a Año"
+    },
+    "table": {
+      "title": "Tabla de Depreciación Año a Año",
+      "subtitle": "Desglose técnico de valor inicial, depreciación del periodo y valor residual final",
+      "colYearNumber": "Año",
+      "colCalendarYear": "Año Calendario",
+      "colStartValue": "Valor Inicial",
+      "colDepreciationAmount": "Depreciación Anual",
+      "colAccumulatedDepreciation": "Depreciación Acumulada",
+      "colEndValue": "Valor Residual Final",
+      "colRemainingPct": "% Conservado"
+    }
+  },
   "notFound": {
     "title": "404 - Página no encontrada",
     "description": "La sección que buscas no existe o ha sido movida como parte de la migración modular a DDD.",

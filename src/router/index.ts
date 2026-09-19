@@ -6,6 +6,7 @@ import catalogRoutes from '@/catalog/presentation/catalog-routes'
 import partnersRoutes from '@/partners/presentation/partners-routes'
 import financingRoutes from '@/financing/presentation/financing-routes'
 import scoringRoutes from '@/scoring/presentation/scoring-routes'
+import projectionsRoutes from '@/projections/presentation/projections-routes'
 import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
@@ -49,10 +50,12 @@ const routes: Array<RouteRecordRaw> = [
         children: scoringRoutes
       },
       {
+        path: 'projections',
+        children: projectionsRoutes
+      },
+      {
         path: 'reports',
-        name: 'reports',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Depreciación y Reportes' }
+        children: projectionsRoutes
       },
       {
         path: 'billing',
