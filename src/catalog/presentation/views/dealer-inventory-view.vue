@@ -24,7 +24,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="catalogStore.isLoading" class="flex flex-col items-center justify-center py-20 gap-3">
+    <div v-if="isLoadingInventory || catalogStore.isLoading" class="flex flex-col items-center justify-center py-20 gap-3">
       <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
       <p class="text-sm text-gray-500 font-medium">Cargando inventario de la concesionaria...</p>
     </div>
@@ -162,31 +162,27 @@ import { useIamStore } from '@/iam/application/iam.store'
 const catalogStore = useCatalogStore()
 const iamStore = useIamStore()
 const userSpecificVehicles = ref<Vehicle[]>([])
+const isLoadingInventory = ref(true)
+
+const loadInventory = async () => {
+  isLoadingInventory.value = true
+  try {
+    const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
+    const list = await catalogStore.fetchVehiclesByUserId(currentUserId)
+    userSpecificVehicles.value = list || []
+  } catch {
+    userSpecificVehicles.value = []
+  } finally {
+    isLoadingInventory.value = false
+  }
+}
 
 onMounted(async () => {
-  const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
-  if (currentUserId) {
-    const list = await catalogStore.fetchVehiclesByUserId(currentUserId)
-    if (list && list.length > 0) {
-      userSpecificVehicles.value = list
-      return
-    }
-  }
-  await catalogStore.fetchVehicles()
+  await loadInventory()
 })
 
 const dealerVehicles = computed(() => {
-  if (userSpecificVehicles.value.length > 0) {
-    return userSpecificVehicles.value
-  }
-  const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
-  if (currentUserId) {
-    const myVehicles = catalogStore.vehicles.filter((v: Vehicle) => v.userId === currentUserId)
-    if (myVehicles.length > 0) {
-      return myVehicles
-    }
-  }
-  return catalogStore.vehicles
+  return userSpecificVehicles.value
 })
 
 const getDaysPublished = (index: number): string => {
@@ -196,7 +192,10 @@ const getDaysPublished = (index: number): string => {
 }
 
 const handleStatusChange = async (car: Vehicle, newStatus: string) => {
-  await catalogStore.updateVehicleStatus(car.id, newStatus)
+  const ok = await catalogStore.updateVehicleStatus(car.id, newStatus)
+  if (ok) {
+    await loadInventory()
+  }
 }
 </script>
 

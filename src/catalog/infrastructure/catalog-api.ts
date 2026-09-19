@@ -66,11 +66,24 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
-   * 3.4 Get Vehicles by User ID.
+   * 3.2 Get Vehicles of authenticated dealer (/api/v1/vehicles/my-listings)
+   * with fallback to 3.3 Get Vehicles by User ID (/api/v1/vehicles/users/{userId}).
    */
   public async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {
-    const response: AxiosResponse<VehicleResource[]> = await this.http.get<VehicleResource[]>(`/api/v1/vehicles/users/${userId}`)
-    return Array.isArray(response.data) ? response.data.map(r => VehicleAssembler.toEntity(r)) : []
+    try {
+      const myResponse = await this.http.get<VehicleResource[]>('/api/v1/vehicles/my-listings')
+      if (Array.isArray(myResponse.data)) {
+        return myResponse.data.map(r => VehicleAssembler.toEntity(r))
+      }
+    } catch {
+      // Fallback to /api/v1/vehicles/users/{userId} if /my-listings is not available
+    }
+
+    if (userId) {
+      const response: AxiosResponse<VehicleResource[]> = await this.http.get<VehicleResource[]>(`/api/v1/vehicles/users/${userId}`)
+      return Array.isArray(response.data) ? response.data.map(r => VehicleAssembler.toEntity(r)) : []
+    }
+    return []
   }
 
   /**
