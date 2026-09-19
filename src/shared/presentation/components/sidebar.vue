@@ -159,27 +159,66 @@ const navItems = computed<NavItem[]>(() => {
     ]
   }
 
-  // If user has Dealer or Bank or Admin roles, preserve expanded tools
+  // If user is Bank / Financial Institution (ROLE_FINANCIAL_INSTITUTION) -> Bank dedicated tools
+  if (isBank.value) {
+    return [
+      {
+        labelKey: 'nav.dashboard',
+        to: '/home',
+        icon: 'pi-th-large'
+      },
+      {
+        labelKey: 'nav.bankEntities',
+        to: '/concessionaries/entities',
+        icon: 'pi-building-columns'
+      },
+      {
+        labelKey: 'nav.commercialSimulations',
+        to: '/simulations',
+        icon: 'pi-calculator'
+      },
+      {
+        labelKey: 'nav.riskScoring',
+        to: '/scoring',
+        icon: 'pi-shield'
+      },
+      {
+        labelKey: 'nav.reports',
+        to: '/reports/depreciation',
+        icon: 'pi-chart-line'
+      },
+      {
+        labelKey: 'nav.bankProfile',
+        to: '/user',
+        icon: 'pi-user'
+      },
+      {
+        labelKey: 'nav.buyerSettings',
+        to: '/settings',
+        icon: 'pi-cog'
+      }
+    ]
+  }
+
+  // Fallback for Admin or mixed roles
   return [
     {
-      labelKey: isDealer.value ? 'nav.dealerVehicles' : 'nav.vehicles',
+      labelKey: 'nav.vehicles',
       to: '/vehicles',
-      icon: 'pi-car',
-      badgeKey: isDealer.value ? 'nav.badgeDealer' : undefined
+      icon: 'pi-car'
     },
     {
-      labelKey: isBank.value ? 'nav.bankEntities' : 'nav.concessionaries',
-      to: '/concessionaries',
-      icon: 'pi-building',
-      badgeKey: isBank.value ? 'nav.badgeBank' : undefined
+      labelKey: 'nav.bankEntities',
+      to: '/concessionaries/entities',
+      icon: 'pi-building'
     },
     {
-      labelKey: (isBank.value || isDealer.value) ? 'nav.commercialSimulations' : 'nav.simulations',
+      labelKey: 'nav.commercialSimulations',
       to: '/simulations',
       icon: 'pi-calculator'
     },
     {
-      labelKey: (isBank.value || isAdmin.value) ? 'nav.riskScoring' : 'nav.scoring',
+      labelKey: 'nav.riskScoring',
       to: '/scoring',
       icon: 'pi-shield'
     },
@@ -197,11 +236,6 @@ const navItems = computed<NavItem[]>(() => {
       labelKey: 'nav.buyerSettings',
       to: '/settings',
       icon: 'pi-cog'
-    },
-    {
-      labelKey: 'nav.billing',
-      to: '/billing',
-      icon: 'pi-credit-card'
     }
   ]
 })

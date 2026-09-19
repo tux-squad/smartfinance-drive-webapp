@@ -141,6 +141,8 @@ const breadcrumbTrail = computed<string[]>(() => {
     return [panel, 'Catálogo General de Vehículos']
   }
   if (path === '/user') {
+    if (iamStore.roles.includes('ROLE_DEALER')) return [panel, 'Perfil de Concesionaria']
+    if (iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION')) return [panel, 'Perfil Institucional']
     return [panel, t('header.myProfile')]
   }
   if (path.startsWith('/reports/applications')) {
