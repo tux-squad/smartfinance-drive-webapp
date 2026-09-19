@@ -23,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'home',
         name: 'home',
         component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Inicio', public: true }
+        meta: { title: 'Inicio' }
       },
       {
         path: 'user',

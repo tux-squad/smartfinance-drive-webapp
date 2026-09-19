@@ -2,6 +2,10 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const iamRoutes: Array<RouteRecordRaw> = [
   {
+    path: '/iam',
+    redirect: '/iam/sign-in'
+  },
+  {
     path: '/iam/sign-in',
     name: 'sign-in',
     component: () => import('@/iam/presentation/views/sign-in-view.vue'),
