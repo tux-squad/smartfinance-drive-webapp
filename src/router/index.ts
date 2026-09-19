@@ -80,8 +80,8 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'billing',
         name: 'billing',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Suscripción y Planes' }
+        component: () => import('@/billing/presentation/views/b2b-membership-view.vue'),
+        meta: { title: 'Membresía B2B' }
       },
       {
         path: 'dealer/inventory',

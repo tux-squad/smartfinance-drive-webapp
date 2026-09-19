@@ -107,6 +107,9 @@ const breadcrumbTrail = computed<string[]>(() => {
   if (path.startsWith('/dealer/settings')) {
     return [panel, 'Configuración', 'Apariencia']
   }
+  if (path === '/billing') {
+    return [panel, 'Configuración', 'Membresía B2B']
+  }
   if (path === '/home' && iamStore.roles.includes('ROLE_DEALER')) {
     return [panel, 'Dashboard']
   }
