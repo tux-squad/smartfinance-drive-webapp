@@ -27,6 +27,7 @@ export interface VehiclePageResource {
  * Infrastructure DTO for creating a new Vehicle.
  */
 export interface CreateVehicleResource {
+  userId: string
   financialEntityId?: string
   brand: string
   model: string

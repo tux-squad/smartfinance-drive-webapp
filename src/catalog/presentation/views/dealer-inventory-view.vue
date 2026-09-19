@@ -147,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import type { Vehicle } from '@/catalog/domain/vehicle.entity'
@@ -155,17 +155,30 @@ import { useIamStore } from '@/iam/application/iam.store'
 
 const catalogStore = useCatalogStore()
 const iamStore = useIamStore()
+const userSpecificVehicles = ref<Vehicle[]>([])
 
 onMounted(async () => {
+  const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
+  if (currentUserId) {
+    const list = await catalogStore.fetchVehiclesByUserId(currentUserId)
+    if (list && list.length > 0) {
+      userSpecificVehicles.value = list
+      return
+    }
+  }
   await catalogStore.fetchVehicles()
 })
 
 const dealerVehicles = computed(() => {
+  if (userSpecificVehicles.value.length > 0) {
+    return userSpecificVehicles.value
+  }
   const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
-  // If vehicles have userId matching dealer, show them; otherwise show catalog vehicles for management
-  const myVehicles = catalogStore.vehicles.filter((v: Vehicle) => v.userId === currentUserId)
-  if (myVehicles.length > 0) {
-    return myVehicles
+  if (currentUserId) {
+    const myVehicles = catalogStore.vehicles.filter((v: Vehicle) => v.userId === currentUserId)
+    if (myVehicles.length > 0) {
+      return myVehicles
+    }
   }
   return catalogStore.vehicles
 })

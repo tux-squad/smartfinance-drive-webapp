@@ -9,6 +9,7 @@ import Select from 'primevue/select'
 import Message from 'primevue/message'
 import { CreateVehicleCommand } from '../../domain/create-vehicle.command'
 import { useCatalogStore } from '../../application/catalog.store'
+import { useIamStore } from '@/iam/application/iam.store'
 import VehicleImageUploader from './vehicle-image-uploader.vue'
 import type { Vehicle } from '../../domain/vehicle.entity'
 
@@ -23,6 +24,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const catalogStore = useCatalogStore()
+const iamStore = useIamStore()
 
 const brand = ref<string>('')
 const model = ref<string>('')
@@ -84,6 +86,9 @@ const handleSubmit = async () => {
     return
   }
 
+  const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1')
+  const defaultEntityId = financialEntityId.value.trim() || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
+
   const command = new CreateVehicleCommand(
     brand.value.trim(),
     model.value.trim(),
@@ -91,7 +96,8 @@ const handleSubmit = async () => {
     condition.value,
     priceAmount.value,
     currency.value,
-    financialEntityId.value.trim() || undefined
+    defaultEntityId,
+    currentUserId
   )
 
   const vehicle = await catalogStore.createVehicle(command)

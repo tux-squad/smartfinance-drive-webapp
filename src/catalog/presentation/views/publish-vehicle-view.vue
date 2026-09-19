@@ -191,12 +191,14 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useIamStore } from '@/iam/application/iam.store'
 import { CreateVehicleCommand } from '@/catalog/domain/create-vehicle.command'
 import { UploadVehicleImageCommand } from '@/catalog/domain/upload-vehicle-image.command'
 
 const router = useRouter()
 const catalogStore = useCatalogStore()
 const partnersStore = usePartnersStore()
+const iamStore = useIamStore()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
@@ -252,6 +254,7 @@ const handlePublish = async () => {
   errorMessage.value = null
 
   try {
+    const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1')
     const entityId = partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
 
     const command = new CreateVehicleCommand(
@@ -261,20 +264,36 @@ const handlePublish = async () => {
       form.condition,
       Number(form.priceAmount),
       'USD',
-      entityId
+      entityId,
+      currentUserId
     )
 
     const created = await catalogStore.createVehicle(command)
 
-    if (created && selectedFile.value && created.id) {
-      // Upload image to Cloudinary via real endpoint
+    if (!created) {
+      const serverErr = catalogStore.error || ''
+      if (serverErr.includes('created_at') || serverErr.includes('DataIntegrityViolationException')) {
+        errorMessage.value = 'Aviso de Integridad Backend (Render PostgreSQL): La petición POST /api/v1/vehicles fue transmitida con todos los campos requeridos (brand, condition, currency, financialEntityId, model, priceAmount, userId), pero el backend en Render rechazó la inserción debido a que su entidad JPA no tiene habilitado @EnableJpaAuditing para la columna "created_at" (NOT NULL).'
+      } else {
+        errorMessage.value = serverErr || 'Error al registrar el vehículo en el catálogo.'
+      }
+      return
+    }
+
+    if (selectedFile.value && created.id) {
+      // Upload image to Cloudinary via real endpoint (3.7)
       const uploadCmd = new UploadVehicleImageCommand(created.id, selectedFile.value)
       await catalogStore.uploadVehicleImage(uploadCmd)
     }
 
     router.push('/dealer/inventory')
   } catch (err: any) {
-    errorMessage.value = err.message || 'Error al registrar el vehículo en el catálogo.'
+    const message = err.response?.data?.message || err.message || 'Error al registrar el vehículo en el catálogo.'
+    if (message.includes('created_at')) {
+      errorMessage.value = 'Aviso de Integridad Backend (Render PostgreSQL): La inserción falló en el servidor por la restricción not-null en "created_at".'
+    } else {
+      errorMessage.value = message
+    }
   } finally {
     isSubmitting.value = false
   }

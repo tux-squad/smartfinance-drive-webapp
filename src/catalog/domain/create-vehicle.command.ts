@@ -9,6 +9,7 @@ export class CreateVehicleCommand {
     public readonly condition: 'NEW' | 'USED' | string,
     public readonly priceAmount: number,
     public readonly currency: string,
-    public readonly financialEntityId?: string
+    public readonly financialEntityId: string,
+    public readonly userId: string
   ) {}
 }
