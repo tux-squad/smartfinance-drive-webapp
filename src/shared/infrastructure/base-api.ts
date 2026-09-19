@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://smartfinance-
 
 /**
  * Shared infrastructure API client base factory.
- * Completely decoupled from specific bounded contexts.
+ * Decoupled from specific bounded contexts and equipped with automatic Bearer JWT injection.
  */
 export class BaseApi {
   private readonly _http: AxiosInstance
@@ -16,6 +16,33 @@ export class BaseApi {
         'Content-Type': 'application/json'
       }
     })
+
+    // Automatically inject Bearer JWT from localStorage for authenticated requests
+    this._http.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem('access_token')
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+        return config
+      },
+      (error: AxiosError) => Promise.reject(error)
+    )
+
+    // Automatically handle 401 Unauthorized for expired tokens
+    this._http.interceptors.response.use(
+      (response: AxiosResponse) => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user_name')
+          localStorage.removeItem('user_id')
+          localStorage.removeItem('user_roles')
+        }
+        return Promise.reject(error)
+      }
+    )
   }
 
   /**

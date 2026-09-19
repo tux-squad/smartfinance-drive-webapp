@@ -26,7 +26,16 @@ const formatIamErrorMessage = (rawMsg?: string): string => {
     return 'Credenciales incorrectas. Verifique su correo y contraseña.'
   }
   if (rawMsg.includes('rucNotFound')) {
-    return 'El RUC ingresado no existe o no está activo en el padrón oficial de SUNAT.'
+    return 'El RUC ingresado no existe en el padrón oficial de SUNAT.'
+  }
+  if (rawMsg.includes('rucNotActiveOrHabido')) {
+    return 'El RUC ingresado no se encuentra en estado ACTIVO y condición HABIDO ante SUNAT.'
+  }
+  if (rawMsg.includes('notFinancialInstitution')) {
+    return 'El RUC consultado ante SUNAT no registra actividad económica de intermediación financiera (CIIU 64 o 66) en los registros del padrón tributario.'
+  }
+  if (rawMsg.includes('notAutomotive') || rawMsg.includes('notDealer')) {
+    return 'El RUC consultado ante SUNAT no registra actividad económica automotriz (CIIU 451).'
   }
   if (rawMsg.includes('invalidCiiu') || rawMsg.includes('ciiu') || rawMsg.includes('economicActivity')) {
     return 'La actividad económica (CIIU) registrada en SUNAT para este RUC no corresponde a la categoría requerida (Automotriz CIIU 451 o Financiera CIIU 64/66).'

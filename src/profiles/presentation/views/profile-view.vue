@@ -27,14 +27,19 @@
       <p class="text-sm text-gray-500 font-medium">{{ t('profiles.loading') }}</p>
     </div>
 
-    <!-- Error Alert -->
-    <div v-else-if="profilesStore.error" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg text-sm text-red-700 flex items-start space-x-2">
-      <i class="pi pi-exclamation-circle text-red-500 text-base mt-0.5"></i>
-      <span>{{ profilesStore.error }}</span>
+    <!-- Error Alert (Non-blocking notification) -->
+    <div v-if="profilesStore.error" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg text-sm text-red-700 flex items-start justify-between">
+      <div class="flex items-start space-x-2">
+        <i class="pi pi-exclamation-circle text-red-500 text-base mt-0.5"></i>
+        <span>{{ profilesStore.error }}</span>
+      </div>
+      <button type="button" @click="profilesStore.error = null" class="text-red-400 hover:text-red-700">
+        <i class="pi pi-times text-xs"></i>
+      </button>
     </div>
 
     <!-- Edit / Create Form View -->
-    <div v-else-if="isEditing || !profilesStore.hasProfile" class="bg-white p-8 rounded-2xl border border-gray-200 shadow-md space-y-6">
+    <div v-if="!profilesStore.isLoading && (isEditing || !profilesStore.hasProfile)" class="bg-white p-8 rounded-2xl border border-gray-200 shadow-md space-y-6">
       <div class="border-b border-gray-100 pb-4">
         <h2 class="text-lg font-bold text-gray-900">
           {{ profilesStore.hasProfile ? t('profiles.editProfileFormTitle') : t('profiles.createProfileFormTitle') }}
@@ -55,7 +60,7 @@
     </div>
 
     <!-- Profile Display View -->
-    <div v-else class="space-y-6">
+    <div v-else-if="!profilesStore.isLoading && profilesStore.hasProfile" class="space-y-6">
       <!-- Profile Header Summary Card -->
       <div class="bg-gradient-to-r from-blue-950 via-sky-900 to-indigo-900 rounded-2xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
         <div class="w-20 h-20 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center text-2xl font-extrabold shadow-inner shrink-0">
@@ -128,10 +133,10 @@
           </dl>
         </div>
       </div>
-
-      <!-- Dealer Role Request / Elevation Section (IAM SUNAT RBAC) -->
-      <DealerRoleRequestCard />
     </div>
+
+    <!-- Business Role Request / Elevation Section (IAM SUNAT RBAC) is always rendered at the bottom -->
+    <DealerRoleRequestCard />
   </div>
 </template>
 
