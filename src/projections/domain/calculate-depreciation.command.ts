@@ -1,13 +1,9 @@
 /**
- * Domain Command representing the request to calculate technical vehicle depreciation.
+ * Domain Command representing the request to calculate technical vehicle depreciation (API Doc 7.1).
  */
 export class CalculateDepreciationCommand {
   constructor(
-    public readonly initialValueAmount: number,
-    public readonly currency: string,
-    public readonly manufactureYear: number,
-    public readonly annualDepreciationRatePct: number = 10,
-    public readonly projectionYears: number = 5,
-    public readonly vehicleId?: string
+    public readonly vehicleId: string,
+    public readonly years: number = 5
   ) {}
 }

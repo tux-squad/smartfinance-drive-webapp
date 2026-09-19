@@ -6,24 +6,23 @@ import { DepreciationAssembler } from './depreciation.assembler'
 import { DepreciationProjection } from '../domain/depreciation-projection.entity'
 
 /**
- * Infrastructure API Gateway for Projections endpoints (/api/v1/projections).
+ * Infrastructure API Gateway for Depreciation Projections endpoint (/api/v1/depreciation-projections).
+ * API Doc 7.1.
  */
 export class ProjectionsApi extends BaseApi {
   /**
-   * Calculates vehicle technical 5-year depreciation projection.
+   * 7.1 Calculate vehicle technical depreciation projection.
+   * POST /api/v1/depreciation-projections
+   * Body: { vehicleId: string, years: number }
    */
   public async calculateDepreciation(command: CalculateDepreciationCommand): Promise<DepreciationProjection> {
     const payload: CalculateDepreciationResource = {
       vehicleId: command.vehicleId,
-      initialValueAmount: command.initialValueAmount,
-      currency: command.currency,
-      manufactureYear: command.manufactureYear,
-      annualDepreciationRatePct: command.annualDepreciationRatePct,
-      projectionYears: command.projectionYears
+      years: command.years
     }
 
     const response: AxiosResponse<DepreciationProjectionResource> = await this.http.post<DepreciationProjectionResource>(
-      '/api/v1/projections/depreciation',
+      '/api/v1/depreciation-projections',
       payload
     )
 
@@ -35,7 +34,7 @@ export class ProjectionsApi extends BaseApi {
    */
   public async getDepreciationByVehicleId(vehicleId: string): Promise<DepreciationProjection> {
     const response: AxiosResponse<DepreciationProjectionResource> = await this.http.get<DepreciationProjectionResource>(
-      `/api/v1/projections/depreciation/vehicle/${vehicleId}`
+      `/api/v1/depreciation-projections/vehicle/${vehicleId}`
     )
     return DepreciationAssembler.toEntity(response.data)
   }

@@ -1,41 +1,25 @@
 /**
- * Infrastructure DTO matching backend JSON response for a yearly depreciation step.
+ * Infrastructure DTO matching backend JSON response for a projected value item.
  */
-export interface YearlyDepreciationResource {
-  yearNumber: number
-  calendarYear: number
-  startValue: number
-  depreciationAmount: number
-  endValue: number
-  accumulatedDepreciation: number
-  remainingValuePercentage: number
+export interface ProjectedValueResource {
+  year: number
+  value: number
 }
 
 /**
- * Infrastructure DTO matching backend JSON response for full vehicle depreciation projection.
+ * Infrastructure DTO matching backend JSON response for full vehicle depreciation projection (API Doc 7.1).
  */
 export interface DepreciationProjectionResource {
   id: string
-  vehicleId?: string
-  initialValueAmount: number
-  currency: string
-  manufactureYear: number
-  annualDepreciationRatePct: number
-  projectionYears: number
-  projectedResidualValue: number
-  totalDepreciationAmount: number
-  yearlyProjections: YearlyDepreciationResource[]
-  calculatedAt: string
+  vehicleId: string
+  initialValue: number
+  projectedValues: ProjectedValueResource[]
 }
 
 /**
- * Infrastructure DTO for sending a depreciation calculation request.
+ * Infrastructure DTO for sending a depreciation calculation request (API Doc 7.1).
  */
 export interface CalculateDepreciationResource {
-  vehicleId?: string
-  initialValueAmount: number
-  currency: string
-  manufactureYear: number
-  annualDepreciationRatePct: number
-  projectionYears: number
+  vehicleId: string
+  years: number
 }

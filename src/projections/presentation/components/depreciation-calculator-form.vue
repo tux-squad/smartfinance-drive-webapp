@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
-import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Message from 'primevue/message'
 import { CalculateDepreciationCommand } from '../../domain/calculate-depreciation.command'
@@ -14,18 +14,9 @@ const projectionsStore = useProjectionsStore()
 const catalogStore = useCatalogStore()
 
 const selectedVehicleId = ref<string>('')
-const initialValueAmount = ref<number | null>(25000)
-const currency = ref<'USD' | 'PEN'>('USD')
-const manufactureYear = ref<number>(new Date().getFullYear())
-const annualDepreciationRatePct = ref<number>(10)
+const manualVehicleId = ref<string>('')
 const projectionYears = ref<number>(5)
-
 const validationError = ref<string | null>(null)
-
-const currencyOptions = [
-  { label: 'USD ($)', value: 'USD' },
-  { label: 'PEN (S/)', value: 'PEN' }
-]
 
 const yearsOptions = [
   { label: '3 años', value: 3 },
@@ -38,38 +29,30 @@ onMounted(async () => {
   if (!catalogStore.hasVehicles) {
     await catalogStore.fetchVehicles({ size: 50 })
   }
+  if (catalogStore.vehicles.length > 0 && catalogStore.vehicles[0]?.id) {
+    selectedVehicleId.value = catalogStore.vehicles[0].id
+  }
 })
 
 watch(selectedVehicleId, (newId) => {
   if (newId) {
-    const vehicle = catalogStore.vehicles.find((v) => v.id === newId)
-    if (vehicle) {
-      initialValueAmount.value = vehicle.priceAmount
-      currency.value = vehicle.currency as 'USD' | 'PEN'
-      manufactureYear.value = vehicle.manufactureYear
-    }
+    manualVehicleId.value = newId
   }
 })
 
 const handleCalculate = async () => {
   validationError.value = null
 
-  if (!initialValueAmount.value || initialValueAmount.value <= 0) {
-    validationError.value = t('projections.form.errorInvalidAmount')
-    return
-  }
-  if (!annualDepreciationRatePct.value || annualDepreciationRatePct.value <= 0) {
-    validationError.value = t('projections.form.errorInvalidRate')
+  const vehicleIdToUse = selectedVehicleId.value.trim() || manualVehicleId.value.trim()
+
+  if (!vehicleIdToUse) {
+    validationError.value = 'Por favor selecciona o ingresa un UUID de vehículo.'
     return
   }
 
   const command = new CalculateDepreciationCommand(
-    initialValueAmount.value,
-    currency.value,
-    manufactureYear.value,
-    annualDepreciationRatePct.value,
-    projectionYears.value,
-    selectedVehicleId.value || undefined
+    vehicleIdToUse,
+    projectionYears.value
   )
 
   await projectionsStore.calculateDepreciation(command)
@@ -98,95 +81,45 @@ const handleCalculate = async () => {
       {{ validationError || projectionsStore.error }}
     </Message>
 
-    <!-- Optional Vehicle Selector from Catalog -->
+    <!-- Vehicle Selector from Catalog -->
     <div v-if="catalogStore.hasVehicles" class="space-y-1.5">
       <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-        {{ t('projections.form.selectVehicleLabel') }}
+        {{ t('projections.form.selectVehicleLabel') }} *
       </label>
       <Select
         v-model="selectedVehicleId"
         :options="catalogStore.vehicles"
         optionLabel="displayName"
         optionValue="id"
-        placeholder="Seleccionar vehículo del catálogo (Opcional)..."
-        showClear
+        placeholder="Seleccionar vehículo del catálogo..."
         class="w-full !rounded-xl !text-xs"
       />
     </div>
 
-    <!-- Inputs Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <!-- Initial Amount -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-          {{ t('projections.form.initialValueLabel') }} *
-        </label>
-        <InputNumber
-          v-model="initialValueAmount"
-          mode="decimal"
-          :minFractionDigits="2"
-          :maxFractionDigits="2"
-          :min="0"
-          placeholder="25000.00"
-          class="w-full !rounded-xl !text-xs"
-        />
-      </div>
+    <!-- Manual Vehicle UUID Input (Fallback) -->
+    <div v-else class="space-y-1.5">
+      <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
+        UUID del Vehículo *
+      </label>
+      <InputText
+        v-model="manualVehicleId"
+        placeholder="Ingresar UUID de vehículo..."
+        class="w-full !rounded-xl !text-xs font-mono"
+      />
+    </div>
 
-      <!-- Currency -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-          {{ t('projections.form.currencyLabel') }} *
-        </label>
-        <Select
-          v-model="currency"
-          :options="currencyOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full !rounded-xl !text-xs"
-        />
-      </div>
-
-      <!-- Year -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-          {{ t('projections.form.manufactureYearLabel') }} *
-        </label>
-        <InputNumber
-          v-model="manufactureYear"
-          :useGrouping="false"
-          :min="1990"
-          :max="2030"
-          class="w-full !rounded-xl !text-xs"
-        />
-      </div>
-
-      <!-- Annual Depreciation Rate % -->
-      <div class="space-y-1.5">
-        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-          {{ t('projections.form.annualRateLabel') }} *
-        </label>
-        <InputNumber
-          v-model="annualDepreciationRatePct"
-          suffix=" %"
-          :min="1"
-          :max="50"
-          class="w-full !rounded-xl !text-xs"
-        />
-      </div>
-
-      <!-- Projection Years -->
-      <div class="space-y-1.5 sm:col-span-2">
-        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
-          {{ t('projections.form.projectionYearsLabel') }} *
-        </label>
-        <Select
-          v-model="projectionYears"
-          :options="yearsOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full !rounded-xl !text-xs"
-        />
-      </div>
+    <!-- Projection Years Select -->
+    <div class="space-y-1.5">
+      <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
+        {{ t('projections.form.projectionYearsLabel') }} (Años) *
+      </label>
+      <Select
+        v-model="projectionYears"
+        :options="yearsOptions"
+        optionLabel="label"
+        optionValue="value"
+        class="w-full !rounded-xl !text-xs"
+      />
     </div>
 
     <!-- Submit Action -->
