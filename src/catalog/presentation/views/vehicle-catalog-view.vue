@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import Paginator, { type PageState } from 'primevue/paginator'
 import { useCatalogStore } from '../../application/catalog.store'
+import { useIamStore } from '@/iam/application/iam.store'
 import VehicleSearchFilters from '../components/vehicle-search-filters.vue'
 import VehicleCard from '../components/vehicle-card.vue'
 import RegisterVehicleDialog from '../components/register-vehicle-dialog.vue'
 
 const { t } = useI18n()
 const catalogStore = useCatalogStore()
+const iamStore = useIamStore()
 const isRegisterModalOpen = ref<boolean>(false)
+
+const isDealerOrAdmin = computed(() => {
+  return iamStore.roles.includes('ROLE_DEALER') || iamStore.roles.includes('ROLE_ADMIN')
+})
 
 onMounted(() => {
   catalogStore.fetchVehicles()
@@ -44,8 +50,8 @@ const onVehicleCreated = () => {
         </p>
       </div>
 
-      <!-- Header Action: Register Vehicle -->
-      <div class="relative z-10 w-full md:w-auto">
+      <!-- Header Action: Register Vehicle (Dealer / Admin only) -->
+      <div v-if="isDealerOrAdmin" class="relative z-10 w-full md:w-auto">
         <Button
           :label="t('catalog.registerVehicleBtn')"
           icon="pi pi-plus"
@@ -53,6 +59,17 @@ const onVehicleCreated = () => {
           class="w-full md:w-auto !rounded-2xl !py-3 !px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-extrabold shadow-lg shadow-emerald-500/20"
           @click="isRegisterModalOpen = true"
         />
+      </div>
+
+      <!-- Header Action: Prompt for Buyers to elevate role -->
+      <div v-else class="relative z-10 w-full md:w-auto">
+        <router-link
+          to="/user"
+          class="inline-flex items-center space-x-2 w-full md:w-auto px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-emerald-200 backdrop-blur-md transition-colors"
+        >
+          <i class="pi pi-shield text-xs"></i>
+          <span>{{ t('catalog.dealerAcreditationPrompt') }}</span>
+        </router-link>
       </div>
     </div>
 
@@ -136,8 +153,9 @@ const onVehicleCreated = () => {
       />
     </div>
 
-    <!-- Register Vehicle Modal -->
+    <!-- Register Vehicle Modal (Dealer / Admin only) -->
     <RegisterVehicleDialog
+      v-if="isDealerOrAdmin"
       v-model:visible="isRegisterModalOpen"
       @created="onVehicleCreated"
     />

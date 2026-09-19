@@ -4,18 +4,31 @@
     "subtitle": "Vehicle Financial Portal"
   },
   "header": {
-    "buyerPanel": "Buyer Panel",
+    "buyerPanel": "Buyer Dashboard",
+    "buyerSubtitle": "Vehicle Explorer & Simulations",
+    "dealerPanel": "Dealership Portal",
+    "dealerSubtitle": "Automotive Inventory Management",
+    "bankPanel": "Financial Entity Portal",
+    "bankSubtitle": "Rates & Credit Products Management",
+    "adminPanel": "Administration Dashboard",
+    "adminSubtitle": "Global Platform Control",
     "alliesPortal": "Allies Portal",
     "userRole": "Pre-approved Buyer"
   },
   "nav": {
     "vehicles": "Search Vehicles",
+    "dealerVehicles": "Vehicle Inventory",
     "concessionaries": "Financial Entities",
+    "bankEntities": "Entities & Benchmark Rates",
     "simulations": "Credit Simulations",
-    "scoring": "Scoring Evaluation",
+    "commercialSimulations": "Applications & Simulations",
+    "scoring": "My Credit Score",
+    "riskScoring": "Risk Assessment & Scoring",
     "reports": "Depreciation Reports",
     "user": "User Profile",
-    "billing": "Subscription & Plans"
+    "billing": "Subscription & Plans",
+    "badgeDealer": "Dealer",
+    "badgeBank": "Bank"
   },
   "sidebar": {
     "needHelp": "Need help?",
@@ -160,6 +173,7 @@
     "viewDetailBtn": "View Detail",
     "simulateLoanBtn": "Simulate Loan",
     "registerVehicleBtn": "+ Register Vehicle",
+    "dealerAcreditationPrompt": "Are you a dealer? Validate your RUC to register vehicles",
     "backToCatalog": "Back to Catalog",
     "vehicleNotFoundTitle": "Vehicle not found",
     "vehicleNotFoundSubtitle": "The requested vehicle does not exist or has been removed from the catalog.",
