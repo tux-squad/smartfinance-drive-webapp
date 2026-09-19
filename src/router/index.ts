@@ -82,6 +82,18 @@ const routes: Array<RouteRecordRaw> = [
         name: 'billing',
         component: () => import('@/shared/presentation/views/home-view.vue'),
         meta: { title: 'Suscripción y Planes' }
+      },
+      {
+        path: 'dealer/inventory',
+        name: 'dealer-inventory',
+        component: () => import('@/catalog/presentation/views/dealer-inventory-view.vue'),
+        meta: { title: 'Gestión de Inventario' }
+      },
+      {
+        path: 'dealer/inventory/new',
+        name: 'dealer-inventory-new',
+        component: () => import('@/catalog/presentation/views/publish-vehicle-view.vue'),
+        meta: { title: 'Publicar Nuevo Vehículo' }
       }
     ]
   },
