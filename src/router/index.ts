@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, RouterView, type RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/shared/presentation/views/app-layout.vue'
 import iamRoutes from '@/iam/presentation/iam-routes'
 import profilesRoutes from '@/profiles/presentation/profiles-routes'
@@ -11,11 +11,7 @@ import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
   // Full-page standalone Authentication routes (outside AppLayout / sidebar)
-  {
-    path: '/iam',
-    redirect: { name: 'sign-in' },
-    children: iamRoutes
-  },
+  ...iamRoutes,
 
   // Main application routes wrapped in AppLayout (with Header & Sidebar)
   {
@@ -80,10 +76,10 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const baseTitle = 'SmartFinance Drive Platform'
   document.title = to.meta.title ? `${baseTitle} - ${to.meta.title}` : baseTitle
-  return authenticationGuard(to, from, next)
+  return authenticationGuard(to, from)
 })
 
 export default router
