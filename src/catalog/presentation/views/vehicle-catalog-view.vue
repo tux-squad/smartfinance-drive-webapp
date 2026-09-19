@@ -1,156 +1,118 @@
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import ProgressSpinner from 'primevue/progressspinner'
-import Button from 'primevue/button'
-import Paginator, { type PageState } from 'primevue/paginator'
-import { useCatalogStore } from '../../application/catalog.store'
-import { useIamStore } from '@/iam/application/iam.store'
-import VehicleSearchFilters from '../components/vehicle-search-filters.vue'
-import VehicleCard from '../components/vehicle-card.vue'
-import RegisterVehicleDialog from '../components/register-vehicle-dialog.vue'
-
-const { t } = useI18n()
-const catalogStore = useCatalogStore()
-const iamStore = useIamStore()
-const isRegisterModalOpen = ref<boolean>(false)
-
-const isDealerOrAdmin = computed(() => {
-  return iamStore.roles.includes('ROLE_DEALER') || iamStore.roles.includes('ROLE_ADMIN')
-})
-
-onMounted(() => {
-  catalogStore.fetchVehicles()
-})
-
-const onPageChange = (event: PageState) => {
-  catalogStore.fetchVehicles({ page: event.page, size: event.rows })
-}
-
-const onVehicleCreated = () => {
-  catalogStore.fetchVehicles({ page: 0 })
-}
-</script>
-
 <template>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <!-- Header Banner -->
-    <div class="rounded-3xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-8 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-      <div class="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
-      <div class="relative z-10 max-w-2xl">
-        <div class="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3.5 py-1 text-xs font-semibold text-emerald-300 backdrop-blur-md mb-3 border border-emerald-500/30">
-          <i class="pi pi-compass"></i>
-          {{ t('catalog.headerBadge') }}
-        </div>
-        <h1 class="text-3xl font-black tracking-tight sm:text-4xl text-white">
-          {{ t('catalog.headerTitle') }}
+    <!-- Header Banner / Greeting matching Mockup Image 1 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
+          Bienvenido, {{ userFirstName }}
         </h1>
-        <p class="mt-2 text-sm text-emerald-100/80 leading-relaxed">
-          {{ t('catalog.headerSubtitle') }}
+        <p class="text-sm text-gray-500 mt-1">
+          Gestiona tus búsquedas y solicitudes de financiamiento automotriz desde un solo lugar.
         </p>
       </div>
 
-      <!-- Header Action: Register Vehicle (Dealer / Admin only) -->
-      <div v-if="isDealerOrAdmin" class="relative z-10 w-full md:w-auto">
+      <!-- Action Button if Dealer / Admin -->
+      <div v-if="isDealerOrAdmin">
         <Button
           :label="t('catalog.registerVehicleBtn')"
           icon="pi pi-plus"
           severity="success"
-          class="w-full md:w-auto !rounded-2xl !py-3 !px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-extrabold shadow-lg shadow-emerald-500/20"
+          class="!rounded-xl !py-2.5 !px-5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs shadow-xs"
           @click="isRegisterModalOpen = true"
         />
       </div>
+    </div>
 
-      <!-- Header Action: Prompt for Buyers to elevate role -->
-      <div v-else class="relative z-10 w-full md:w-auto">
-        <router-link
-          to="/user"
-          class="inline-flex items-center space-x-2 w-full md:w-auto px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-emerald-200 backdrop-blur-md transition-colors"
+    <!-- Search Bar matching Mockup Image 1 -->
+    <div class="relative">
+      <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+        <i class="pi pi-search text-base"></i>
+      </span>
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Buscar vehículos por marca, modelo o año..."
+        class="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent shadow-xs transition-all"
+        @input="handleSearchInput"
+      />
+    </div>
+
+    <!-- Section: Recomendados para ti matching Mockup Image 1 -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-gray-950">
+          Recomendados para ti
+        </h2>
+        <span class="text-xs text-gray-500 font-medium">
+          {{ displayVehicles.length }} unidades disponibles
+        </span>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="catalogStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
+        <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
+        <p class="text-sm text-gray-500 font-medium">{{ t('catalog.loadingText') }}</p>
+      </div>
+
+      <!-- Vehicles Grid matching Mockup Cards -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-for="car in displayVehicles"
+          :key="car.id"
+          class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
         >
-          <i class="pi pi-shield text-xs"></i>
-          <span>{{ t('catalog.dealerAcreditationPrompt') }}</span>
-        </router-link>
+          <!-- Card Media Container -->
+          <div class="relative h-48 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+            <!-- Badge Recomendado -->
+            <span
+              v-if="car.isRecommended"
+              class="absolute top-3.5 left-3.5 z-10 bg-[#00a887] text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-xs"
+            >
+              Recomendado
+            </span>
+
+            <!-- Image or Styled Car Vector -->
+            <img
+              v-if="car.imageUrl"
+              :src="car.imageUrl"
+              :alt="car.title"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-gray-300 space-y-2 bg-gradient-to-br from-slate-100 to-blue-50/50">
+              <i class="pi pi-car text-5xl text-blue-900/30"></i>
+              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{{ car.brand }}</span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-5 space-y-3 flex-1 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <h3 class="text-base font-bold text-gray-900 leading-snug">
+                {{ car.title }}
+              </h3>
+              <div class="text-xl font-extrabold text-gray-950">
+                {{ car.formattedPrice }}
+              </div>
+              <div class="flex items-center space-x-1.5 text-xs text-gray-500">
+                <i class="pi pi-map-marker text-[11px] text-gray-400"></i>
+                <span>{{ car.location }} · {{ car.mileage }}</span>
+              </div>
+            </div>
+
+            <!-- Action Button: Solicitar Pre-evaluación -->
+            <div class="pt-2">
+              <button
+                type="button"
+                @click="handlePreEvaluation(car)"
+                class="w-full py-2.5 px-4 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-semibold text-xs text-center shadow-xs transition-colors"
+              >
+                Solicitar Pre-evaluación
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Filter Component -->
-    <VehicleSearchFilters />
-
-    <!-- Results Overview Bar -->
-    <div class="flex items-center justify-between">
-      <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-        {{ t('catalog.totalResults') }}:
-        <span class="font-bold text-gray-900 dark:text-white">{{ catalogStore.totalElements }}</span>
-        {{ t('catalog.vehiclesCountLabel') }}
-      </p>
-
-      <Button
-        :label="t('catalog.registerVehicleBtn')"
-        icon="pi pi-plus"
-        severity="secondary"
-        outlined
-        class="!rounded-xl !text-xs sm:hidden"
-        @click="isRegisterModalOpen = true"
-      />
-    </div>
-
-    <!-- Loading Spinner State -->
-    <div v-if="catalogStore.isLoading" class="flex flex-col items-center justify-center py-20 gap-3">
-      <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-      <p class="text-sm text-gray-500 font-medium">{{ t('catalog.loadingText') }}</p>
-    </div>
-
-    <!-- Empty Catalog State -->
-    <div
-      v-else-if="!catalogStore.hasVehicles"
-      class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-12 text-center"
-    >
-      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mb-4">
-        <i class="pi pi-car text-2xl"></i>
-      </div>
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-        {{ t('catalog.emptyTitle') }}
-      </h3>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-md">
-        {{ t('catalog.emptySubtitle') }}
-      </p>
-      <div class="mt-6 flex flex-wrap justify-center gap-3">
-        <Button
-          :label="t('catalog.clearFiltersBtn')"
-          icon="pi pi-filter-slash"
-          severity="secondary"
-          outlined
-          class="rounded-xl !text-xs"
-          @click="catalogStore.resetFilters"
-        />
-        <Button
-          :label="t('catalog.registerVehicleBtn')"
-          icon="pi pi-plus"
-          severity="success"
-          class="rounded-xl !text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-          @click="isRegisterModalOpen = true"
-        />
-      </div>
-    </div>
-
-    <!-- Vehicles Grid -->
-    <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <VehicleCard
-        v-for="vehicle in catalogStore.vehicles"
-        :key="vehicle.id"
-        :vehicle="vehicle"
-      />
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="catalogStore.totalPages > 1" class="flex justify-center pt-4">
-      <Paginator
-        :rows="catalogStore.pageSize"
-        :totalRecords="catalogStore.totalElements"
-        :first="catalogStore.currentPage * catalogStore.pageSize"
-        class="!bg-transparent"
-        @page="onPageChange"
-      />
     </div>
 
     <!-- Register Vehicle Modal (Dealer / Admin only) -->
@@ -161,3 +123,154 @@ const onVehicleCreated = () => {
     />
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import ProgressSpinner from 'primevue/progressspinner'
+import Button from 'primevue/button'
+import { useCatalogStore } from '../../application/catalog.store'
+import { useIamStore } from '@/iam/application/iam.store'
+import { useProfilesStore } from '@/profiles/application/profiles.store'
+import RegisterVehicleDialog from '../components/register-vehicle-dialog.vue'
+
+const { t } = useI18n()
+const router = useRouter()
+const catalogStore = useCatalogStore()
+const iamStore = useIamStore()
+const profilesStore = useProfilesStore()
+
+const isRegisterModalOpen = ref<boolean>(false)
+const searchQuery = ref<string>('')
+
+interface DisplayVehicle {
+  id: string
+  title: string
+  brand: string
+  model: string
+  year: number
+  price: number
+  formattedPrice: string
+  location: string
+  mileage: string
+  isRecommended: boolean
+  imageUrl?: string
+}
+
+// Demo curated vehicles matching Mockup Image 1
+const mockRecommendedVehicles: DisplayVehicle[] = [
+  {
+    id: 'rec-1',
+    title: 'Toyota Corolla 2023',
+    brand: 'Toyota',
+    model: 'Corolla',
+    year: 2023,
+    price: 18500,
+    formattedPrice: '$18,500 USD',
+    location: 'Lima, Perú',
+    mileage: '15,000 km',
+    isRecommended: true
+  },
+  {
+    id: 'rec-2',
+    title: 'Honda Civic 2022',
+    brand: 'Honda',
+    model: 'Civic',
+    year: 2022,
+    price: 16200,
+    formattedPrice: '$16,200 USD',
+    location: 'Santiago, Chile',
+    mileage: '22,400 km',
+    isRecommended: true
+  },
+  {
+    id: 'rec-3',
+    title: 'Mazda 3 2024',
+    brand: 'Mazda',
+    model: '3',
+    year: 2024,
+    price: 22800,
+    formattedPrice: '$22,800 USD',
+    location: 'Bogotá, Colombia',
+    mileage: '8,900 km',
+    isRecommended: true
+  }
+]
+
+const isDealerOrAdmin = computed(() => {
+  return iamStore.roles.includes('ROLE_DEALER') || iamStore.roles.includes('ROLE_ADMIN')
+})
+
+const userFirstName = computed(() => {
+  if (profilesStore.currentProfile?.firstName) {
+    return profilesStore.currentProfile.firstName
+  }
+  if (iamStore.username && iamStore.username !== 'Invitado') {
+    const raw = iamStore.username.split('@')[0] || ''
+    const clean = raw.replace(/[._-]/g, ' ')
+    if (clean) return clean.split(' ')[0]
+  }
+  return 'Carlos'
+})
+
+const displayVehicles = computed<DisplayVehicle[]>(() => {
+  // If backend catalog has vehicles, transform them; otherwise fallback to mock recommendations
+  let list: DisplayVehicle[] = []
+  if (catalogStore.vehicles.length > 0) {
+    list = catalogStore.vehicles.map((v, index) => ({
+      id: v.id,
+      title: `${v.brand} ${v.model} ${v.manufactureYear}`,
+      brand: v.brand,
+      model: v.model,
+      year: v.manufactureYear,
+      price: v.priceAmount,
+      formattedPrice: v.formattedPrice || `$${v.priceAmount.toLocaleString()} USD`,
+      location: 'Lima, Perú',
+      mileage: `${(index + 1) * 7500} km`,
+      isRecommended: true,
+      imageUrl: v.imagePath
+    }))
+  } else {
+    list = mockRecommendedVehicles
+  }
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim()
+    return list.filter(v =>
+      v.title.toLowerCase().includes(q) ||
+      v.brand.toLowerCase().includes(q) ||
+      v.model.toLowerCase().includes(q) ||
+      String(v.year).includes(q)
+    )
+  }
+
+  return list
+})
+
+onMounted(async () => {
+  await catalogStore.fetchVehicles()
+})
+
+const handleSearchInput = () => {
+  // Client-side live filter for instant feedback
+}
+
+const handlePreEvaluation = (car: DisplayVehicle) => {
+  router.push({
+    name: 'simulations',
+    query: {
+      vehicleId: car.id,
+      vehiclePrice: car.price,
+      vehicleModel: car.title
+    }
+  })
+}
+
+const onVehicleCreated = () => {
+  catalogStore.fetchVehicles({ page: 0 })
+}
+</script>
+
+<style scoped>
+</style>
