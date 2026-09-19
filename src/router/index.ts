@@ -54,6 +54,12 @@ const routes: Array<RouteRecordRaw> = [
         children: projectionsRoutes
       },
       {
+        path: 'messages',
+        name: 'messages',
+        component: () => import('@/shared/presentation/views/messages-view.vue'),
+        meta: { title: 'Bandeja de Entrada' }
+      },
+      {
         path: 'consultation',
         name: 'ai-consultation',
         component: () => import('@/financing/presentation/views/ai-consultation-view.vue'),

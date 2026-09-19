@@ -99,6 +99,11 @@ const navItems = computed<NavItem[]>(() => {
         icon: 'pi-building'
       },
       {
+        labelKey: 'nav.buyerMessages',
+        to: '/messages',
+        icon: 'pi-comment'
+      },
+      {
         labelKey: 'nav.buyerAiConsultation',
         to: '/consultation',
         icon: 'pi-comments'

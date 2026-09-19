@@ -2,10 +2,13 @@
   <header class="bg-white border-b border-gray-200 shadow-xs">
     <div class="flex justify-between items-center px-8 py-3.5">
       <!-- Breadcrumbs matching mockup -->
-      <div class="flex items-center space-x-2 text-sm">
-        <span class="text-gray-500 font-medium">{{ currentPanelTitle }}</span>
-        <span class="text-gray-400">/</span>
-        <span class="text-blue-950 font-bold">{{ currentSectionSubtitle }}</span>
+      <div class="flex items-center space-x-2 text-sm flex-wrap">
+        <template v-for="(crumb, idx) in breadcrumbTrail" :key="idx">
+          <span v-if="idx > 0" class="text-gray-400">/</span>
+          <span :class="[idx === breadcrumbTrail.length - 1 ? 'text-blue-950 font-bold' : 'text-gray-500 font-medium']">
+            {{ crumb }}
+          </span>
+        </template>
       </div>
 
       <div class="flex items-center space-x-5">
@@ -45,6 +48,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
+import { useCatalogStore } from '@/catalog/application/catalog.store'
+import { usePartnersStore } from '@/partners/application/partners.store'
 import LanguageSwitcher from './language-switcher.vue'
 import AuthenticationSection from '@/iam/presentation/components/authentication-section.vue'
 
@@ -52,6 +57,8 @@ const $route = useRoute()
 const { t } = useI18n()
 const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
+const catalogStore = useCatalogStore()
+const partnersStore = usePartnersStore()
 
 const currentPanelTitle = computed(() => {
   const roles = iamStore.roles
@@ -75,6 +82,55 @@ const currentSectionSubtitle = computed(() => {
   if (roles.includes('ROLE_DEALER')) return t('header.dealerSubtitle')
   if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return t('header.bankSubtitle')
   return t('header.buyerSubtitle')
+})
+
+const breadcrumbTrail = computed<string[]>(() => {
+  const panel = currentPanelTitle.value
+  const path = $route.path
+
+  if (path === '/messages') {
+    return [panel, 'Mensajes']
+  }
+  if (path === '/vehicles/compare') {
+    return [panel, 'Comparar Vehículos']
+  }
+  if (path.startsWith('/vehicles/') && path.endsWith('/pre-evaluation')) {
+    const vehicleName = catalogStore.selectedVehicle
+      ? `${catalogStore.selectedVehicle.brand} ${catalogStore.selectedVehicle.model} ${catalogStore.selectedVehicle.manufactureYear}`
+      : 'Vehículo'
+    return [panel, vehicleName, 'Pre-evaluación Crediticia']
+  }
+  if (path.startsWith('/vehicles/') && path !== '/vehicles') {
+    const vehicleName = catalogStore.selectedVehicle
+      ? `${catalogStore.selectedVehicle.brand} ${catalogStore.selectedVehicle.model} ${catalogStore.selectedVehicle.manufactureYear}`
+      : 'Detalle del Vehículo'
+    return [panel, 'Vehículos a buscar', vehicleName]
+  }
+  if (path.startsWith('/concessionaries/') && path !== '/concessionaries' && path !== '/concessionaries/entities') {
+    const entity = partnersStore.financialEntities.find(e => e.id === $route.params.id)
+    const entityName = entity ? entity.name : 'Concesionaria Aliada'
+    return [panel, 'Portal Aliados', entityName]
+  }
+  if (path === '/concessionaries') {
+    return [panel, 'Concesionarias a buscar']
+  }
+  if (path === '/vehicles' || path === '/home') {
+    return [panel, 'Vehículos a buscar']
+  }
+  if (path === '/user') {
+    return [panel, t('header.myProfile')]
+  }
+  if (path.startsWith('/reports/applications')) {
+    return [panel, t('header.applicationsReport')]
+  }
+  if (path === '/settings') {
+    return [panel, t('header.settings')]
+  }
+  if (path === '/consultation') {
+    return [panel, t('header.aiConsultation')]
+  }
+
+  return [panel, currentSectionSubtitle.value]
 })
 
 const userDisplayName = computed(() => {
