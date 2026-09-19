@@ -1,7 +1,9 @@
 import { BaseApi } from '@/shared/infrastructure/base-api'
 import type { AxiosResponse } from 'axios'
 import type { SearchVehiclesQuery } from '../domain/search-vehicles.query'
-import type { VehicleResource, VehiclePageResource } from './vehicle.resource'
+import type { CreateVehicleCommand } from '../domain/create-vehicle.command'
+import type { UploadVehicleImageCommand } from '../domain/upload-vehicle-image.command'
+import type { VehicleResource, VehiclePageResource, CreateVehicleResource } from './vehicle.resource'
 import { VehicleAssembler } from './vehicle.assembler'
 import { Vehicle } from '../domain/vehicle.entity'
 import { VehiclePage } from '../domain/vehicle-page.entity'
@@ -37,10 +39,48 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
+   * 3.2 Register / Create a new Vehicle.
+   */
+  public async createVehicle(command: CreateVehicleCommand): Promise<Vehicle> {
+    const payload: CreateVehicleResource = {
+      financialEntityId: command.financialEntityId,
+      brand: command.brand,
+      model: command.model,
+      manufactureYear: command.manufactureYear,
+      condition: command.condition,
+      priceAmount: command.priceAmount,
+      currency: command.currency
+    }
+
+    const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>('/api/v1/vehicles', payload)
+    return VehicleAssembler.toEntity(response.data)
+  }
+
+  /**
    * 3.3 Get Vehicle details by UUID.
    */
   public async getVehicleById(vehicleId: string): Promise<Vehicle> {
     const response: AxiosResponse<VehicleResource> = await this.http.get<VehicleResource>(`/api/v1/vehicles/${vehicleId}`)
+    return VehicleAssembler.toEntity(response.data)
+  }
+
+  /**
+   * 3.4 Upload image for a Vehicle (multipart/form-data).
+   */
+  public async uploadVehicleImage(command: UploadVehicleImageCommand): Promise<Vehicle> {
+    const formData = new FormData()
+    formData.append('file', command.file)
+
+    const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>(
+      `/api/v1/vehicles/${command.vehicleId}/image`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
     return VehicleAssembler.toEntity(response.data)
   }
 }

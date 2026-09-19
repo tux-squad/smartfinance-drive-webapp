@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Vehicle } from '../domain/vehicle.entity'
 import type { SearchVehiclesQuery } from '../domain/search-vehicles.query'
+import type { CreateVehicleCommand } from '../domain/create-vehicle.command'
+import type { UploadVehicleImageCommand } from '../domain/upload-vehicle-image.command'
 import { CatalogApi } from '../infrastructure/catalog-api'
 
 const catalogApi = new CatalogApi()
@@ -67,6 +69,25 @@ export const useCatalogStore = defineStore('catalog', () => {
   }
 
   /**
+   * Registers a new vehicle in the catalog (3.2).
+   */
+  const createVehicle = async (command: CreateVehicleCommand): Promise<Vehicle | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const newVehicle = await catalogApi.createVehicle(command)
+      vehicles.value.unshift(newVehicle)
+      totalElements.value++
+      return newVehicle
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al registrar el vehículo.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Fetches full specs of a single vehicle by UUID (3.3).
    */
   const fetchVehicleById = async (vehicleId: string): Promise<boolean> => {
@@ -82,6 +103,30 @@ export const useCatalogStore = defineStore('catalog', () => {
     } catch (err: any) {
       error.value = err.response?.data?.message || 'No se encontró la información del vehículo.'
       selectedVehicle.value = null
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Uploads an image for a vehicle (3.4).
+   */
+  const uploadVehicleImage = async (command: UploadVehicleImageCommand): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updatedVehicle = await catalogApi.uploadVehicleImage(command)
+      if (selectedVehicle.value && selectedVehicle.value.id === updatedVehicle.id) {
+        selectedVehicle.value = updatedVehicle
+      }
+      const index = vehicles.value.findIndex((v) => v.id === updatedVehicle.id)
+      if (index !== -1) {
+        vehicles.value[index] = updatedVehicle
+      }
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al subir la imagen del vehículo.'
       return false
     } finally {
       isLoading.value = false
@@ -120,7 +165,9 @@ export const useCatalogStore = defineStore('catalog', () => {
     hasVehicles,
     activeFiltersCount,
     fetchVehicles,
+    createVehicle,
     fetchVehicleById,
+    uploadVehicleImage,
     clearSelectedVehicle,
     resetFilters
   }

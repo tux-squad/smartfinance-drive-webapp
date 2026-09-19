@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useCatalogStore } from '../../application/catalog.store'
+import VehicleImageUploader from '../components/vehicle-image-uploader.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const catalogStore = useCatalogStore()
 
+const isImageModalOpen = ref<boolean>(false)
 const vehicleId = computed(() => route.params.id as string)
 
 onMounted(async () => {
@@ -32,6 +35,13 @@ const goBack = () => {
 const goToSimulation = () => {
   if (vehicle.value) {
     router.push({ name: 'simulations', query: { vehicleId: vehicle.value.id } })
+  }
+}
+
+const onImageUploaded = async () => {
+  isImageModalOpen.value = false
+  if (vehicleId.value) {
+    await catalogStore.fetchVehicleById(vehicleId.value)
   }
 }
 </script>
@@ -98,6 +108,17 @@ const goToSimulation = () => {
             <span class="rounded-full bg-black/70 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-white shadow-md">
               {{ vehicle.manufactureYear }}
             </span>
+          </div>
+
+          <!-- Upload Image Overlay Button -->
+          <div class="absolute bottom-4 right-4">
+            <Button
+              :label="t('catalog.imageUpload.changeImageBtn')"
+              icon="pi pi-camera"
+              severity="secondary"
+              class="!rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white font-bold !text-xs border border-white/20"
+              @click="isImageModalOpen = true"
+            />
           </div>
         </div>
 
@@ -195,5 +216,22 @@ const goToSimulation = () => {
         </div>
       </div>
     </div>
+
+    <!-- Upload Image Modal -->
+    <Dialog
+      v-model:visible="isImageModalOpen"
+      modal
+      :header="t('catalog.imageUpload.dialogTitle')"
+      :style="{ width: '90vw', maxWidth: '500px' }"
+      class="!rounded-3xl p-dialog-custom"
+    >
+      <div class="pt-2">
+        <VehicleImageUploader
+          v-if="vehicle"
+          :vehicleId="vehicle.id"
+          @uploaded="onImageUploaded"
+        />
+      </div>
+    </Dialog>
   </div>
 </template>

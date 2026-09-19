@@ -128,6 +128,7 @@
     "vehicleCode": "Code",
     "viewDetailBtn": "View Detail",
     "simulateLoanBtn": "Simulate Loan",
+    "registerVehicleBtn": "+ Register Vehicle",
     "backToCatalog": "Back to Catalog",
     "vehicleNotFoundTitle": "Vehicle not found",
     "vehicleNotFoundSubtitle": "The requested vehicle does not exist or has been removed from the catalog.",
@@ -139,7 +140,35 @@
     "priceNote": "Subject to credit evaluation and TEA rate of the selected financial institution.",
     "benefit1": "Fuzzy search and smart model matching",
     "benefit2": "Immediate payment schedule simulation",
-    "benefit3": "Backed and verified by authorized commercial dealer"
+    "benefit3": "Backed and verified by authorized commercial dealer",
+    "register": {
+      "dialogTitle": "Register New Vehicle",
+      "dialogSubtitle": "Complete vehicle information to add it to the commercial catalog",
+      "brandLabel": "Vehicle Brand",
+      "brandPlaceholder": "e.g. Toyota, Hyundai, Nissan...",
+      "modelLabel": "Model",
+      "modelPlaceholder": "e.g. Corolla, Tucson, Kicks...",
+      "yearLabel": "Manufacture Year",
+      "conditionLabel": "Condition",
+      "priceLabel": "Selling Price",
+      "currencyLabel": "Currency",
+      "financialEntityIdLabel": "Financial Entity UUID (Optional)",
+      "submitBtn": "Register Vehicle",
+      "successTitle": "Vehicle registered successfully!",
+      "skipImageBtn": "Skip for now",
+      "errorRequiredFields": "Please complete vehicle brand and model.",
+      "errorInvalidPrice": "Please enter a valid selling price greater than zero."
+    },
+    "imageUpload": {
+      "dialogTitle": "Upload Vehicle Image",
+      "changeImageBtn": "Change Image",
+      "dropzoneTitle": "Drag & drop vehicle image here",
+      "dropzoneSubtitle": "Supported formats: JPG, PNG, WEBP (Max 5MB)",
+      "selectFileBtn": "Select File",
+      "uploadBtn": "Upload Image",
+      "invalidTypeError": "Selected file must be a valid image (JPG, PNG, WEBP).",
+      "maxSizeError": "Image size must not exceed 5 MB."
+    }
   },
   "partners": {
     "headerBadge": "Financial Entities & SUNAT",

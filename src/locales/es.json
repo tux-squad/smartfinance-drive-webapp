@@ -128,6 +128,7 @@
     "vehicleCode": "Cód",
     "viewDetailBtn": "Ver Detalle",
     "simulateLoanBtn": "Simular Crédito",
+    "registerVehicleBtn": "+ Registrar Vehículo",
     "backToCatalog": "Volver al Catálogo",
     "vehicleNotFoundTitle": "Vehículo no encontrado",
     "vehicleNotFoundSubtitle": "El vehículo solicitado no existe o ha sido retirado del catálogo.",
@@ -139,7 +140,35 @@
     "priceNote": "Sujeto a evaluación crediticia y tasa TEA de la entidad financiera elegida.",
     "benefit1": "Búsqueda difusa y coincidencia inteligente de modelo",
     "benefit2": "Simulación inmediata de cronograma de pagos",
-    "benefit3": "Respaldo y verificación de entidad comercial autorizada"
+    "benefit3": "Respaldo y verificación de entidad comercial autorizada",
+    "register": {
+      "dialogTitle": "Registrar Nuevo Vehículo",
+      "dialogSubtitle": "Completa la información del vehículo para agregarlo al catálogo comercial",
+      "brandLabel": "Marca del Vehículo",
+      "brandPlaceholder": "Ej: Toyota, Hyundai, Nissan...",
+      "modelLabel": "Modelo",
+      "modelPlaceholder": "Ej: Corolla, Tucson, Kicks...",
+      "yearLabel": "Año de Fabricación",
+      "conditionLabel": "Condición",
+      "priceLabel": "Precio de Venta",
+      "currencyLabel": "Moneda",
+      "financialEntityIdLabel": "UUID Entidad Financiera (Opcional)",
+      "submitBtn": "Registrar Vehículo",
+      "successTitle": "¡Vehículo registrado exitosamente!",
+      "skipImageBtn": "Omitir por ahora",
+      "errorRequiredFields": "Por favor completa la marca y modelo del vehículo.",
+      "errorInvalidPrice": "Por favor ingresa un precio de venta válido mayor a cero."
+    },
+    "imageUpload": {
+      "dialogTitle": "Subir Imagen del Vehículo",
+      "changeImageBtn": "Cambiar Imagen",
+      "dropzoneTitle": "Arrastra y suelta la imagen del vehículo aquí",
+      "dropzoneSubtitle": "Formatos soportados: JPG, PNG, WEBP (Máx. 5MB)",
+      "selectFileBtn": "Seleccionar Archivo",
+      "uploadBtn": "Subir Imagen",
+      "invalidTypeError": "El archivo seleccionado debe ser una imagen válida (JPG, PNG, WEBP).",
+      "maxSizeError": "La imagen no debe superar los 5 MB de tamaño."
+    }
   },
   "partners": {
     "headerBadge": "Entidades Financieras y SUNAT",
