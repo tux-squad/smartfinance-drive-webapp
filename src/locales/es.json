@@ -5,7 +5,12 @@
   },
   "header": {
     "buyerPanel": "Panel de Comprador",
-    "buyerSubtitle": "Explorador y Simulaciones",
+    "buyerSubtitle": "Portal Aliados",
+    "portalAllies": "Portal Aliados",
+    "applicationsReport": "Reporte de Solicitudes",
+    "myProfile": "Mi Perfil",
+    "settings": "Configuración",
+    "aiConsultation": "Consulta IA",
     "dealerPanel": "Portal Concesionario",
     "dealerSubtitle": "Gestión de Inventario Automotriz",
     "bankPanel": "Portal Entidad Financiera",
@@ -16,6 +21,12 @@
     "userRole": "Comprador Pre-aprobado"
   },
   "nav": {
+    "buyerVehicles": "Vehículos a buscar",
+    "buyerConcessionaires": "Concesionarias a buscar",
+    "buyerAiConsultation": "Consulta IA",
+    "buyerReport": "Reporte",
+    "buyerProfile": "Perfil",
+    "buyerSettings": "Configuración",
     "vehicles": "Buscar Vehículos",
     "dealerVehicles": "Inventario de Vehículos",
     "concessionaries": "Entidades Financieras",

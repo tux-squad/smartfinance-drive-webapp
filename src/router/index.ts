@@ -54,6 +54,24 @@ const routes: Array<RouteRecordRaw> = [
         children: projectionsRoutes
       },
       {
+        path: 'consultation',
+        name: 'ai-consultation',
+        component: () => import('@/financing/presentation/views/ai-consultation-view.vue'),
+        meta: { title: 'Consulta IA' }
+      },
+      {
+        path: 'reports/applications',
+        name: 'buyer-applications',
+        component: () => import('@/financing/presentation/views/buyer-applications-view.vue'),
+        meta: { title: 'Reporte de Solicitudes' }
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@/shared/presentation/views/settings-view.vue'),
+        meta: { title: 'Configuración' }
+      },
+      {
         path: 'billing',
         name: 'billing',
         component: () => import('@/shared/presentation/views/home-view.vue'),

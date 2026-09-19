@@ -1,18 +1,37 @@
 <template>
   <header class="bg-white border-b border-gray-200 shadow-xs">
-    <div class="flex justify-between items-center px-8 py-4">
+    <div class="flex justify-between items-center px-8 py-3.5">
+      <!-- Breadcrumbs matching mockup -->
       <div class="flex items-center space-x-2 text-sm">
         <span class="text-gray-500 font-medium">{{ currentPanelTitle }}</span>
         <span class="text-gray-400">/</span>
         <span class="text-blue-950 font-bold">{{ currentSectionSubtitle }}</span>
       </div>
 
-      <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-5">
         <!-- Language Switcher -->
         <LanguageSwitcher />
 
-        <!-- Dynamic User / Auth Section -->
-        <div class="pl-4 border-l border-gray-200">
+        <!-- User Profile Pill matching mockup (Carlos Mendoza / Comprador Pre-aprobado) -->
+        <div class="flex items-center space-x-3 text-right">
+          <div>
+            <div class="text-sm font-bold text-gray-900 leading-tight">
+              {{ userDisplayName }}
+            </div>
+            <div class="text-[11px] text-gray-500 font-medium">
+              {{ userRoleSubtitle }}
+            </div>
+          </div>
+          <router-link
+            to="/user"
+            class="w-9 h-9 rounded-full bg-[#0d2a5c] text-white flex items-center justify-center font-bold text-xs shadow-xs hover:opacity-90 transition-opacity shrink-0"
+          >
+            {{ userInitials }}
+          </router-link>
+        </div>
+
+        <!-- Auth Section / Sign Out -->
+        <div class="pl-2 border-l border-gray-200">
           <AuthenticationSection />
         </div>
       </div>
@@ -22,13 +41,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '@/iam/application/iam.store'
+import { useProfilesStore } from '@/profiles/application/profiles.store'
 import LanguageSwitcher from './language-switcher.vue'
 import AuthenticationSection from '@/iam/presentation/components/authentication-section.vue'
 
+const $route = useRoute()
 const { t } = useI18n()
 const iamStore = useIamStore()
+const profilesStore = useProfilesStore()
 
 const currentPanelTitle = computed(() => {
   const roles = iamStore.roles
@@ -39,11 +62,49 @@ const currentPanelTitle = computed(() => {
 })
 
 const currentSectionSubtitle = computed(() => {
+  const path = $route.path
+  if (path === '/user') return t('header.myProfile')
+  if (path.startsWith('/reports/applications')) return t('header.applicationsReport')
+  if (path === '/settings') return t('header.settings')
+  if (path === '/consultation') return t('header.aiConsultation')
+  if (path === '/concessionaries') return t('header.portalAllies')
+  if (path === '/vehicles' || path === '/home') return t('header.portalAllies')
+
   const roles = iamStore.roles
   if (roles.includes('ROLE_ADMIN')) return t('header.adminSubtitle')
   if (roles.includes('ROLE_DEALER')) return t('header.dealerSubtitle')
   if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return t('header.bankSubtitle')
   return t('header.buyerSubtitle')
+})
+
+const userDisplayName = computed(() => {
+  if (profilesStore.currentProfile?.fullName) {
+    return profilesStore.currentProfile.fullName
+  }
+  if (iamStore.username && iamStore.username !== 'Invitado') {
+    const raw = iamStore.username.split('@')[0] || ''
+    const name = raw.replace(/[._-]/g, ' ')
+    if (name) {
+      return name.charAt(0).toUpperCase() + name.slice(1)
+    }
+  }
+  return 'Carlos Mendoza'
+})
+
+const userInitials = computed(() => {
+  const parts = userDisplayName.value.trim().split(' ')
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+  }
+  return userDisplayName.value.substring(0, 2).toUpperCase()
+})
+
+const userRoleSubtitle = computed(() => {
+  const roles = iamStore.roles
+  if (roles.includes('ROLE_ADMIN')) return 'Administrador'
+  if (roles.includes('ROLE_DEALER')) return 'Concesionario Acreditado'
+  if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return 'Entidad Financiera'
+  return t('header.userRole')
 })
 </script>
 

@@ -1,39 +1,32 @@
 <template>
-  <aside class="w-64 bg-blue-950 border-r border-blue-900 p-4 min-h-screen flex flex-col justify-between text-white shrink-0">
+  <aside class="w-64 bg-[#0a1936] border-r border-blue-950/60 p-4 min-h-screen flex flex-col justify-between text-white shrink-0">
     <div>
-      <!-- Brand Logo -->
-      <router-link to="/home" class="flex items-center space-x-3 mb-4 mt-4 px-2">
-        <i class="pi pi-car text-blue-950 bg-gray-200 rounded-lg p-2.5 text-xl"></i>
+      <!-- Brand Logo matching mockup -->
+      <router-link to="/vehicles" class="flex items-center space-x-3 mb-8 mt-2 px-2">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shrink-0 shadow-sm">
+          <i class="pi pi-car"></i>
+        </div>
         <div>
-          <div class="text-xl font-bold leading-tight tracking-wide">SmartFinance</div>
-          <div class="text-sky-400 text-xs font-semibold tracking-wider uppercase">Drive Platform</div>
+          <div class="text-base font-bold leading-tight tracking-wide text-white">SmartFinance</div>
+          <div class="text-gray-400 text-xs font-normal">Drive</div>
         </div>
       </router-link>
 
-      <!-- Active Role Pill Indicator -->
-      <div class="px-2 mb-6">
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-blue-900/50 border border-blue-800/60 text-xs">
-          <span class="w-2 h-2 rounded-full" :class="roleDotColor"></span>
-          <span class="text-gray-400 text-[11px] font-medium uppercase tracking-wider">Rol:</span>
-          <span class="font-bold text-sky-200 truncate">{{ activeRoleName }}</span>
-        </div>
-      </div>
-
-      <!-- Navigation Items -->
-      <nav class="space-y-1.5">
+      <!-- Navigation Items for Buyer Flow -->
+      <nav class="space-y-1">
         <router-link
           v-for="item in navItems"
           :key="item.to"
           :to="item.to"
-          class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all"
           :class="[
-            $route.path.startsWith(item.to)
-              ? 'bg-sky-600 text-white shadow-xs font-semibold'
-              : 'text-gray-300 hover:bg-blue-900/60 hover:text-white'
+            isCurrentRoute(item.to)
+              ? 'bg-blue-600 text-white shadow-sm font-semibold'
+              : 'text-gray-300 hover:bg-blue-900/40 hover:text-white'
           ]"
         >
           <div class="flex items-center space-x-3 truncate">
-            <i :class="['pi', item.icon, 'text-lg shrink-0']"></i>
+            <i :class="['pi', item.icon, 'text-base shrink-0']"></i>
             <span class="truncate">{{ t(item.labelKey) }}</span>
           </div>
 
@@ -47,20 +40,18 @@
       </nav>
     </div>
 
-    <!-- Help & Support Card -->
-    <div class="mt-auto bg-sky-900/40 border border-sky-800/50 rounded-xl p-4 space-y-3">
-      <div class="flex items-center space-x-2 text-sky-300 font-semibold text-sm">
-        <i class="pi pi-headphones text-base"></i>
-        <span>{{ t('sidebar.needHelp') }}</span>
+    <!-- Help & Support Card matching mockup -->
+    <div class="mt-auto bg-[#122347] border border-blue-900/50 rounded-2xl p-4 space-y-2.5">
+      <div class="text-white font-bold text-xs">
+        {{ t('sidebar.needHelp') }}
       </div>
-      <p class="text-xs text-gray-300 leading-relaxed">
+      <p class="text-[11px] text-gray-300 leading-relaxed">
         {{ t('sidebar.helpDescription') }}
       </p>
       <a
         href="tel:+51987654321"
-        class="flex items-center justify-center space-x-2 w-full py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-xs shadow-xs transition-colors"
+        class="flex items-center justify-center space-x-1.5 w-full py-2 px-3 rounded-xl bg-[#00a887] hover:bg-[#009275] text-white font-bold text-xs shadow-xs transition-colors"
       >
-        <i class="pi pi-phone text-xs"></i>
         <span>{{ t('sidebar.callSupport') }}</span>
       </a>
     </div>
@@ -84,48 +75,73 @@ interface NavItem {
   badgeKey?: string
 }
 
-const activeRoleName = computed(() => {
-  const roles = iamStore.roles
-  if (roles.includes('ROLE_ADMIN')) return 'Admin'
-  if (roles.includes('ROLE_DEALER')) return 'Concesionario'
-  if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return 'Banco/Entidad'
-  return 'Comprador'
-})
+const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
+const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
+const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
-const roleDotColor = computed(() => {
-  const roles = iamStore.roles
-  if (roles.includes('ROLE_ADMIN')) return 'bg-amber-400'
-  if (roles.includes('ROLE_DEALER')) return 'bg-emerald-400'
-  if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return 'bg-sky-400'
-  return 'bg-gray-400'
-})
+const isCurrentRoute = (targetPath: string): boolean => {
+  if (targetPath === '/vehicles' && ($route.path === '/vehicles' || $route.path === '/home')) return true
+  return $route.path.startsWith(targetPath)
+}
 
 const navItems = computed<NavItem[]>(() => {
-  const roles = iamStore.roles
-  const isDealer = roles.includes('ROLE_DEALER')
-  const isBank = roles.includes('ROLE_FINANCIAL_INSTITUTION')
-  const isAdmin = roles.includes('ROLE_ADMIN')
+  // If user is Buyer (ROLE_USER, not dealer, not bank, not admin) -> exactly the 6 mockup links
+  if (!isDealer.value && !isBank.value && !isAdmin.value) {
+    return [
+      {
+        labelKey: 'nav.buyerVehicles',
+        to: '/vehicles',
+        icon: 'pi-car'
+      },
+      {
+        labelKey: 'nav.buyerConcessionaires',
+        to: '/concessionaries',
+        icon: 'pi-building'
+      },
+      {
+        labelKey: 'nav.buyerAiConsultation',
+        to: '/consultation',
+        icon: 'pi-comments'
+      },
+      {
+        labelKey: 'nav.buyerReport',
+        to: '/reports/applications',
+        icon: 'pi-file'
+      },
+      {
+        labelKey: 'nav.buyerProfile',
+        to: '/user',
+        icon: 'pi-user'
+      },
+      {
+        labelKey: 'nav.buyerSettings',
+        to: '/settings',
+        icon: 'pi-cog'
+      }
+    ]
+  }
 
+  // If user has Dealer or Bank or Admin roles, preserve expanded tools
   return [
     {
-      labelKey: isDealer ? 'nav.dealerVehicles' : 'nav.vehicles',
+      labelKey: isDealer.value ? 'nav.dealerVehicles' : 'nav.vehicles',
       to: '/vehicles',
       icon: 'pi-car',
-      badgeKey: isDealer ? 'nav.badgeDealer' : undefined
+      badgeKey: isDealer.value ? 'nav.badgeDealer' : undefined
     },
     {
-      labelKey: isBank ? 'nav.bankEntities' : 'nav.concessionaries',
+      labelKey: isBank.value ? 'nav.bankEntities' : 'nav.concessionaries',
       to: '/concessionaries',
       icon: 'pi-building',
-      badgeKey: isBank ? 'nav.badgeBank' : undefined
+      badgeKey: isBank.value ? 'nav.badgeBank' : undefined
     },
     {
-      labelKey: (isBank || isDealer) ? 'nav.commercialSimulations' : 'nav.simulations',
+      labelKey: (isBank.value || isDealer.value) ? 'nav.commercialSimulations' : 'nav.simulations',
       to: '/simulations',
       icon: 'pi-calculator'
     },
     {
-      labelKey: (isBank || isAdmin) ? 'nav.riskScoring' : 'nav.scoring',
+      labelKey: (isBank.value || isAdmin.value) ? 'nav.riskScoring' : 'nav.scoring',
       to: '/scoring',
       icon: 'pi-shield'
     },
@@ -140,10 +156,15 @@ const navItems = computed<NavItem[]>(() => {
       icon: 'pi-user'
     },
     {
+      labelKey: 'nav.buyerSettings',
+      to: '/settings',
+      icon: 'pi-cog'
+    },
+    {
       labelKey: 'nav.billing',
       to: '/billing',
       icon: 'pi-credit-card'
-    },
+    }
   ]
 })
 </script>
