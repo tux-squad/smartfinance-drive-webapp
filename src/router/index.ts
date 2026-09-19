@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, RouterView, type RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/shared/presentation/views/app-layout.vue'
 import iamRoutes from '@/iam/presentation/iam-routes'
 import profilesRoutes from '@/profiles/presentation/profiles-routes'
@@ -11,11 +11,7 @@ import { authenticationGuard } from '@/iam/infrastructure/authentication.guard'
 
 const routes: Array<RouteRecordRaw> = [
   // Full-page standalone Authentication routes (outside AppLayout / sidebar)
-  {
-    path: '/iam',
-    redirect: { name: 'sign-in' },
-    children: iamRoutes
-  },
+  ...iamRoutes,
 
   // Main application routes wrapped in AppLayout (with Header & Sidebar)
   {
@@ -27,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'home',
         name: 'home',
         component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Inicio', public: true }
+        meta: { title: 'Inicio' }
       },
       {
         path: 'user',
@@ -58,10 +54,70 @@ const routes: Array<RouteRecordRaw> = [
         children: projectionsRoutes
       },
       {
+        path: 'messages',
+        name: 'messages',
+        component: () => import('@/shared/presentation/views/messages-view.vue'),
+        meta: { title: 'Bandeja de Entrada' }
+      },
+      {
+        path: 'consultation',
+        name: 'ai-consultation',
+        component: () => import('@/financing/presentation/views/ai-consultation-view.vue'),
+        meta: { title: 'Consulta IA' }
+      },
+      {
+        path: 'reports/applications',
+        name: 'buyer-applications',
+        component: () => import('@/financing/presentation/views/buyer-applications-view.vue'),
+        meta: { title: 'Reporte de Solicitudes' }
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@/shared/presentation/views/settings-view.vue'),
+        meta: { title: 'Configuración' }
+      },
+      {
         path: 'billing',
         name: 'billing',
-        component: () => import('@/shared/presentation/views/home-view.vue'),
-        meta: { title: 'Suscripción y Planes' }
+        component: () => import('@/billing/presentation/views/b2b-membership-view.vue'),
+        meta: { title: 'Membresía B2B' }
+      },
+      {
+        path: 'dealer/inventory',
+        name: 'dealer-inventory',
+        component: () => import('@/catalog/presentation/views/dealer-inventory-view.vue'),
+        meta: { title: 'Gestión de Inventario' }
+      },
+      {
+        path: 'dealer/inventory/new',
+        name: 'dealer-inventory-new',
+        component: () => import('@/catalog/presentation/views/publish-vehicle-view.vue'),
+        meta: { title: 'Publicar Nuevo Vehículo' }
+      },
+      {
+        path: 'dealer/prospects',
+        name: 'dealer-prospects',
+        component: () => import('@/financing/presentation/views/prospects-list-view.vue'),
+        meta: { title: 'Prospectos de Concesionaria' }
+      },
+      {
+        path: 'dealer/prospects/:id',
+        name: 'dealer-prospect-detail',
+        component: () => import('@/financing/presentation/views/prospect-detail-view.vue'),
+        meta: { title: 'Detalle del Prospecto' }
+      },
+      {
+        path: 'dealer/messages',
+        name: 'dealer-messages',
+        component: () => import('@/shared/presentation/views/dealer-messages-view.vue'),
+        meta: { title: 'Bandeja de Entrada' }
+      },
+      {
+        path: 'dealer/settings/appearance',
+        name: 'dealer-settings-appearance',
+        component: () => import('@/partners/presentation/views/store-appearance-view.vue'),
+        meta: { title: 'Apariencia de la Tienda' }
       }
     ]
   },
@@ -80,10 +136,10 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const baseTitle = 'SmartFinance Drive Platform'
   document.title = to.meta.title ? `${baseTitle} - ${to.meta.title}` : baseTitle
-  return authenticationGuard(to, from, next)
+  return authenticationGuard(to, from)
 })
 
 export default router

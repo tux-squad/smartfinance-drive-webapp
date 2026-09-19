@@ -43,6 +43,7 @@ export class CatalogApi extends BaseApi {
    */
   public async createVehicle(command: CreateVehicleCommand): Promise<Vehicle> {
     const payload: CreateVehicleResource = {
+      userId: command.userId,
       financialEntityId: command.financialEntityId,
       brand: command.brand,
       model: command.model,
@@ -65,7 +66,30 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
-   * 3.4 Upload image for a Vehicle (multipart/form-data).
+   * 3.4 Get Vehicles by User ID.
+   */
+  public async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {
+    const response: AxiosResponse<VehicleResource[]> = await this.http.get<VehicleResource[]>(`/api/v1/vehicles/users/${userId}`)
+    return Array.isArray(response.data) ? response.data.map(r => VehicleAssembler.toEntity(r)) : []
+  }
+
+  /**
+   * 3.5 Update Vehicle specifications by UUID.
+   */
+  public async updateVehicle(vehicleId: string, resource: import('./vehicle.resource').UpdateVehicleResource): Promise<Vehicle> {
+    const response: AxiosResponse<VehicleResource> = await this.http.put<VehicleResource>(`/api/v1/vehicles/${vehicleId}`, resource)
+    return VehicleAssembler.toEntity(response.data)
+  }
+
+  /**
+   * 3.6 Delete Vehicle by UUID.
+   */
+  public async deleteVehicle(vehicleId: string): Promise<void> {
+    await this.http.delete(`/api/v1/vehicles/${vehicleId}`)
+  }
+
+  /**
+   * 3.7 Upload image for a Vehicle (multipart/form-data).
    */
   public async uploadVehicleImage(command: UploadVehicleImageCommand): Promise<Vehicle> {
     const formData = new FormData()

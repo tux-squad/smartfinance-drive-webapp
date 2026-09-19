@@ -133,6 +133,22 @@ export const useCatalogStore = defineStore('catalog', () => {
     }
   }
 
+  /**
+   * Fetches vehicles belonging to a specific user/dealer (3.4).
+   */
+  const fetchVehiclesByUserId = async (userId: string): Promise<Vehicle[]> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      return await catalogApi.getVehiclesByUserId(userId)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar los vehículos del concesionario.'
+      return []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const clearSelectedVehicle = () => {
     selectedVehicle.value = null
   }
@@ -165,6 +181,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     hasVehicles,
     activeFiltersCount,
     fetchVehicles,
+    fetchVehiclesByUserId,
     createVehicle,
     fetchVehicleById,
     uploadVehicleImage,

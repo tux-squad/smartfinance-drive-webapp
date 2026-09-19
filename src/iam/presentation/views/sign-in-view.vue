@@ -83,16 +83,28 @@
         <div class="flex-grow border-t border-gray-200"></div>
       </div>
 
-      <!-- Google OAuth Button -->
-      <button
-        type="button"
-        @click="handleGoogleSignIn"
-        :disabled="iamStore.isLoading"
-        class="w-full py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm rounded-xl shadow-xs transition-all flex items-center justify-center space-x-3"
-      >
-        <i class="pi pi-google text-red-500 text-base"></i>
-        <span>{{ t('iam.googleSignIn') }}</span>
-      </button>
+      <!-- Google OAuth & Quick Demo Buttons -->
+      <div class="space-y-2">
+        <button
+          type="button"
+          @click="handleGoogleSignIn"
+          :disabled="iamStore.isLoading"
+          class="w-full py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm rounded-xl shadow-xs transition-all flex items-center justify-center space-x-3"
+        >
+          <i class="pi pi-google text-red-500 text-base"></i>
+          <span>{{ t('iam.googleSignIn') }}</span>
+        </button>
+
+        <button
+          type="button"
+          @click="handleQuickDemoSignIn"
+          :disabled="iamStore.isLoading"
+          class="w-full py-2.5 px-4 bg-sky-50 hover:bg-sky-100 text-sky-900 border border-sky-200 font-semibold text-sm rounded-xl transition-all flex items-center justify-center space-x-2"
+        >
+          <i class="pi pi-bolt text-sky-600"></i>
+          <span>{{ t('iam.demoLoginBtn') }}</span>
+        </button>
+      </div>
 
       <!-- Footer navigation link -->
       <div class="text-center text-sm text-gray-600 pt-2 border-t border-gray-100">
@@ -127,6 +139,14 @@ const handleSignIn = async () => {
   })
 
   const success = await iamStore.signIn(command)
+  if (success) {
+    const redirectPath = (route.query.redirect as string) || '/home'
+    router.push(redirectPath)
+  }
+}
+
+const handleQuickDemoSignIn = async () => {
+  const success = await iamStore.signInDemo()
   if (success) {
     const redirectPath = (route.query.redirect as string) || '/home'
     router.push(redirectPath)

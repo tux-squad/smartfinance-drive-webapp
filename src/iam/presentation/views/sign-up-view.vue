@@ -66,59 +66,27 @@
               :placeholder="t('iam.passwordPlaceholder')"
             />
           </div>
+          <span class="text-[11px] text-amber-700 font-medium mt-1 flex items-center space-x-1">
+            <i class="pi pi-info-circle text-xs"></i>
+            <span>{{ t('iam.passwordHelp') }}</span>
+          </span>
         </div>
 
-        <!-- Role Selection -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-            {{ t('iam.selectRole') }}
-          </label>
-          <div class="grid grid-cols-3 gap-2">
-            <label
-              v-for="role in roleOptions"
-              :key="role.value"
-              class="flex flex-col items-center justify-center p-3 rounded-xl border cursor-pointer text-center transition-all"
-              :class="[
-                selectedRole === role.value
-                  ? 'border-sky-600 bg-sky-50 text-sky-900 shadow-xs'
-                  : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
-              ]"
-            >
-              <input
-                type="radio"
-                name="role"
-                :value="role.value"
-                v-model="selectedRole"
-                class="sr-only"
-              />
-              <i :class="['pi', role.icon, 'text-lg mb-1']"></i>
-              <span class="text-xs font-semibold">{{ role.label }}</span>
-            </label>
-          </div>
+        <div class="flex justify-end">
+          <button
+            type="button"
+            @click="fillDemoData"
+            class="text-xs text-sky-700 hover:text-sky-900 font-semibold underline flex items-center space-x-1"
+          >
+            <i class="pi pi-sparkles text-xs"></i>
+            <span>{{ t('iam.fillDemoBtn') }}</span>
+          </button>
         </div>
 
-        <!-- RUC Input (Visible for Dealer and Financial Institution) -->
-        <div v-if="selectedRole === 'ROLE_DEALER' || selectedRole === 'ROLE_FINANCIAL_INSTITUTION'">
-          <label for="reg-ruc" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            {{ t('iam.rucNumber') }} (SUNAT)
-          </label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-              <i class="pi pi-building text-sm"></i>
-            </span>
-            <input
-              id="reg-ruc"
-              v-model="ruc"
-              type="text"
-              required
-              maxlength="11"
-              minlength="11"
-              pattern="[0-9]{11}"
-              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:bg-white transition-all font-mono"
-              placeholder="20601234567"
-            />
-          </div>
-          <span class="text-[10px] text-gray-500 mt-1 block">RUC oficial de 11 dígitos a validar con SUNAT</span>
+        <!-- Informative note about Dealer / Financial Partner elevation -->
+        <div class="p-3 bg-sky-50 rounded-xl border border-sky-100 flex items-start space-x-2 text-xs text-sky-900">
+          <i class="pi pi-info-circle text-sky-600 mt-0.5 shrink-0"></i>
+          <span>{{ t('iam.dealerNotice') }}</span>
         </div>
 
         <button
@@ -148,7 +116,6 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
-import { RoleRequestCommand } from '../../domain/role-request.command'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -156,39 +123,32 @@ const iamStore = useIamStore()
 
 const username = ref('')
 const password = ref('')
-const ruc = ref('')
-const selectedRole = ref('ROLE_USER')
 const successMessage = ref('')
 
-const roleOptions = [
-  { label: 'Comprador', value: 'ROLE_USER', icon: 'pi-user' },
-  { label: 'Concesionario', value: 'ROLE_DEALER', icon: 'pi-car' },
-  { label: 'Entidad Fin.', value: 'ROLE_FINANCIAL_INSTITUTION', icon: 'pi-building' }
-]
+const fillDemoData = () => {
+  username.value = 'demo_user_' + Math.floor(Math.random() * 1000) + '@smartfinance.com'
+  password.value = 'Password123!'
+}
 
 const handleSignUp = async () => {
   const command = new SignUpCommand({
     username: username.value,
     password: password.value,
-    roles: [selectedRole.value]
+    roles: ['ROLE_USER']
   })
 
   const createdUser = await iamStore.signUp(command)
   if (createdUser && createdUser.id) {
-    // If dealer or financial institution, submit RUC role request with the EXACT created user ID
-    if (ruc.value && (selectedRole.value === 'ROLE_DEALER' || selectedRole.value === 'ROLE_FINANCIAL_INSTITUTION')) {
-      const roleCommand = new RoleRequestCommand({ userId: createdUser.id, ruc: ruc.value })
-      if (selectedRole.value === 'ROLE_DEALER') {
-        await iamStore.requestDealerRole(roleCommand)
-      } else {
-        await iamStore.requestFinancialInstitutionRole(roleCommand)
-      }
-    }
+    // Automatic sign-in in background to acquire JWT Bearer token
+    await iamStore.signIn({
+      username: username.value,
+      password: password.value
+    })
 
     successMessage.value = t('iam.signUpSuccess')
     setTimeout(() => {
-      router.push('/iam/sign-in')
-    }, 1500)
+      router.push('/home')
+    }, 1200)
   }
 }
 </script>
