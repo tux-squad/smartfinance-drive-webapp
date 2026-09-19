@@ -12,6 +12,12 @@ export const partnersRoutes: Array<RouteRecordRaw> = [
     name: 'financial-entities',
     component: () => import('./views/financial-entities-view.vue'),
     meta: { title: 'Entidades Financieras' }
+  },
+  {
+    path: ':id',
+    name: 'concessionaire-detail',
+    component: () => import('./views/concessionaire-detail-view.vue'),
+    meta: { title: 'Inventario de Concesionaria' }
   }
 ]
 

@@ -162,10 +162,7 @@ const filteredDealers = computed<ConcessionaireCard[]>(() => {
 })
 
 const handleViewInventory = (dealer: ConcessionaireCard) => {
-  router.push({
-    path: '/vehicles',
-    query: { entityId: dealer.id, entityName: dealer.name }
-  })
+  router.push(`/concessionaries/${dealer.id}`)
 }
 </script>
 
