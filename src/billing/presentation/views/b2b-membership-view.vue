@@ -3,10 +3,10 @@
     <!-- Header matching Mockup Screenshot 3 -->
     <div class="border-b border-gray-100 pb-6 space-y-1">
       <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
-        Suscripción B2B
+        {{ t('b2bMembership.title') }}
       </h1>
       <p class="text-sm text-gray-500">
-        Monitorea el estatus de tu plan institucional, facturas y el volumen de leads calificados generados.
+        {{ t('b2bMembership.subtitle') }}
       </p>
     </div>
 
@@ -27,7 +27,7 @@
     <!-- Loading State -->
     <div v-if="billingStore.isLoading" class="flex flex-col items-center justify-center py-20 gap-3">
       <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-      <p class="text-sm text-gray-500 font-medium">Cargando estado de la membresía B2B...</p>
+      <p class="text-sm text-gray-500 font-medium">{{ t('b2bMembership.loading') }}</p>
     </div>
 
     <!-- Main Subscription Card matching Mockup Screenshot 3 -->
@@ -44,7 +44,7 @@
         </div>
 
         <div class="text-xs text-gray-400 font-medium">
-          Próxima facturación: <span class="font-bold text-gray-700">{{ nextBillingDate }}</span>
+          {{ t('b2bMembership.nextBilling') }} <span class="font-bold text-gray-700">{{ nextBillingDate }}</span>
         </div>
       </div>
 
@@ -56,10 +56,10 @@
           </div>
           <div class="space-y-0.5">
             <div class="text-xs font-bold text-gray-900">
-              Retorno de inversión institucional (ROI: {{ roiValue }})
+              {{ t('b2bMembership.roiTitle', { roi: roiValue }) }}
             </div>
             <div class="text-xs text-gray-700">
-              <span class="font-extrabold text-[#00a887]">{{ totalLeadsCount }} leads cualificados</span> generados este mes a través de la red SmartFinance Drive (Conversión: {{ conversionRateValue }}%).
+              {{ t('b2bMembership.leadsGenerated', { leads: totalLeadsCount, conv: conversionRateValue }) }}
             </div>
           </div>
         </div>
@@ -67,12 +67,12 @@
         <div class="flex items-center gap-4 text-xs font-semibold text-gray-600 self-end md:self-auto shrink-0 bg-white/80 px-4 py-2 rounded-xl border border-[#00a887]/15">
           <div class="text-center">
             <span class="block font-black text-gray-900">{{ vehicleViewsCount }}</span>
-            <span class="text-[10px] text-gray-400 font-medium">Vistas</span>
+            <span class="text-[10px] text-gray-400 font-medium">{{ t('b2bMembership.viewsLabel') }}</span>
           </div>
           <div class="w-px h-6 bg-gray-200"></div>
           <div class="text-center">
             <span class="block font-black text-gray-900">{{ activeListingsCount }}</span>
-            <span class="text-[10px] text-gray-400 font-medium">Autos en venta</span>
+            <span class="text-[10px] text-gray-400 font-medium">{{ t('b2bMembership.activeCarsLabel') }}</span>
           </div>
         </div>
       </div>
@@ -82,21 +82,21 @@
         <!-- Left Column: Incluido en tu plan (approx 7 cols) -->
         <div class="md:col-span-7 space-y-3.5">
           <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">
-            INCLUIDO EN TU PLAN
+            {{ t('b2bMembership.includedTitle') }}
           </h3>
 
           <ul class="space-y-2.5 text-xs text-gray-700 font-medium">
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>Publicación de hasta {{ maxListings }} vehículos simultáneos</span>
+              <span>{{ t('b2bMembership.featListings', { max: maxListings }) }}</span>
             </li>
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>Hasta {{ maxSimulations }} simulaciones crediticias mensuales</span>
+              <span>{{ t('b2bMembership.featSimulations', { max: maxSimulations }) }}</span>
             </li>
             <li class="flex items-center gap-2.5">
               <i class="pi pi-check text-[#00a887] font-bold text-xs"></i>
-              <span>CRM integrado para prospectos y pruebas de manejo</span>
+              <span>{{ t('b2bMembership.featCrm') }}</span>
             </li>
           </ul>
         </div>
@@ -104,11 +104,11 @@
         <!-- Right Column: Costo Mensual (approx 5 cols) -->
         <div class="md:col-span-5 space-y-2">
           <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">
-            COSTO MENSUAL
+            {{ t('b2bMembership.monthlyCostTitle') }}
           </h3>
           <div class="flex items-baseline gap-1.5">
             <span class="text-4xl font-extrabold text-gray-950">${{ planPrice }}</span>
-            <span class="text-xs text-gray-500 font-medium">/ mes</span>
+            <span class="text-xs text-gray-500 font-medium">{{ t('b2bMembership.perMonth') }}</span>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@
           class="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2"
         >
           <i class="pi pi-download text-xs"></i>
-          <span>Descargar última factura</span>
+          <span>{{ t('b2bMembership.downloadPdf') }}</span>
         </button>
 
         <button
@@ -129,7 +129,7 @@
           @click="handleManagePayment"
           class="w-full sm:w-auto text-xs font-bold text-gray-900 hover:text-blue-600 transition-colors py-2 flex items-center justify-center gap-1.5"
         >
-          <span>Gestionar método de pago</span>
+          <span>{{ t('b2bMembership.invoicesSubtitle') }}</span>
           <i class="pi pi-external-link text-[10px]"></i>
         </button>
       </div>
@@ -138,17 +138,17 @@
     <!-- Recent Invoices Summary Card (Directly from API /api/v1/billing/invoices/me) -->
     <div v-if="billingStore.invoices.length > 0" class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-gray-900">Historial de Facturación</h3>
-        <span class="text-xs text-gray-400 font-medium">{{ billingStore.invoices.length }} comprobantes registrados</span>
+        <h3 class="text-sm font-bold text-gray-900">{{ t('b2bMembership.invoicesTitle') }}</h3>
+        <span class="text-xs text-gray-400 font-medium">{{ billingStore.invoices.length }}</span>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-gray-100 text-gray-400 font-bold pb-2">
-              <th class="py-2">Comprobante #</th>
-              <th class="py-2">Monto</th>
-              <th class="py-2">Estado</th>
-              <th class="py-2 text-right">Acciones</th>
+              <th class="py-2">{{ t('b2bMembership.colReceipt') }}</th>
+              <th class="py-2">{{ t('b2bMembership.colAmount') }}</th>
+              <th class="py-2">{{ t('b2bMembership.colStatus') }}</th>
+              <th class="py-2 text-right">{{ t('b2bMembership.colAction') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -195,9 +195,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useBillingStore } from '../../application/billing.store'
 
+const { t } = useI18n()
 const billingStore = useBillingStore()
 
 const feedbackMessage = ref<string | null>(null)

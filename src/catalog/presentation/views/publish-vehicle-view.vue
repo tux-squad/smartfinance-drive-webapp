@@ -3,10 +3,10 @@
     <!-- Header matching Mockup Screenshot 2 -->
     <div class="border-b border-gray-100 pb-6 space-y-1">
       <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
-        Publicar Nuevo Vehículo
+        {{ t('publishVehicle.title') }}
       </h1>
       <p class="text-sm text-gray-500">
-        Registra una nueva unidad ingresando las especificaciones y adjuntando fotos reales.
+        {{ t('publishVehicle.subtitle') }}
       </p>
     </div>
 
@@ -27,7 +27,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <!-- Left Column: Fotografías del Vehículo (approx 6 cols) -->
           <div class="lg:col-span-6 space-y-4">
-            <h2 class="text-xs font-bold text-gray-800">Fotografías del Vehículo</h2>
+            <h2 class="text-xs font-bold text-gray-800">{{ t('publishVehicle.photosSection') }}</h2>
 
             <!-- Image Upload Drop Zone -->
             <div
@@ -46,9 +46,9 @@
 
               <!-- Preview if file selected -->
               <template v-if="previewUrl">
-                <img :src="previewUrl" alt="Previsualización" class="absolute inset-0 w-full h-full object-cover" />
+                <img :src="previewUrl" alt="Preview" class="absolute inset-0 w-full h-full object-cover" />
                 <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-semibold">
-                  Cambiar imagen seleccionada
+                  {{ t('publishVehicle.changeImage') }}
                 </div>
               </template>
 
@@ -57,16 +57,11 @@
                 <div class="w-12 h-12 rounded-2xl bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-gray-500 mb-3">
                   <i class="pi pi-upload text-xl"></i>
                 </div>
-                <div class="text-xs font-bold text-gray-900">Subir Imágenes</div>
-                <div class="text-[11px] text-gray-400 mt-0.5">Arrastra tus fotos o busca archivos</div>
-                <div class="text-[10px] text-gray-400 mt-2 font-mono">Formatos soportados: JPG, PNG (máx. 10MB)</div>
+                <div class="text-xs font-bold text-gray-900">{{ t('publishVehicle.uploadImages') }}</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">{{ t('publishVehicle.uploadAction') }}</div>
+                <div class="text-[10px] text-gray-400 mt-2 font-mono">{{ t('publishVehicle.uploadHint') }}</div>
               </template>
             </div>
-
-            <!-- Recommendation Note matching Mockup -->
-            <p class="text-[11px] text-gray-400 leading-relaxed">
-              Recomendamos subir al menos 4 fotos que muestren el frente, interior, laterales y motor del auto para generar más confianza.
-            </p>
           </div>
 
           <!-- Right Column: Especificaciones (approx 6 cols) -->
@@ -74,20 +69,20 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Condición -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Condición</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.conditionLabel') }}</label>
                 <select
                   v-model="form.condition"
                   required
                   class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer shadow-2xs"
                 >
-                  <option value="NEW">Nuevo</option>
-                  <option value="USED">Usado</option>
+                  <option value="NEW">{{ t('dealerInventory.conditionNew') }}</option>
+                  <option value="USED">{{ t('dealerInventory.conditionUsed') }}</option>
                 </select>
               </div>
 
               <!-- Marca -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Marca</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.brandLabel') }}</label>
                 <select
                   v-model="form.brand"
                   required
@@ -107,19 +102,19 @@
 
               <!-- Modelo -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Modelo</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.modelLabel') }}</label>
                 <input
                   v-model="form.model"
                   type="text"
                   required
-                  placeholder="Corolla Cross"
+                  :placeholder="t('publishVehicle.modelPlaceholder')"
                   class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
                 />
               </div>
 
               <!-- Año -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Año</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.yearLabel') }}</label>
                 <input
                   v-model.number="form.manufactureYear"
                   type="number"
@@ -133,7 +128,7 @@
 
               <!-- Kilometraje -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Kilometraje</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.mileageLabel') }}</label>
                 <input
                   v-model="form.mileage"
                   type="text"
@@ -144,7 +139,7 @@
 
               <!-- Precio -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">Precio</label>
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.priceLabel') }}</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold">$</span>
                   <input
@@ -167,7 +162,7 @@
                 @click="handleCancel"
                 class="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                Cancelar
+                {{ t('publishVehicle.cancelBtn') }}
               </button>
 
               <button
@@ -176,7 +171,7 @@
                 class="px-6 py-2.5 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2"
               >
                 <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-xs"></i>
-                <span>Guardar y Publicar</span>
+                <span>{{ isSubmitting ? t('publishVehicle.publishing') : t('publishVehicle.publishBtn') }}</span>
               </button>
             </div>
           </div>
@@ -189,11 +184,14 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { useIamStore } from '@/iam/application/iam.store'
 import { CreateVehicleCommand } from '@/catalog/domain/create-vehicle.command'
 import { UploadVehicleImageCommand } from '@/catalog/domain/upload-vehicle-image.command'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const catalogStore = useCatalogStore()
