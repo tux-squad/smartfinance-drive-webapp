@@ -7,13 +7,13 @@
         class="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors"
       >
         <i class="pi pi-arrow-left text-xs"></i>
-        <span>Volver a Prospectos</span>
+        <span>{{ t('prospectDetail.backBtn') }}</span>
       </router-link>
 
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 pb-6">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-950">
-            Detalle del Prospecto: {{ prospectName }}
+            {{ t('prospectDetail.title') }}: {{ prospectName }}
           </h1>
           <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#e6f7f4] text-[#00a887]">
             {{ prospectStatus }}
@@ -43,9 +43,9 @@
         <!-- Card 1: Vehículo de Interés -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
           <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h2 class="text-sm font-bold text-gray-900">Vehículo de Interés</h2>
+            <h2 class="text-sm font-bold text-gray-900">{{ t('prospectDetail.vehicleCardTitle') }}</h2>
             <span class="text-xs text-blue-600 font-semibold cursor-pointer hover:underline" @click="goToVehicleDetail">
-              Ver ficha técnica
+              {{ t('prospectDetail.viewVehicleSpecs') }}
             </span>
           </div>
 
@@ -65,7 +65,7 @@
                 {{ vehicle?.brand || 'Toyota' }} {{ vehicle?.model || 'Corolla Cross' }}
               </div>
               <div class="text-xs text-gray-400 font-medium">
-                Año {{ vehicle?.manufactureYear || 2023 }} • {{ vehicle?.condition === 'NEW' ? 'Nuevo' : 'Usado' }}
+                {{ t('publishVehicle.yearLabel') }} {{ vehicle?.manufactureYear || 2023 }} • {{ vehicle?.condition === 'NEW' ? t('dealerInventory.conditionNew') : t('dealerInventory.conditionUsed') }}
               </div>
               <div class="text-xl font-extrabold text-[#eb8f47] pt-1">
                 ${{ (vehicle?.priceAmount || 26900).toLocaleString() }} USD
@@ -76,11 +76,11 @@
           <!-- Specifications Grid matching Mockup -->
           <div class="grid grid-cols-2 gap-3 pt-2">
             <div class="p-3 bg-gray-50/70 rounded-2xl border border-gray-100">
-              <span class="block text-[11px] text-gray-400 font-medium">Transmisión</span>
+              <span class="block text-[11px] text-gray-400 font-medium">{{ t('vehicleDetail.transmission') }}</span>
               <span class="text-xs font-bold text-gray-800">Automática CVT</span>
             </div>
             <div class="p-3 bg-gray-50/70 rounded-2xl border border-gray-100">
-              <span class="block text-[11px] text-gray-400 font-medium">Motor</span>
+              <span class="block text-[11px] text-gray-400 font-medium">{{ t('vehicleCompare.attrFuel') }}</span>
               <span class="text-xs font-bold text-gray-800">2.0L Híbrido</span>
             </div>
             <div class="p-3 bg-gray-50/70 rounded-2xl border border-gray-100">
@@ -88,8 +88,8 @@
               <span class="text-xs font-bold text-gray-800">4x2 Delantera</span>
             </div>
             <div class="p-3 bg-gray-50/70 rounded-2xl border border-gray-100">
-              <span class="block text-[11px] text-gray-400 font-medium">Kilometraje</span>
-              <span class="text-xs font-bold text-gray-800">0 km (Nuevo)</span>
+              <span class="block text-[11px] text-gray-400 font-medium">{{ t('vehicleDetail.mileage') }}</span>
+              <span class="text-xs font-bold text-gray-800">0 km ({{ t('dealerInventory.conditionNew') }})</span>
             </div>
           </div>
         </div>
@@ -97,15 +97,15 @@
         <!-- Card 2: Perfil Financiero matching Mockup -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
           <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h2 class="text-sm font-bold text-gray-900">Perfil Financiero</h2>
+            <h2 class="text-sm font-bold text-gray-900">{{ t('prospectDetail.applicantCardTitle') }}</h2>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700">
-              Score Verificado
+              {{ t('profiles.activeBenchmarksTitle') }}
             </span>
           </div>
 
           <div class="space-y-3.5 divide-y divide-gray-100 text-xs">
             <div class="flex items-center justify-between pt-1">
-              <span class="text-gray-500">Ingreso Mensual</span>
+              <span class="text-gray-500">{{ t('prospectDetail.monthlyIncomeLabel') }}</span>
               <span class="font-extrabold text-gray-900">${{ (financialData.monthlyIncome).toLocaleString() }} USD</span>
             </div>
             <div class="flex items-center justify-between pt-3">
@@ -117,14 +117,14 @@
               <span class="font-semibold text-gray-800">{{ financialData.bankName }}</span>
             </div>
             <div class="flex items-center justify-between pt-3">
-              <span class="text-gray-500">Score Crediticio</span>
+              <span class="text-gray-500">{{ t('prospectDetail.creditScoreLabel') }}</span>
               <div class="flex items-center gap-1.5">
                 <span class="font-extrabold text-emerald-600">{{ financialData.creditScore }}</span>
                 <span class="text-[11px] text-gray-400">({{ financialData.scoreCategory }})</span>
               </div>
             </div>
             <div class="flex items-center justify-between pt-3">
-              <span class="text-gray-500">Enganche Disponible</span>
+              <span class="text-gray-500">{{ t('prospectDetail.downPaymentLabel') }}</span>
               <span class="font-bold text-[#eb8f47]">{{ financialData.downPaymentPercent }}% (${{ financialData.downPaymentAmount.toLocaleString() }} USD)</span>
             </div>
           </div>
@@ -180,7 +180,7 @@
               class="w-full sm:w-auto flex-1 py-3 px-6 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2"
             >
               <i class="pi pi-calendar-plus text-xs"></i>
-              <span>Agendar Test Drive</span>
+              <span>{{ t('prospectDetail.testDriveBtn') }}</span>
             </button>
 
             <button
@@ -200,9 +200,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { useCrmStore } from '@/financing/application/crm.store'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()

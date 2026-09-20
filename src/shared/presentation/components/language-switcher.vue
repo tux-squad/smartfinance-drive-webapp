@@ -4,7 +4,7 @@
       v-for="lang in availableLocales"
       :key="lang"
       type="button"
-      @click="locale = lang"
+      @click="selectLocale(lang)"
       class="px-2.5 py-1 text-xs font-bold rounded-md transition-all uppercase"
       :class="[
         locale === lang
@@ -21,6 +21,11 @@
 import { useI18n } from 'vue-i18n'
 
 const { locale, availableLocales } = useI18n()
+
+const selectLocale = (lang: string) => {
+  locale.value = lang
+  localStorage.setItem('user_locale', lang)
+}
 </script>
 
 <style scoped>
