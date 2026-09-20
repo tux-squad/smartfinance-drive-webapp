@@ -12,13 +12,13 @@
           <div class="space-y-2 max-w-2xl">
             <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#eb8f47]/20 border border-[#eb8f47]/40 text-[#eb8f47] text-xs font-bold">
               <i class="pi pi-building"></i>
-              <span>Concesionaria Oficial Verificada · Membresía B2B Activa</span>
+              <span>{{ t('dashboard.dealer.badge') }}</span>
             </div>
             <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white">
-              Panel de Rendimiento Comercial
+              {{ t('dashboard.dealer.title') }}
             </h1>
             <p class="text-xs sm:text-sm text-blue-100/80 leading-relaxed">
-              Monitorea el volumen de clientes potenciales, conversión vehicular y retorno de inversión en tiempo real.
+              {{ t('dashboard.dealer.subtitle') }}
             </p>
           </div>
 
@@ -29,14 +29,14 @@
               class="px-5 py-3 rounded-2xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-bold text-xs shadow-md transition-all flex items-center gap-2"
             >
               <i class="pi pi-plus"></i>
-              <span>Publicar Vehículo</span>
+              <span>{{ t('dashboard.dealer.publishBtn') }}</span>
             </router-link>
             <router-link
               to="/dealer/prospects"
               class="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all flex items-center gap-2"
             >
               <i class="pi pi-users"></i>
-              <span>Ver Prospectos</span>
+              <span>{{ t('dashboard.dealer.prospectsBtn') }}</span>
             </router-link>
           </div>
         </div>
@@ -47,7 +47,7 @@
         <!-- Card 1: Leads -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Leads Cualificados</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.leadsTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
               <i class="pi pi-users text-lg"></i>
             </div>
@@ -56,19 +56,19 @@
             <div class="text-3xl font-black text-gray-950">{{ dealerLeadsCount }}</div>
             <p class="text-xs text-emerald-600 font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-arrow-up-right text-[10px]"></i>
-              <span>+18.5% este mes</span>
-              <span class="text-gray-400 font-normal">vs. mes anterior</span>
+              <span>{{ t('dashboard.dealer.kpi.leadsGrowth') }}</span>
+              <span class="text-gray-400 font-normal">{{ t('dashboard.dealer.kpi.leadsVs') }}</span>
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Compradores con crédito pre-evaluado interesados en tu stock.
+            {{ t('dashboard.dealer.kpi.leadsDesc') }}
           </div>
         </div>
 
         <!-- Card 2: Conversion Rate -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tasa de Conversión</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.conversionTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
               <i class="pi pi-chart-line text-lg"></i>
             </div>
@@ -77,18 +77,18 @@
             <div class="text-3xl font-black text-gray-950">{{ dealerConversionRate }}%</div>
             <p class="text-xs text-emerald-600 font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-check text-[10px]"></i>
-              <span>Superior al promedio del sector (14%)</span>
+              <span>{{ t('dashboard.dealer.kpi.conversionSub') }}</span>
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Ratio de prospectos convertidos a citas en concesionaria.
+            {{ t('dashboard.dealer.kpi.conversionDesc') }}
           </div>
         </div>
 
         <!-- Card 3: Vehicle Views -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Visitas a tu Vitrina</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.viewsTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
               <i class="pi pi-eye text-lg"></i>
             </div>
@@ -97,37 +97,37 @@
             <div class="text-3xl font-black text-gray-950">{{ dealerViewsCount.toLocaleString() }}</div>
             <p class="text-xs text-purple-600 font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-car text-[10px]"></i>
-              <span>En los últimos 30 días</span>
+              <span>{{ t('dashboard.dealer.kpi.viewsSub') }}</span>
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Total de impresiones en el catálogo web oficial.
+            {{ t('dashboard.dealer.kpi.viewsDesc') }}
           </div>
         </div>
 
         <!-- Card 4: Active Listings -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Vehículos Activos</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.listingsTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
               <i class="pi pi-car text-lg"></i>
             </div>
           </div>
           <div>
-            <div class="text-3xl font-black text-gray-950">{{ dealerListingsCount }} unidades</div>
+            <div class="text-3xl font-black text-gray-950">{{ dealerListingsCount }} {{ t('dashboard.dealer.kpi.listingsUnits') }}</div>
             <p class="text-xs text-gray-600 font-medium mt-1">
-              <span class="font-bold text-emerald-600">8 disponibles</span> · 3 reservados · 1 vendido
+              <span class="font-bold text-emerald-600">{{ t('dashboard.dealer.kpi.listingsAvailable') }}</span> · {{ t('dashboard.dealer.kpi.listingsReserved') }} · {{ t('dashboard.dealer.kpi.listingsSold') }}
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Límite de membresía: hasta 100 vehículos simultáneos.
+            {{ t('dashboard.dealer.kpi.listingsLimit') }}
           </div>
         </div>
 
         <!-- Card 5: Return on Investment -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Retorno de Inversión</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.roiTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-teal-50 text-[#00a887] flex items-center justify-center font-bold">
               <i class="pi pi-dollar text-lg"></i>
             </div>
@@ -136,18 +136,18 @@
             <div class="text-3xl font-black text-[#00a887]">{{ dealerRoiValue }} ROI</div>
             <p class="text-xs text-[#00a887] font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-verified text-[10px]"></i>
-              <span>Plan Concesionaria Premium</span>
+              <span>{{ t('dashboard.dealer.kpi.roiBadge') }}</span>
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Multiplicador de valor obtenido respecto al costo de suscripción.
+            {{ t('dashboard.dealer.kpi.roiDesc') }}
           </div>
         </div>
 
         <!-- Card 6: Financed Volume -->
         <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Volumen Canalizado</span>
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.volumeTitle') }}</span>
             <div class="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
               <i class="pi pi-credit-card text-lg"></i>
             </div>
@@ -156,11 +156,11 @@
             <div class="text-3xl font-black text-gray-950">$ 284,500 USD</div>
             <p class="text-xs text-sky-600 font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-check-circle text-[10px]"></i>
-              <span>En créditos bancarios pre-aprobados</span>
+              <span>{{ t('dashboard.dealer.kpi.volumeSub') }}</span>
             </p>
           </div>
           <div class="text-[11px] text-gray-500 pt-2 border-t border-gray-100">
-            Financiamiento coordinado con BCP, BBVA, Interbank y BanBif.
+            {{ t('dashboard.dealer.kpi.volumeDesc') }}
           </div>
         </div>
       </div>
@@ -171,11 +171,11 @@
         <div class="lg:col-span-7 bg-white rounded-3xl border border-gray-200 p-7 shadow-xs space-y-6">
           <div class="flex items-center justify-between border-b border-gray-100 pb-4">
             <div>
-              <h2 class="text-base font-bold text-gray-950">Embudo de Conversión de Prospectos</h2>
-              <p class="text-xs text-gray-500">Evolución de clientes desde el primer contacto hasta el cierre.</p>
+              <h2 class="text-base font-bold text-gray-950">{{ t('dashboard.dealer.funnel.title') }}</h2>
+              <p class="text-xs text-gray-500">{{ t('dashboard.dealer.funnel.subtitle') }}</p>
             </div>
             <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-800">
-              Mes en curso
+              {{ t('dashboard.dealer.funnel.badge') }}
             </span>
           </div>
 
@@ -183,8 +183,8 @@
             <!-- Stage 1 -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-800">1. Consultas y Leads Recibidos</span>
-                <span class="text-blue-900 font-black">45 clientes (100%)</span>
+                <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage1') }}</span>
+                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage1Value') }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-blue-600 rounded-full w-full"></div>
@@ -194,8 +194,8 @@
             <!-- Stage 2 -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-800">2. Solicitudes Pre-Aprobadas</span>
-                <span class="text-blue-900 font-black">28 clientes (62%)</span>
+                <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage2') }}</span>
+                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage2Value') }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-sky-500 rounded-full w-[62%]"></div>
@@ -205,8 +205,8 @@
             <!-- Stage 3 -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-800">3. Pruebas de Manejo (Test Drive)</span>
-                <span class="text-blue-900 font-black">16 citas (35%)</span>
+                <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage3') }}</span>
+                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage3Value') }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-amber-500 rounded-full w-[35%]"></div>
@@ -216,8 +216,8 @@
             <!-- Stage 4 -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-800">4. Desembolsos y Cierres Exitosos</span>
-                <span class="text-emerald-700 font-black">8 ventas (18%)</span>
+                <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage4') }}</span>
+                <span class="text-emerald-700 font-black">{{ t('dashboard.dealer.funnel.stage4Value') }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-[#00a887] rounded-full w-[18%]"></div>
@@ -230,11 +230,11 @@
         <div class="lg:col-span-5 bg-white rounded-3xl border border-gray-200 p-7 shadow-xs space-y-6">
           <div class="flex items-center justify-between border-b border-gray-100 pb-4">
             <div>
-              <h2 class="text-base font-bold text-gray-950">Autos Más Consultados</h2>
-              <p class="text-xs text-gray-500">Unidades con mayor demanda este mes.</p>
+              <h2 class="text-base font-bold text-gray-950">{{ t('dashboard.dealer.topVehicles.title') }}</h2>
+              <p class="text-xs text-gray-500">{{ t('dashboard.dealer.topVehicles.subtitle') }}</p>
             </div>
             <router-link to="/dealer/inventory" class="text-xs font-bold text-blue-600 hover:text-blue-800">
-              Ver todos
+              {{ t('dashboard.dealer.topVehicles.viewAll') }}
             </router-link>
           </div>
 
@@ -299,45 +299,45 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-gray-500">
-            <span>Score Crediticio</span>
+            <span>{{ t('dashboard.buyer.scoreTitle') }}</span>
             <i class="pi pi-shield text-indigo-600"></i>
           </div>
           <div class="text-2xl font-extrabold text-gray-950">745 pts</div>
           <span class="inline-block text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-            Nivel Excelente
+            {{ t('dashboard.buyer.scoreLevel') }}
           </span>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-gray-500">
-            <span>Capacidad de Crédito</span>
+            <span>{{ t('dashboard.buyer.capacityTitle') }}</span>
             <i class="pi pi-dollar text-emerald-600"></i>
           </div>
           <div class="text-2xl font-extrabold text-gray-950">$ 35,000 USD</div>
           <span class="inline-block text-[11px] font-medium text-gray-500">
-            Hasta 48 cuotas mensuales
+            {{ t('dashboard.buyer.capacitySub') }}
           </span>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-gray-500">
-            <span>Simulaciones Guardadas</span>
+            <span>{{ t('dashboard.buyer.simulationsTitle') }}</span>
             <i class="pi pi-calculator text-blue-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">3 cotizaciones</div>
+          <div class="text-2xl font-extrabold text-gray-950">{{ t('dashboard.buyer.simulationsCount') }}</div>
           <router-link to="/simulations" class="inline-block text-[11px] font-bold text-blue-600 hover:underline">
-            Ver simulaciones →
+            {{ t('dashboard.buyer.simulationsLink') }}
           </router-link>
         </div>
 
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-gray-500">
-            <span>Solicitud de Crédito</span>
+            <span>{{ t('dashboard.buyer.applicationsTitle') }}</span>
             <i class="pi pi-check-circle text-teal-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">1 Aprobada</div>
+          <div class="text-2xl font-extrabold text-gray-950">{{ t('dashboard.buyer.applicationsStatus') }}</div>
           <router-link to="/applications" class="inline-block text-[11px] font-bold text-teal-600 hover:underline">
-            Ver estado en banco →
+            {{ t('dashboard.buyer.applicationsLink') }}
           </router-link>
         </div>
       </div>
@@ -370,10 +370,10 @@
           <div class="w-12 h-12 bg-purple-100 text-purple-900 rounded-xl flex items-center justify-center text-xl">
             <i class="pi pi-sparkles"></i>
           </div>
-          <h3 class="font-bold text-gray-900 text-lg">Asesor Virtual Gemini IA</h3>
-          <p class="text-gray-600 text-sm">Resuelve dudas sobre cuotas, tasas y autos recomendados para tu presupuesto.</p>
-          <router-link to="/ai-consultation" class="inline-flex items-center text-sm font-semibold text-purple-900 hover:text-purple-700">
-            Consultar ahora <i class="pi pi-arrow-right ml-1.5 text-xs"></i>
+          <h3 class="font-bold text-gray-900 text-lg">{{ t('dashboard.buyer.aiTitle') }}</h3>
+          <p class="text-gray-600 text-sm">{{ t('dashboard.buyer.aiDesc') }}</p>
+          <router-link to="/consultation" class="inline-flex items-center text-sm font-semibold text-purple-900 hover:text-purple-700">
+            {{ t('dashboard.buyer.aiBtn') }} <i class="pi pi-arrow-right ml-1.5 text-xs"></i>
           </router-link>
         </div>
       </div>
@@ -386,33 +386,33 @@
       <div class="bg-gradient-to-r from-emerald-900 via-teal-950 to-slate-900 rounded-3xl p-8 text-white shadow-xl">
         <div class="space-y-2">
           <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full border border-emerald-400/30">
-            Entidad Financiera Aliada
+            {{ t('dashboard.bank.badge') }}
           </span>
-          <h1 class="text-3xl font-extrabold">Panel de Colocación Crediticia</h1>
-          <p class="text-emerald-100/80 text-sm">Monitoreo de solicitudes y colocación vehicular institucional.</p>
+          <h1 class="text-3xl font-extrabold">{{ t('dashboard.bank.title') }}</h1>
+          <p class="text-emerald-100/80 text-sm">{{ t('dashboard.bank.subtitle') }}</p>
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Solicitudes Recibidas</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.receivedTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">124</div>
-          <span class="text-xs text-emerald-600 font-semibold">+12% este mes</span>
+          <span class="text-xs text-emerald-600 font-semibold">{{ t('dashboard.bank.receivedGrowth') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Aprobaciones Emitidas</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.approvedTitle') }}</span>
           <div class="text-3xl font-black text-emerald-600">86</div>
-          <span class="text-xs text-gray-500 font-medium">Tasa de aprobación: 69.3%</span>
+          <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.approvalRate') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Tasa Promedio TEA</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.rateTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">9.85%</div>
-          <span class="text-xs text-gray-500 font-medium">Competitiva en mercado</span>
+          <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.rateSub') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Cartera Colocada</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.portfolioTitle') }}</span>
           <div class="text-3xl font-black text-blue-900">$ 1.85M</div>
-          <span class="text-xs text-blue-600 font-medium">USD acumulado</span>
+          <span class="text-xs text-blue-600 font-medium">{{ t('dashboard.bank.portfolioSub') }}</span>
         </div>
       </div>
     </template>
@@ -423,27 +423,27 @@
     <template v-else>
       <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-3xl p-8 text-white shadow-xl space-y-2">
         <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-full border border-indigo-400/30">
-          Administración Global
+          {{ t('dashboard.admin.badge') }}
         </span>
-        <h1 class="text-3xl font-extrabold">Panel de Control de la Plataforma</h1>
-        <p class="text-gray-300 text-sm">Supervisión integral de concesionarias, entidades bancarias y usuarios.</p>
+        <h1 class="text-3xl font-extrabold">{{ t('dashboard.admin.title') }}</h1>
+        <p class="text-gray-300 text-sm">{{ t('dashboard.admin.subtitle') }}</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Concesionarias Activas</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.dealersTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">28</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Bancos Aliados</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.banksTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">6</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Vehículos en Catálogo</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.vehiclesTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">142</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">Usuarios Registrados</span>
+          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.usersTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">1,840</div>
         </div>
       </div>

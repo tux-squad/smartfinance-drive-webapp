@@ -90,62 +90,62 @@ const breadcrumbTrail = computed<string[]>(() => {
 
   // Dealership portal breadcrumbs matching mockups
   if (path === '/dealer/inventory/new') {
-    return [panel, 'Inventario', 'Añadir Vehículo']
+    return [panel, t('header.breadcrumbs.inventory'), t('header.breadcrumbs.addVehicle')]
   }
   if (path === '/dealer/inventory') {
-    return [panel, 'Gestión de Inventario']
+    return [panel, t('header.breadcrumbs.inventoryManagement')]
   }
   if (path.startsWith('/dealer/prospects/') && path !== '/dealer/prospects') {
-    return [panel, 'Prospectos', 'Detalle del Prospecto']
+    return [panel, t('header.breadcrumbs.prospects'), t('header.breadcrumbs.prospectDetail')]
   }
   if (path === '/dealer/prospects') {
-    return [panel, 'Prospectos']
+    return [panel, t('header.breadcrumbs.prospects')]
   }
   if (path === '/dealer/messages') {
-    return [panel, 'Mensajes']
+    return [panel, t('header.breadcrumbs.messages')]
   }
   if (path.startsWith('/dealer/settings')) {
-    return [panel, 'Configuración', 'Apariencia']
+    return [panel, t('header.breadcrumbs.settings'), t('header.breadcrumbs.appearance')]
   }
   if (path === '/billing') {
-    return [panel, 'Configuración', 'Membresía B2B']
+    return [panel, t('header.breadcrumbs.settings'), t('header.breadcrumbs.b2bMembership')]
   }
   if (path === '/home' && iamStore.roles.includes('ROLE_DEALER')) {
-    return [panel, 'Dashboard']
+    return [panel, t('header.breadcrumbs.dashboard')]
   }
 
   if (path === '/messages') {
-    return [panel, 'Mensajes']
+    return [panel, t('header.breadcrumbs.messages')]
   }
   if (path === '/vehicles/compare') {
-    return [panel, 'Comparar Vehículos']
+    return [panel, t('header.breadcrumbs.compareVehicles')]
   }
   if (path.startsWith('/vehicles/') && path.endsWith('/pre-evaluation')) {
     const vehicleName = catalogStore.selectedVehicle
       ? `${catalogStore.selectedVehicle.brand} ${catalogStore.selectedVehicle.model} ${catalogStore.selectedVehicle.manufactureYear}`
-      : 'Vehículo'
-    return [panel, vehicleName, 'Pre-evaluación Crediticia']
+      : t('header.breadcrumbs.vehicle')
+    return [panel, vehicleName, t('header.breadcrumbs.preEvaluation')]
   }
   if (path.startsWith('/vehicles/') && path !== '/vehicles') {
     const vehicleName = catalogStore.selectedVehicle
       ? `${catalogStore.selectedVehicle.brand} ${catalogStore.selectedVehicle.model} ${catalogStore.selectedVehicle.manufactureYear}`
-      : 'Detalle del Vehículo'
-    return [panel, 'Vehículos a buscar', vehicleName]
+      : t('header.breadcrumbs.vehicleDetail')
+    return [panel, t('header.breadcrumbs.searchVehicles'), vehicleName]
   }
   if (path.startsWith('/concessionaries/') && path !== '/concessionaries' && path !== '/concessionaries/entities') {
     const entity = partnersStore.financialEntities.find(e => e.id === $route.params.id)
-    const entityName = entity ? entity.name : 'Concesionaria Aliada'
-    return [panel, 'Portal Aliados', entityName]
+    const entityName = entity ? entity.name : t('header.breadcrumbs.partnerDealer')
+    return [panel, t('header.breadcrumbs.alliesPortal'), entityName]
   }
   if (path === '/concessionaries') {
-    return [panel, 'Concesionarias a buscar']
+    return [panel, t('header.breadcrumbs.searchDealerships')]
   }
   if (path === '/vehicles' || path === '/home') {
-    return [panel, 'Catálogo General de Vehículos']
+    return [panel, t('header.breadcrumbs.generalCatalog')]
   }
   if (path === '/user') {
-    if (iamStore.roles.includes('ROLE_DEALER')) return [panel, 'Perfil de Concesionaria']
-    if (iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION')) return [panel, 'Perfil Institucional']
+    if (iamStore.roles.includes('ROLE_DEALER')) return [panel, t('header.breadcrumbs.dealerProfile')]
+    if (iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION')) return [panel, t('header.breadcrumbs.bankProfile')]
     return [panel, t('header.myProfile')]
   }
   if (path.startsWith('/reports/applications')) {
@@ -185,9 +185,9 @@ const userInitials = computed(() => {
 
 const userRoleSubtitle = computed(() => {
   const roles = iamStore.roles
-  if (roles.includes('ROLE_ADMIN')) return 'Administrador'
-  if (roles.includes('ROLE_DEALER')) return 'Concesionario Acreditado'
-  if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return 'Entidad Financiera'
+  if (roles.includes('ROLE_ADMIN')) return t('header.adminRole')
+  if (roles.includes('ROLE_DEALER')) return t('header.dealerRole')
+  if (roles.includes('ROLE_FINANCIAL_INSTITUTION')) return t('header.bankRole')
   return t('header.userRole')
 })
 </script>
