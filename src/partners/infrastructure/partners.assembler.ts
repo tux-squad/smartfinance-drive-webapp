@@ -15,10 +15,17 @@ export class PartnersAssembler {
    * Maps a RateBenchmarkResource to a RateBenchmark value object.
    */
   static toBenchmarkValueObject(resource: RateBenchmarkResource): RateBenchmark {
+    const rate = resource.annualRate ?? resource.annualEffectiveRate ?? 0
     return new RateBenchmark(
       resource.loanTermMonths || 36,
-      resource.annualEffectiveRate || 0,
-      resource.monthlyCreditLifeInsuranceRate || 0.05
+      rate,
+      resource.monthlyCreditLifeInsuranceRate || 0.05,
+      resource.id,
+      resource.rateType,
+      resource.currency || 'PEN',
+      resource.sourceLabel,
+      resource.sourceUrl,
+      resource.effectiveFrom
     )
   }
 
@@ -33,7 +40,10 @@ export class PartnersAssembler {
       resource.id,
       resource.name || '',
       resource.ruc || '',
-      benchmarks
+      benchmarks,
+      resource.logoUrl,
+      resource.bannerUrl,
+      resource.userId
     )
   }
 

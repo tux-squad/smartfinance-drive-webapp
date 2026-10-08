@@ -11,6 +11,7 @@ const partnersApi = new PartnersApi()
 export const usePartnersStore = defineStore('partners', () => {
   const financialEntities = ref<FinancialEntity[]>([])
   const selectedEntity = ref<FinancialEntity | null>(null)
+  const myFinancialEntity = ref<FinancialEntity | null>(null)
   const sunatResult = ref<SunatRuc | null>(null)
   const dealerships = ref<Dealership[]>([])
   const currentDealership = ref<Dealership | null>(null)
@@ -246,9 +247,121 @@ export const usePartnersStore = defineStore('partners', () => {
     }
   }
 
+  // --- Phase 4: Institutional Financial Entity Actions ---
+  const fetchMyFinancialEntity = async (): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const entity = await partnersApi.getMyFinancialEntity()
+      myFinancialEntity.value = entity
+      return entity
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al obtener la entidad financiera institucional.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const addBenchmarkToEntity = async (id: string, resource: {
+    rateType: string
+    annualRate: number
+    currency: string
+    sourceLabel?: string
+    sourceUrl?: string
+    effectiveFrom?: string
+  }): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.addRateBenchmark(id, resource)
+      const idx = financialEntities.value.findIndex(e => e.id === id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      if (selectedEntity.value?.id === id) selectedEntity.value = updated
+      if (myFinancialEntity.value?.id === id) myFinancialEntity.value = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al agregar benchmark de tasa de interés.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadFinancialEntityLogo = async (id: string, file: File): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.uploadFinancialEntityLogo(id, file)
+      const idx = financialEntities.value.findIndex(e => e.id === id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      if (selectedEntity.value?.id === id) selectedEntity.value = updated
+      if (myFinancialEntity.value?.id === id) myFinancialEntity.value = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al subir el logo de la entidad financiera.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadMyFinancialEntityLogo = async (file: File): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.uploadMyFinancialEntityLogo(file)
+      myFinancialEntity.value = updated
+      const idx = financialEntities.value.findIndex(e => e.id === updated.id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al subir el logo institucional.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadFinancialEntityBanner = async (id: string, file: File): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.uploadFinancialEntityBanner(id, file)
+      const idx = financialEntities.value.findIndex(e => e.id === id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      if (selectedEntity.value?.id === id) selectedEntity.value = updated
+      if (myFinancialEntity.value?.id === id) myFinancialEntity.value = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al subir el banner de la entidad financiera.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const uploadMyFinancialEntityBanner = async (file: File): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.uploadMyFinancialEntityBanner(file)
+      myFinancialEntity.value = updated
+      const idx = financialEntities.value.findIndex(e => e.id === updated.id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al subir el banner institucional.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     financialEntities,
     selectedEntity,
+    myFinancialEntity,
     sunatResult,
     dealerships,
     currentDealership,
@@ -275,7 +388,13 @@ export const usePartnersStore = defineStore('partners', () => {
     clearSunatResult,
     lookupCorporateRuc,
     initiateCorporateVerification,
-    confirmCorporateVerification
+    confirmCorporateVerification,
+    fetchMyFinancialEntity,
+    addBenchmarkToEntity,
+    uploadFinancialEntityLogo,
+    uploadMyFinancialEntityLogo,
+    uploadFinancialEntityBanner,
+    uploadMyFinancialEntityBanner
   }
 })
 

@@ -59,7 +59,101 @@ export class PartnersApi extends BaseApi {
   }
 
   /**
-   * 4.6 Lookup SUNAT RUC validation.
+   * 4.6 Get my Financial Entity (for ROLE_FINANCIAL_INSTITUTION).
+   * GET /api/v1/financial-entities/me
+   */
+  public async getMyFinancialEntity(): Promise<FinancialEntity | null> {
+    try {
+      const response: AxiosResponse<FinancialEntityResource> = await this.http.get<FinancialEntityResource>(
+        '/api/v1/financial-entities/me'
+      )
+      return response.data ? PartnersAssembler.toFinancialEntity(response.data) : null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 4.7 Add Rate Benchmark to Financial Entity.
+   * POST /api/v1/financial-entities/{id}/rate-benchmarks
+   */
+  public async addRateBenchmark(id: string, resource: {
+    rateType: string
+    annualRate: number
+    currency: string
+    sourceLabel?: string
+    sourceUrl?: string
+    effectiveFrom?: string
+  }): Promise<FinancialEntity> {
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/rate-benchmarks`,
+      resource
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.8 Upload Financial Entity Logo.
+   * POST /api/v1/financial-entities/{id}/logo
+   */
+  public async uploadFinancialEntityLogo(id: string, file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/logo`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.9 Upload my Financial Entity Logo.
+   * POST /api/v1/financial-entities/me/logo
+   */
+  public async uploadMyFinancialEntityLogo(file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      '/api/v1/financial-entities/me/logo',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.10 Upload Financial Entity Banner.
+   * POST /api/v1/financial-entities/{id}/banner
+   */
+  public async uploadFinancialEntityBanner(id: string, file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/banner`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.11 Upload my Financial Entity Banner.
+   * POST /api/v1/financial-entities/me/banner
+   */
+  public async uploadMyFinancialEntityBanner(file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      '/api/v1/financial-entities/me/banner',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.10 Lookup SUNAT RUC validation.
    */
   public async lookupSunatRuc(ruc: string): Promise<SunatRuc> {
     const response: AxiosResponse<SunatRucResource> = await this.http.get<SunatRucResource>(`/api/v1/partners/sunat/ruc/${ruc}`)

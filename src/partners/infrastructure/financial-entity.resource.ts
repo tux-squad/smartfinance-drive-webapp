@@ -3,8 +3,14 @@
  */
 export interface RateBenchmarkResource {
   id?: string
-  loanTermMonths: number
-  annualEffectiveRate: number
+  loanTermMonths?: number
+  rateType?: string
+  annualRate?: number
+  annualEffectiveRate?: number
+  currency?: string
+  sourceLabel?: string
+  sourceUrl?: string
+  effectiveFrom?: string
   monthlyCreditLifeInsuranceRate?: number
 }
 
@@ -15,6 +21,9 @@ export interface FinancialEntityResource {
   id: string
   name: string
   ruc?: string
+  logoUrl?: string
+  bannerUrl?: string
+  userId?: string
   rateBenchmarks?: RateBenchmarkResource[]
 }
 

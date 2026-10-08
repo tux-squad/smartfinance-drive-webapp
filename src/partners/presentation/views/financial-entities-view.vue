@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
+import Button from 'primevue/button'
 import { usePartnersStore } from '../../application/partners.store'
+import { useIamStore } from '../../../iam/application/iam.store'
 import type { FinancialEntity } from '../../domain/financial-entity.entity'
 import SunatRucSearch from '../components/sunat-ruc-search.vue'
 import FinancialEntityCard from '../components/financial-entity-card.vue'
@@ -10,17 +12,32 @@ import RateBenchmarksDialog from '../components/rate-benchmarks-dialog.vue'
 
 const { t } = useI18n()
 const partnersStore = usePartnersStore()
+const iamStore = useIamStore()
 
 const showBenchmarksModal = ref<boolean>(false)
 const selectedEntity = ref<FinancialEntity | null>(null)
 
-onMounted(() => {
+const isBankUser = computed(() => {
+  return iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION') || iamStore.roles.includes('ROLE_ADMIN')
+})
+
+onMounted(async () => {
   partnersStore.fetchFinancialEntities()
+  if (isBankUser.value) {
+    await partnersStore.fetchMyFinancialEntity()
+  }
 })
 
 const handleOpenBenchmarks = (entity: FinancialEntity) => {
   selectedEntity.value = entity
   showBenchmarksModal.value = true
+}
+
+const handleManageMyEntity = () => {
+  if (partnersStore.myFinancialEntity) {
+    selectedEntity.value = partnersStore.myFinancialEntity
+    showBenchmarksModal.value = true
+  }
 }
 </script>
 
@@ -40,6 +57,47 @@ const handleOpenBenchmarks = (entity: FinancialEntity) => {
         <p class="mt-2 text-sm text-blue-100/80 leading-relaxed">
           {{ t('partners.headerSubtitle') }}
         </p>
+      </div>
+    </div>
+
+    <!-- Institutional Bank Section (For ROLE_FINANCIAL_INSTITUTION) -->
+    <div
+      v-if="isBankUser && partnersStore.myFinancialEntity"
+      class="rounded-3xl border border-primary/30 bg-surface-0 dark:bg-surface-900 p-6 shadow-md relative overflow-hidden"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 overflow-hidden">
+            <img
+              v-if="partnersStore.myFinancialEntity.logoUrl"
+              :src="partnersStore.myFinancialEntity.logoUrl"
+              :alt="partnersStore.myFinancialEntity.name"
+              class="h-full w-full object-contain p-1"
+            />
+            <i v-else class="pi pi-building-columns text-3xl text-primary"></i>
+          </div>
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/15 text-primary mb-1">
+              <i class="pi pi-verified"></i> Mi Entidad Financiera Asociada
+            </div>
+            <h2 class="text-xl font-bold text-surface-900 dark:text-surface-0">
+              {{ partnersStore.myFinancialEntity.name }}
+            </h2>
+            <p class="text-xs text-surface-500">
+              RUC: <span class="font-mono font-semibold">{{ partnersStore.myFinancialEntity.ruc || 'No registrado' }}</span> •
+              {{ partnersStore.myFinancialEntity.rateBenchmarks.length }} tasas publicadas
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <Button
+            label="Gestionar Tasas y Multimedia"
+            icon="pi pi-cog"
+            class="!rounded-2xl !text-xs font-semibold"
+            @click="handleManageMyEntity"
+          />
+        </div>
       </div>
     </div>
 
