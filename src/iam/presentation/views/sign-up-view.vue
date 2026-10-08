@@ -236,6 +236,7 @@
           </label>
           <Password
             id="reg-password"
+            inputId="reg-password-input"
             v-model="password"
             required
             toggleMask
@@ -410,8 +411,8 @@ const handleSignUp = async () => {
 
   const emailInput = document.getElementById('reg-username') as HTMLInputElement | null
   const passwordInput =
-    (document.querySelector('#reg-password input') as HTMLInputElement | null) ||
-    (document.getElementById('reg-password') as HTMLInputElement | null)
+    (document.getElementById('reg-password-input') as HTMLInputElement | null) ||
+    (document.querySelector('#reg-password input, input[type="password"]') as HTMLInputElement | null)
   const dniInput = document.getElementById('reg-dni') as HTMLInputElement | null
 
   const cleanEmail = (emailInput?.value || username.value || '').trim()

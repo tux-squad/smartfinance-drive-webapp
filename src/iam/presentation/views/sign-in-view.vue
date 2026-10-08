@@ -122,6 +122,7 @@
               </label>
               <Password
                 id="password"
+                inputId="password-input"
                 v-model="password"
                 :feedback="false"
                 toggleMask
@@ -275,11 +276,11 @@ onMounted(() => {
 const handleSignIn = async () => {
   iamStore.error = null
 
-  // Capture DOM values directly in case browser autofill did not trigger v-model events
+  // Capture DOM values directly from input elements (resolving actual input inside PrimeVue wrapper)
   const emailInput = document.getElementById('username') as HTMLInputElement | null
   const passwordInput =
-    (document.querySelector('#password input') as HTMLInputElement | null) ||
-    (document.getElementById('password') as HTMLInputElement | null)
+    (document.getElementById('password-input') as HTMLInputElement | null) ||
+    (document.querySelector('#password input, input[type="password"]') as HTMLInputElement | null)
 
   const cleanEmail = (emailInput?.value || username.value || '').trim()
   const cleanPassword = (passwordInput?.value || password.value || '').trim()
