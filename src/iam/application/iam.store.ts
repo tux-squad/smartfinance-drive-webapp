@@ -497,6 +497,96 @@ export const useIamStore = defineStore('iam', () => {
     }
   }
 
+  // --- Phase 1: OTP Email/Phone Verification & RENIEC DNI Lookup ---
+  const isVerifyingOtp = ref<boolean>(false)
+  const isLookingUpDni = ref<boolean>(false)
+  const emailVerified = ref<boolean>(false)
+  const emailVerificationToken = ref<string | null>(null)
+  const phoneVerified = ref<boolean>(false)
+  const phoneVerificationToken = ref<string | null>(null)
+  const reniecData = ref<import('../infrastructure/verification.resource').ReniecDniResponse | null>(null)
+
+  /**
+   * Enviar código OTP de 6 dígitos al correo electrónico
+   * POST /api/v1/auth/email-verification/send
+   */
+  const sendEmailOtp = async (emailToVerify: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const res = await iamApi.sendEmailVerificationOtp({ email: emailToVerify })
+      successMessage.value = res.data.message || 'Código de verificación enviado a su correo.'
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al enviar código de verificación.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Validar código OTP de 6 dígitos del correo electrónico
+   * POST /api/v1/auth/email-verification/verify
+   */
+  const verifyEmailOtp = async (emailToVerify: string, code: string): Promise<boolean> => {
+    isVerifyingOtp.value = true
+    error.value = null
+    try {
+      const res = await iamApi.verifyEmailOtp({ email: emailToVerify, code })
+      emailVerified.value = res.data.verified
+      emailVerificationToken.value = res.data.verificationToken
+      successMessage.value = res.data.message || 'Correo electrónico verificado con éxito.'
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Código de verificación inválido o expirado.'
+      return false
+    } finally {
+      isVerifyingOtp.value = false
+    }
+  }
+
+  /**
+   * Validar token telefónico de Firebase
+   * POST /api/v1/auth/phone-verification
+   */
+  const verifyPhoneToken = async (firebaseIdToken: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const res = await iamApi.verifyPhone({ firebaseIdToken })
+      phoneVerified.value = res.data.verified
+      phoneVerificationToken.value = res.data.verificationToken
+      successMessage.value = res.data.message || 'Teléfono verificado con éxito.'
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al verificar teléfono.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Consultar datos oficiales en RENIEC por número de DNI
+   * GET /api/v1/profiles/reniec/dni/{dni}
+   */
+  const lookupDni = async (dni: string): Promise<import('../infrastructure/verification.resource').ReniecDniResponse | null> => {
+    if (!dni || dni.length !== 8) return null
+    isLookingUpDni.value = true
+    error.value = null
+    try {
+      const res = await iamApi.lookupDniReniec(dni)
+      reniecData.value = res.data
+      return res.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'No se pudo consultar el DNI en RENIEC.'
+      return null
+    } finally {
+      isLookingUpDni.value = false
+    }
+  }
+
   return {
     currentUser,
     token,
@@ -511,6 +601,13 @@ export const useIamStore = defineStore('iam', () => {
     isAuthenticated,
     username,
     roles,
+    isVerifyingOtp,
+    isLookingUpDni,
+    emailVerified,
+    emailVerificationToken,
+    phoneVerified,
+    phoneVerificationToken,
+    reniecData,
     restoreSession,
     signIn,
     signInDemo,
@@ -526,6 +623,10 @@ export const useIamStore = defineStore('iam', () => {
     createSalesAgent,
     updateSalesAgent,
     reassignSalesAgentLeads,
+    sendEmailOtp,
+    verifyEmailOtp,
+    verifyPhoneToken,
+    lookupDni,
     refreshSession,
     signOut
   }

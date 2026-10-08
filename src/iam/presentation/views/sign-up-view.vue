@@ -1,108 +1,201 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-gray-200 shadow-xl">
+  <div class="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans antialiased text-surface-800 dark:text-surface-100">
+    <div class="max-w-lg w-full space-y-6 bg-surface-0 dark:bg-surface-900 p-6 sm:p-8 rounded-3xl border border-surface-200 dark:border-surface-800 shadow-xl">
       <!-- Form Header -->
       <div class="text-center space-y-2">
-        <router-link to="/home" class="inline-flex items-center space-x-2 text-sky-700 font-bold mb-2">
-          <i class="pi pi-car text-xl bg-sky-700 text-white p-2 rounded-lg"></i>
-          <span class="text-xl">SmartFinance Drive</span>
+        <router-link to="/home" class="inline-flex items-center space-x-2 text-primary font-bold mb-1">
+          <div class="w-10 h-10 rounded-xl bg-primary text-primary-contrast flex items-center justify-center text-lg shadow-md">
+            <i class="pi pi-car"></i>
+          </div>
+          <span class="text-xl font-black text-surface-900 dark:text-surface-0">SmartFinance Drive</span>
         </router-link>
-        <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">
+        <h2 class="text-2xl font-black text-surface-900 dark:text-surface-0 tracking-tight">
           {{ t('iam.signUpTitle') }}
         </h2>
-        <p class="text-sm text-gray-500">
+        <p class="text-xs text-surface-500">
           {{ t('iam.signUpSubtitle') }}
         </p>
       </div>
 
       <!-- Success Alert -->
-      <div v-if="successMessage" class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg text-sm text-emerald-800 flex items-start space-x-2">
-        <i class="pi pi-check-circle text-emerald-600 text-base mt-0.5"></i>
-        <span>{{ successMessage }}</span>
-      </div>
+      <Message v-if="successMessage || iamStore.successMessage" severity="success" :closable="false" class="w-full text-xs">
+        {{ successMessage || iamStore.successMessage }}
+      </Message>
 
       <!-- Error Alert -->
-      <div v-if="iamStore.error" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg text-sm text-red-700 flex items-start space-x-2">
-        <i class="pi pi-exclamation-circle text-red-500 text-base mt-0.5"></i>
-        <span>{{ iamStore.error }}</span>
-      </div>
+      <Message v-if="iamStore.error" severity="error" :closable="false" class="w-full text-xs">
+        {{ iamStore.error }}
+      </Message>
 
       <!-- Form Inputs -->
-      <form class="space-y-5" @submit.prevent="handleSignUp">
-        <div>
-          <label for="reg-username" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            {{ t('iam.email') }}
-          </label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-              <i class="pi pi-envelope text-sm"></i>
-            </span>
-            <input
-              id="reg-username"
-              v-model="username"
-              type="email"
-              required
-              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:bg-white transition-all"
-              :placeholder="t('iam.emailPlaceholder')"
-            />
-          </div>
-        </div>
+      <Fluid>
+        <form class="space-y-4" @submit.prevent="handleSignUp">
+          <!-- Step 1: DNI RENIEC Lookup -->
+          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                Documento de Identidad (DNI)
+              </label>
+              <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
+            </div>
 
-        <div>
-          <label for="reg-password" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-            {{ t('iam.password') }}
-          </label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-              <i class="pi pi-key text-sm"></i>
-            </span>
-            <input
+            <div class="flex gap-2">
+              <IconField class="flex-1">
+                <InputIcon class="pi pi-id-card text-surface-400 text-xs" />
+                <InputText
+                  id="reg-dni"
+                  v-model="dni"
+                  maxlength="8"
+                  placeholder="Ingrese 8 dígitos de su DNI"
+                  fluid
+                  @input="handleDniInput"
+                />
+              </IconField>
+              <Button
+                type="button"
+                severity="secondary"
+                variant="outlined"
+                :loading="iamStore.isLookingUpDni"
+                :disabled="dni.length !== 8"
+                @click="searchDni"
+                v-tooltip.top="'Consultar nombres en RENIEC'"
+              >
+                <i class="pi pi-search" />
+              </Button>
+            </div>
+
+            <!-- RENIEC Verified Result Card -->
+            <div
+              v-if="iamStore.reniecData"
+              class="p-2.5 rounded-xl bg-primary-50/70 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-xs space-y-1"
+            >
+              <div class="flex items-center gap-1.5 font-bold text-primary">
+                <i class="pi pi-check-circle text-xs" />
+                <span>{{ iamStore.reniecData.fullLegalName }}</span>
+              </div>
+              <p v-if="iamStore.reniecData.district" class="text-[10px] text-surface-500">
+                {{ iamStore.reniecData.district }}, {{ iamStore.reniecData.province }} - {{ iamStore.reniecData.department }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2: Email & Verification OTP -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.email') }}
+              </label>
+              <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                <i class="pi pi-check" /> Verificado
+              </span>
+            </div>
+
+            <div class="flex gap-2">
+              <IconField class="flex-1">
+                <InputIcon class="pi pi-envelope text-surface-400 text-xs" />
+                <InputText
+                  id="reg-username"
+                  v-model="username"
+                  type="email"
+                  required
+                  fluid
+                  :placeholder="t('iam.emailPlaceholder')"
+                />
+              </IconField>
+              <Button
+                type="button"
+                severity="secondary"
+                variant="outlined"
+                :disabled="!username || otpCooldown > 0 || iamStore.emailVerified"
+                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
+                @click="sendOtp"
+                class="text-xs shrink-0"
+              >
+                {{ otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : 'Enviar OTP') }}
+              </Button>
+            </div>
+
+            <!-- OTP Code Verification Input -->
+            <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
+              <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
+                Ingrese el código de 6 dígitos enviado a su correo:
+              </span>
+              <div class="flex gap-2">
+                <InputText
+                  v-model="otpCode"
+                  maxlength="6"
+                  placeholder="Ej: 849201"
+                  fluid
+                  class="font-mono text-center tracking-widest text-sm"
+                />
+                <Button
+                  type="button"
+                  severity="primary"
+                  :disabled="otpCode.length !== 6"
+                  :loading="iamStore.isVerifyingOtp"
+                  @click="confirmOtp"
+                  class="text-xs shrink-0"
+                  label="Validar"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Password -->
+          <div class="space-y-1.5">
+            <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+              {{ t('iam.password') }}
+            </label>
+            <Password
               id="reg-password"
               v-model="password"
-              type="password"
               required
-              minlength="6"
-              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-600 focus:bg-white transition-all"
+              toggleMask
+              fluid
               :placeholder="t('iam.passwordPlaceholder')"
             />
+            <span class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
+              <i class="pi pi-info-circle text-[10px]" />
+              <span>{{ t('iam.passwordHelp') }}</span>
+            </span>
           </div>
-          <span class="text-[11px] text-amber-700 font-medium mt-1 flex items-center space-x-1">
-            <i class="pi pi-info-circle text-xs"></i>
-            <span>{{ t('iam.passwordHelp') }}</span>
-          </span>
-        </div>
 
-        <div class="flex justify-end">
-          <button
-            type="button"
-            @click="fillDemoData"
-            class="text-xs text-sky-700 hover:text-sky-900 font-semibold underline flex items-center space-x-1"
-          >
-            <i class="pi pi-sparkles text-xs"></i>
-            <span>{{ t('iam.fillDemoBtn') }}</span>
-          </button>
-        </div>
+          <!-- Quick Fill Demo Button -->
+          <div class="flex justify-end pt-1">
+            <button
+              type="button"
+              @click="fillDemoData"
+              class="text-xs text-primary hover:underline font-semibold flex items-center space-x-1"
+            >
+              <i class="pi pi-sparkles text-xs"></i>
+              <span>{{ t('iam.fillDemoBtn') }}</span>
+            </button>
+          </div>
 
-        <!-- Informative note about Dealer / Financial Partner elevation -->
-        <div class="p-3 bg-sky-50 rounded-xl border border-sky-100 flex items-start space-x-2 text-xs text-sky-900">
-          <i class="pi pi-info-circle text-sky-600 mt-0.5 shrink-0"></i>
-          <span>{{ t('iam.dealerNotice') }}</span>
-        </div>
+          <!-- Informative note about Dealer / Financial Partner elevation -->
+          <div class="p-3 bg-surface-50 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 flex items-start space-x-2 text-xs text-surface-600 dark:text-surface-400">
+            <i class="pi pi-info-circle text-primary mt-0.5 shrink-0"></i>
+            <span>{{ t('iam.dealerNotice') }}</span>
+          </div>
 
-        <button
-          type="submit"
-          :disabled="iamStore.isLoading"
-          class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
-        >
-          <i v-if="iamStore.isLoading" class="pi pi-spin pi-spinner text-sm"></i>
-          <span>{{ iamStore.isLoading ? t('iam.registering') : t('iam.signUpBtn') }}</span>
-        </button>
-      </form>
+          <!-- Submit Button -->
+          <Button
+            type="submit"
+            :loading="iamStore.isLoading"
+            :label="iamStore.isLoading ? t('iam.registering') : t('iam.signUpBtn')"
+            icon="pi pi-user-plus"
+            iconPos="right"
+            severity="primary"
+            fluid
+            class="font-bold !py-2.5 shadow-md shadow-primary/20 rounded-xl transition-all"
+          />
+        </form>
+      </Fluid>
 
       <!-- Footer navigation link -->
-      <div class="text-center text-sm text-gray-600 pt-2 border-t border-gray-100">
+      <div class="text-center text-xs text-surface-500 pt-2 border-t border-surface-100 dark:border-surface-800">
         {{ t('iam.hasAccount') }}
-        <router-link to="/iam/sign-in" class="font-bold text-sky-700 hover:underline">
+        <router-link to="/iam/sign-in" class="font-bold text-primary hover:underline ml-1">
           {{ t('iam.signInLink') }}
         </router-link>
       </div>
@@ -117,17 +210,65 @@ import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
 
+// PrimeVue Components
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import Message from 'primevue/message'
+import Fluid from 'primevue/fluid'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+
 const { t } = useI18n()
 const router = useRouter()
 const iamStore = useIamStore()
 
+const dni = ref('')
 const username = ref('')
 const password = ref('')
+const otpCode = ref('')
+const otpSent = ref(false)
+const otpCooldown = ref(0)
 const successMessage = ref('')
 
+const handleDniInput = () => {
+  dni.value = dni.value.replace(/\D/g, '').slice(0, 8)
+  if (dni.value.length === 8) {
+    searchDni()
+  }
+}
+
+const searchDni = async () => {
+  if (dni.value.length === 8) {
+    await iamStore.lookupDni(dni.value)
+  }
+}
+
+const sendOtp = async () => {
+  if (!username.value) return
+  const ok = await iamStore.sendEmailOtp(username.value)
+  if (ok) {
+    otpSent.value = true
+    otpCooldown.value = 60
+    const interval = setInterval(() => {
+      otpCooldown.value--
+      if (otpCooldown.value <= 0) {
+        clearInterval(interval)
+      }
+    }, 1000)
+  }
+}
+
+const confirmOtp = async () => {
+  if (otpCode.value.length !== 6) return
+  await iamStore.verifyEmailOtp(username.value, otpCode.value)
+}
+
 const fillDemoData = () => {
+  dni.value = '72849102'
   username.value = 'demo_user_' + Math.floor(Math.random() * 1000) + '@smartfinance.com'
   password.value = 'Password123!'
+  searchDni()
 }
 
 const handleSignUp = async () => {
@@ -139,7 +280,6 @@ const handleSignUp = async () => {
 
   const createdUser = await iamStore.signUp(command)
   if (createdUser && createdUser.id) {
-    // Automatic sign-in in background to acquire JWT Bearer token
     await iamStore.signIn({
       username: username.value,
       password: password.value
