@@ -364,8 +364,8 @@
         </div>
       </div>
 
-      <!-- Action Button: Guardar cambios -->
-      <div class="flex justify-start">
+      <!-- Action Button: Guardar cambios y Eliminar perfil -->
+      <div class="flex justify-between items-center pt-2">
         <button
           type="submit"
           :disabled="isSaving"
@@ -374,6 +374,16 @@
           <i v-if="isSaving" class="pi pi-spin pi-spinner text-xs"></i>
           <i v-else class="pi pi-save text-xs"></i>
           <span>Guardar cambios</span>
+        </button>
+
+        <button
+          v-if="profilesStore.hasProfile"
+          type="button"
+          @click="handleDeleteProfile"
+          class="px-4 py-2 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors flex items-center gap-1.5"
+        >
+          <i class="pi pi-trash text-xs"></i>
+          <span>Eliminar perfil</span>
         </button>
       </div>
     </form>
@@ -598,6 +608,25 @@ const handleSaveProfile = async () => {
     setTimeout(() => {
       saveSuccessMessage.value = null
     }, 4000)
+  }
+}
+
+const handleDeleteProfile = async () => {
+  if (!profilesStore.currentProfile?.id) return
+  if (!window.confirm('¿Está seguro de que desea eliminar su perfil de cliente? Esta acción no se puede deshacer.')) return
+  isSaving.value = true
+  try {
+    const success = await profilesStore.deleteProfile(profilesStore.currentProfile.id)
+    if (success) {
+      saveSuccessMessage.value = 'Perfil eliminado con éxito.'
+      form.firstName = ''
+      form.lastName = ''
+      form.email = ''
+      form.dni = ''
+      form.phoneNumber = ''
+    }
+  } finally {
+    isSaving.value = false
   }
 }
 </script>
