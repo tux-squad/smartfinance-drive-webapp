@@ -10,6 +10,7 @@ export interface CreateCreditApplicationCommand {
 }
 
 export interface UpdateCreditApplicationStatusCommand {
-  status: string
+  status: 'PENDING' | 'IN_REVIEW' | 'PRE_APPROVED' | 'REJECTED' | 'DISBURSED' | string
+  notes?: string
   reviewerNotes?: string
 }

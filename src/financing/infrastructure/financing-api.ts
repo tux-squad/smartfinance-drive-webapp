@@ -102,9 +102,13 @@ export class FinancingApi extends BaseApi {
     id: string,
     command: UpdateCreditApplicationStatusCommand
   ): Promise<CreditApplication> {
+    const payload = {
+      status: command.status,
+      notes: command.notes ?? command.reviewerNotes ?? ''
+    }
     const response: AxiosResponse<CreditApplicationResource> = await this.http.patch<CreditApplicationResource>(
       `/api/v1/credit-applications/${id}/status`,
-      command
+      payload
     )
     return CreditApplicationAssembler.toEntity(response.data)
   }
