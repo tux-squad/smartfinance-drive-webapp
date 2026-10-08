@@ -24,7 +24,7 @@
       </Message>
 
       <!-- Error Alert -->
-      <Message v-if="iamStore.error" severity="error" :closable="false" class="w-full text-xs">
+      <Message v-if="iamStore.error" severity="error" :closable="true" @close="iamStore.error = null" class="w-full text-xs">
         {{ iamStore.error }}
       </Message>
 
@@ -396,16 +396,17 @@ onUnmounted(() => {
 })
 
 const fillDemoData = () => {
+  iamStore.error = null
   dni.value = '72849102'
-  username.value = 'demo_user_' + Math.floor(Math.random() * 1000) + '@smartfinance.com'
+  username.value = 'demo_user_' + Math.floor(Math.random() * 100000) + '@smartfinance.com'
   password.value = 'Password123!'
   phoneNumber.value = '+51 987654321'
   phoneFirebaseToken.value = 'demo-firebase-id-token-valid'
   manualTokenPrompt.value = true
-  searchDni()
 }
 
 const handleSignUp = async () => {
+  iamStore.error = null
   const command = new SignUpCommand({
     username: username.value,
     password: password.value,
@@ -414,10 +415,28 @@ const handleSignUp = async () => {
 
   const createdUser = await iamStore.signUp(command)
   if (createdUser && createdUser.id) {
-    await iamStore.signIn({
+    const signInOk = await iamStore.signIn({
       username: username.value,
       password: password.value
     })
+
+    if (signInOk && dni.value && dni.value.length === 8) {
+      try {
+        const { useProfilesStore } = await import('@/profiles/application/profiles.store')
+        const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
+        const profilesStore = useProfilesStore()
+        await profilesStore.createProfile(new CreateProfileCommand({
+          fullLegalNames: iamStore.reniecData?.fullLegalName || username.value.split('@')[0],
+          email: username.value,
+          nationalId: dni.value,
+          mobilePhone: phoneNumber.value || '',
+          monthlyIncomeAmount: 3500,
+          monthlyIncomeCurrency: 'PEN'
+        }))
+      } catch {
+        // Continue if profile already exists or can be completed later
+      }
+    }
 
     successMessage.value = t('iam.signUpSuccess')
     setTimeout(() => {

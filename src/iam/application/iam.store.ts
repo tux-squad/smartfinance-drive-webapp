@@ -29,6 +29,9 @@ const formatIamErrorMessage = (rawMsg?: string): string => {
   if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
     return 'Credenciales incorrectas. Verifique su correo y contraseña.'
   }
+  if (rawMsg.includes('undeliverable') || rawMsg.includes('email.undeliverable')) {
+    return 'No se pudo enviar el correo de verificación. Puedes continuar con el registro directamente.'
+  }
   if (rawMsg.includes('rucNotFound')) {
     return 'El RUC ingresado no existe en el padrón oficial de SUNAT.'
   }
@@ -636,13 +639,13 @@ export const useIamStore = defineStore('iam', () => {
   const lookupDni = async (dni: string): Promise<import('../infrastructure/verification.resource').ReniecDniResponse | null> => {
     if (!dni || dni.length !== 8) return null
     isLookingUpDni.value = true
-    error.value = null
     try {
       const res = await iamApi.lookupDniReniec(dni)
       reniecData.value = res.data
       return res.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'No se pudo consultar el DNI en RENIEC.'
+    } catch {
+      // In unauthenticated context or backend error, do not set global error to avoid blocking registration UX
+      reniecData.value = null
       return null
     } finally {
       isLookingUpDni.value = false
