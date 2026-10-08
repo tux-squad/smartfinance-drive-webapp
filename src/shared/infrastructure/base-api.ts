@@ -1,6 +1,8 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://smartfinance-drive-platform.onrender.com'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL !== undefined
+  ? import.meta.env.VITE_API_BASE_URL
+  : (import.meta.env.DEV ? '' : 'https://smartfinance-drive-platform.onrender.com')
 
 // Mutex queue state for concurrent 401 handling
 let isRefreshing = false

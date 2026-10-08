@@ -17,5 +17,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://smartfinance-drive-platform.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })
 
