@@ -29,6 +29,9 @@ const formatIamErrorMessage = (rawMsg?: string): string => {
   if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
     return 'Credenciales incorrectas. Verifique su correo y contraseña.'
   }
+  if (rawMsg.includes('api-key-not-valid') || rawMsg.includes('auth/api-key') || rawMsg.includes('auth/invalid-api-key')) {
+    return 'El servicio de SMS de Firebase requiere una API Key activa. La verificación telefónica es opcional; puedes presionar "Registrarse" directamente.'
+  }
   if (rawMsg.includes('undeliverable') || rawMsg.includes('email.undeliverable')) {
     return 'No se pudo enviar el correo de verificación. Puedes continuar con el registro directamente.'
   }
@@ -608,7 +611,7 @@ export const useIamStore = defineStore('iam', () => {
       successMessage.value = 'Código de verificación SMS enviado exitosamente.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al enviar código SMS de verificación.'
+      error.value = formatIamErrorMessage(err.message) || 'Error al enviar código SMS de verificación.'
       return false
     } finally {
       isLoading.value = false
@@ -625,7 +628,7 @@ export const useIamStore = defineStore('iam', () => {
       const idToken = await firebasePhoneAuthService.confirmSmsCode(code)
       return await verifyPhoneToken(idToken)
     } catch (err: any) {
-      error.value = err.message || 'Código SMS inválido o expirado.'
+      error.value = formatIamErrorMessage(err.message) || 'Código SMS inválido o expirado.'
       return false
     } finally {
       isVerifyingOtp.value = false

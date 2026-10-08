@@ -34,7 +34,7 @@
         <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
           <div class="flex items-center justify-between">
             <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              Documento de Identidad (DNI)
+              Documento de Identidad (DNI) <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
             </label>
             <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
           </div>
@@ -83,7 +83,7 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.email') }}
+              {{ t('iam.email') }} <span class="text-rose-500">*</span>
             </label>
             <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
               <i class="pi pi-check" /> Verificado
@@ -143,7 +143,7 @@
         <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
           <div class="flex items-center justify-between">
             <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              Verificación Telefónica (SMS Firebase)
+              Verificación Telefónica <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
             </label>
             <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
               <i class="pi pi-check" /> Verificado
@@ -232,7 +232,7 @@
         <!-- Step 3: Password -->
         <div class="space-y-1.5">
           <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-            {{ t('iam.password') }}
+            {{ t('iam.password') }} <span class="text-rose-500">*</span>
           </label>
           <Password
             id="reg-password"
