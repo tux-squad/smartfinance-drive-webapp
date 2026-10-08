@@ -1,43 +1,43 @@
 <template>
-  <div class="min-h-screen w-full flex items-center justify-center p-3 sm:p-4 lg:p-6 bg-surface-100 dark:bg-surface-950 font-sans antialiased text-surface-900 dark:text-surface-100">
-    <div class="w-full max-w-7xl h-full lg:h-[calc(100vh-3rem)] max-h-[920px] flex flex-col lg:flex-row gap-4 lg:gap-6">
-      
-      <!-- Left Column: Floating Minimalist Video Capsule -->
-      <div
-        class="hidden lg:flex lg:w-1/2 xl:w-7/12 relative rounded-3xl overflow-hidden border border-surface-200/60 dark:border-surface-800/80 shadow-2xl bg-black select-none"
+  <div class="min-h-screen w-full flex flex-col lg:flex-row bg-surface-100 dark:bg-surface-950 font-sans antialiased text-surface-900 dark:text-surface-100 overflow-x-hidden">
+    <!-- Left Column: Full-bleed Edge-to-Edge Video Panel (NOT floating, flush with viewport) -->
+    <div
+      class="hidden lg:block lg:w-1/2 xl:w-7/12 relative h-screen bg-black select-none shrink-0"
+    >
+      <!-- Pure 1080p Video (No blur filter, crisp clarity, full bleed) -->
+      <video
+        autoplay
+        loop
+        muted
+        playsinline
+        class="w-full h-full object-cover object-center"
       >
-        <!-- Pure 1080p Video (No blur filter, crisp clarity) -->
-        <video
-          autoplay
-          loop
-          muted
-          playsinline
-          class="w-full h-full object-cover object-center"
-        >
-          <source :src="heroVideoWebm" type="video/webm" />
-          <source :src="heroVideoMp4" type="video/mp4" />
-        </video>
+        <source :src="heroVideoWebm" type="video/webm" />
+        <source :src="heroVideoMp4" type="video/mp4" />
+      </video>
 
-        <!-- Minimalist Brand Overlay (Only the application name) -->
-        <router-link
-          to="/home"
-          class="absolute top-6 left-6 z-10 flex items-center space-x-3 px-4 py-2.5 rounded-2xl bg-black/45 backdrop-blur-md border border-white/15 text-white shadow-xl hover:bg-black/60 transition-all group"
+      <!-- Minimalist Brand Overlay (Only the application name) -->
+      <router-link
+        to="/home"
+        class="absolute top-8 left-8 z-10 flex items-center space-x-3 px-4 py-2.5 rounded-2xl bg-black/45 backdrop-blur-md border border-white/15 text-white shadow-xl hover:bg-black/60 transition-all group"
+      >
+        <div
+          class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white text-base shadow-md group-hover:scale-105 transition-transform"
         >
-          <div
-            class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white text-base shadow-md group-hover:scale-105 transition-transform"
-          >
-            <i class="pi pi-car" />
-          </div>
-          <div>
-            <span class="text-sm font-black tracking-wide block leading-none text-white">SmartFinance</span>
-            <span class="text-[10px] text-blue-300/90 font-medium tracking-widest uppercase">Drive</span>
-          </div>
-        </router-link>
-      </div>
+          <i class="pi pi-car" />
+        </div>
+        <div>
+          <span class="text-sm font-black tracking-wide block leading-none text-white">SmartFinance</span>
+          <span class="text-[10px] text-blue-300/90 font-medium tracking-widest uppercase">Drive</span>
+        </div>
+      </router-link>
+    </div>
 
-      <!-- Right Column: Floating Minimalist Form Capsule -->
+    <!-- Right Column: Container with Floating Minimalist Form Card -->
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-10 xl:p-14 min-h-screen">
+      <!-- Floating Form Capsule (Elevated, rounded-3xl, shadow-2xl) -->
       <div
-        class="w-full lg:w-1/2 xl:w-5/12 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-12 bg-surface-0 dark:bg-surface-900 rounded-3xl border border-surface-200/80 dark:border-surface-800 shadow-2xl overflow-y-auto"
+        class="w-full max-w-md bg-surface-0 dark:bg-surface-900 rounded-3xl border border-surface-200/80 dark:border-surface-800 shadow-2xl p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-all"
       >
         <!-- Top Navigation Bar -->
         <div class="flex items-center justify-between mb-6">
@@ -53,7 +53,7 @@
         </div>
 
         <!-- Center Form Area -->
-        <div class="w-full max-w-sm mx-auto my-auto space-y-5">
+        <div class="space-y-5">
           <!-- Form Header -->
           <div class="space-y-1.5">
             <!-- Mobile Brand Logo -->
@@ -164,7 +164,7 @@
           </form>
 
           <!-- PrimeVue Divider -->
-          <Divider align="center" class="my-4">
+          <Divider align="center" class="my-3">
             <span class="text-[10px] text-surface-400 dark:text-surface-500 font-bold uppercase tracking-wider">
               O continuar con
             </span>
@@ -200,7 +200,7 @@
           </div>
 
           <!-- Sign Up Link -->
-          <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-3 border-t border-surface-100 dark:border-surface-800">
+          <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-100 dark:border-surface-800">
             <span>{{ t('iam.noAccount') }} </span>
             <router-link
               to="/iam/sign-up"
@@ -212,7 +212,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="text-center text-[10px] text-surface-400 dark:text-surface-500 mt-6">
+        <div class="text-center text-[10px] text-surface-400 dark:text-surface-500 mt-6 pt-2">
           SmartFinance Drive © {{ new Date().getFullYear() }} • Sistema Financiero Vehicular
         </div>
       </div>
