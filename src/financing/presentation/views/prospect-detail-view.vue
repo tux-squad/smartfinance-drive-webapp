@@ -191,6 +191,69 @@
               Marcar como Perdido
             </button>
           </div>
+
+          <!-- Test Drives Management Section (11.9, 11.10, 11.11) -->
+          <div class="pt-4 border-t border-gray-100 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                <i class="pi pi-car text-emerald-600"></i>
+                Pruebas de Manejo Agendadas
+              </span>
+              <span class="text-[11px] text-gray-400 font-medium">{{ crmStore.testDrives.length }} registradas</span>
+            </div>
+
+            <div v-if="crmStore.testDrives.length > 0" class="space-y-2">
+              <div
+                v-for="drive in crmStore.testDrives"
+                :key="drive.id"
+                class="p-3 bg-gray-50 border border-gray-100 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+              >
+                <div>
+                  <div class="font-bold text-gray-900">{{ drive.notes || 'Test Drive programado' }}</div>
+                  <div class="text-[11px] text-gray-500 font-mono">{{ drive.scheduledDateTime ? new Date(drive.scheduledDateTime).toLocaleString('es-PE') : '-' }}</div>
+                  <span
+                    :class="[
+                      'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-1',
+                      drive.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                      drive.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                    ]"
+                  >
+                    {{ drive.status || 'SCHEDULED' }}
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-1.5 self-end sm:self-auto">
+                  <button
+                    v-if="drive.status !== 'COMPLETED' && drive.status !== 'CANCELLED'"
+                    type="button"
+                    @click="handleCompleteTestDrive(drive.id)"
+                    class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px]"
+                  >
+                    Completar
+                  </button>
+                  <button
+                    v-if="drive.status !== 'CANCELLED'"
+                    type="button"
+                    @click="handleCancelTestDrive(drive.id)"
+                    class="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-semibold text-[11px]"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    @click="handleViewTestDriveDetail(drive.id)"
+                    class="px-2.5 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 text-[11px]"
+                    title="Consultar detalles por ID"
+                  >
+                    <i class="pi pi-info-circle text-[11px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-[11px] text-gray-400 italic">
+              No hay citas activas de prueba de manejo para este registro.
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -243,6 +306,7 @@ onMounted(async () => {
   await Promise.all([
     catalogStore.fetchVehicles(),
     financingStore.fetchSimulations(),
+    crmStore.fetchMyTestDrives(),
     paramId ? crmStore.fetchProspectById(paramId) : Promise.resolve(),
     paramId ? crmStore.fetchProspectTimeline(paramId) : Promise.resolve()
   ])
@@ -303,6 +367,27 @@ const handleScheduleTestDrive = async () => {
   })
 
   actionSuccessMessage.value = '¡Test Drive agendado exitosamente! Se notificó al cliente por correo y SMS.'
+}
+
+const handleCompleteTestDrive = async (id: string) => {
+  const ok = await crmStore.updateTestDriveStatus(id, 'COMPLETED')
+  if (ok) {
+    actionSuccessMessage.value = 'Prueba de manejo marcada como completada con éxito.'
+  }
+}
+
+const handleCancelTestDrive = async (id: string) => {
+  const ok = await crmStore.cancelTestDrive(id)
+  if (ok) {
+    actionSuccessMessage.value = 'Prueba de manejo cancelada correctamente.'
+  }
+}
+
+const handleViewTestDriveDetail = async (id: string) => {
+  const detail = await crmStore.fetchTestDriveById(id)
+  if (detail) {
+    actionSuccessMessage.value = `Detalles de prueba #${detail.id.substring(0, 8)}: Estado ${detail.status}, fecha ${detail.scheduledDateTime ? new Date(detail.scheduledDateTime).toLocaleString('es-PE') : '-'}`
+  }
 }
 
 const handleMarkAsLost = async () => {

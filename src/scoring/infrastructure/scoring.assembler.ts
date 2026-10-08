@@ -69,7 +69,7 @@ export class CreditScoreAssembler {
   static toEvaluateRequestResource(command: EvaluateScoreCommand): EvaluateCreditScoreRequestResource {
     return {
       profileId: command.profileId,
-      simulationId: command.simulationId || '00000000-0000-0000-0000-000000000000',
+      simulationId: command.simulationId || '',
       monthlyIncomeAmount: Number(command.monthlyIncomeAmount) || 3000,
       projectedMonthlyInstallmentAmount: Number(command.projectedMonthlyInstallmentAmount) || 500,
       currency: command.currency || 'USD'

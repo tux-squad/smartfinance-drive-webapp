@@ -109,6 +109,17 @@
               />
             </div>
 
+            <!-- Fecha de Nacimiento -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Fecha de Nacimiento</label>
+              <input
+                v-model="form.dateOfBirth"
+                type="date"
+                required
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
+            </div>
+
             <!-- Correo Electrónico -->
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-700">Correo Electrónico</label>
@@ -432,6 +443,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '../../application/profiles.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
@@ -440,6 +452,7 @@ import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
 import DealerRoleRequestCard from '@/iam/presentation/components/dealer-role-request-card.vue'
 
+const route = useRoute()
 const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
 const catalogStore = useCatalogStore()
@@ -496,6 +509,7 @@ const form = reactive({
   lastName: '',
   email: '',
   dni: '',
+  dateOfBirth: '',
   phoneNumber: '',
   monthlyIncomeAmount: 0,
   currency: 'PEN',
@@ -525,6 +539,7 @@ const populateFormData = () => {
     form.lastName = p.lastName || ''
     form.email = p.email || ''
     form.dni = p.dni || ''
+    form.dateOfBirth = p.dateOfBirth || ''
     form.phoneNumber = p.phoneNumber || ''
     form.monthlyIncomeAmount = p.monthlyIncomeAmount || 0
     form.currency = p.currency || 'PEN'
@@ -538,9 +553,12 @@ const populateFormData = () => {
 
 onMounted(async () => {
   const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
+  const profileIdParam = (route.query.profileId as string) || ''
   const promises: Promise<any>[] = []
 
-  if (userId) {
+  if (profileIdParam) {
+    promises.push(profilesStore.fetchProfileById(profileIdParam))
+  } else if (userId) {
     promises.push(profilesStore.fetchProfileByUserId(userId))
   }
   if (isDealer.value) {
@@ -578,6 +596,7 @@ const handleSaveProfile = async () => {
         lastName: form.lastName,
         email: form.email,
         dni: form.dni,
+        dateOfBirth: form.dateOfBirth,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
         currency: form.currency,
@@ -594,6 +613,7 @@ const handleSaveProfile = async () => {
         lastName: form.lastName,
         email: form.email,
         dni: form.dni,
+        dateOfBirth: form.dateOfBirth,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
         currency: form.currency,

@@ -49,9 +49,9 @@ export class ProfileAssembler {
     return {
       userId,
       email: command.email,
-      nationalId: command.nationalId || command.dni || '72849102',
+      nationalId: command.nationalId || command.dni || '',
       fullLegalNames: legalNames,
-      dateOfBirth: command.dateOfBirth || '1995-04-12',
+      dateOfBirth: command.dateOfBirth || '',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(command.monthlyIncomeAmount) || 0,
@@ -72,9 +72,9 @@ export class ProfileAssembler {
 
     return {
       email: command.email,
-      nationalId: command.nationalId || command.dni || '72849102',
+      nationalId: command.nationalId || command.dni || '',
       fullLegalNames: legalNames,
-      dateOfBirth: command.dateOfBirth || '1995-04-12',
+      dateOfBirth: command.dateOfBirth || '',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(command.monthlyIncomeAmount) || 0,

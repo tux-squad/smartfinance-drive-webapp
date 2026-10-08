@@ -57,14 +57,61 @@ onMounted(async () => {
   }
 })
 
-const handleOpenBenchmarks = (entity: FinancialEntity) => {
-  selectedEntity.value = entity
+const logoFileInput = ref<HTMLInputElement | null>(null)
+const bannerFileInput = ref<HTMLInputElement | null>(null)
+const isUploadingLogo = ref(false)
+const isUploadingBanner = ref(false)
+
+const triggerLogoUpload = () => {
+  logoFileInput.value?.click()
+}
+
+const triggerBannerUpload = () => {
+  bannerFileInput.value?.click()
+}
+
+const onLogoSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  isUploadingLogo.value = true
+  try {
+    const updated = await partnersStore.uploadMyFinancialEntityLogo(file)
+    if (updated) {
+      feedbackMessage.value = 'Logo corporativo de la entidad financiera actualizado con éxito en Cloudinary.'
+    }
+  } finally {
+    isUploadingLogo.value = false
+    if (target) target.value = ''
+  }
+}
+
+const onBannerSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  isUploadingBanner.value = true
+  try {
+    const updated = await partnersStore.uploadMyFinancialEntityBanner(file)
+    if (updated) {
+      feedbackMessage.value = 'Banner promocional de la entidad financiera actualizado con éxito en Cloudinary.'
+    }
+  } finally {
+    isUploadingBanner.value = false
+    if (target) target.value = ''
+  }
+}
+
+const handleOpenBenchmarks = async (entity: FinancialEntity) => {
+  await partnersStore.fetchFinancialEntityById(entity.id)
+  selectedEntity.value = partnersStore.selectedEntity || entity
   showBenchmarksModal.value = true
 }
 
-const handleManageMyEntity = () => {
+const handleManageMyEntity = async () => {
   if (partnersStore.myFinancialEntity) {
-    selectedEntity.value = partnersStore.myFinancialEntity
+    await partnersStore.fetchFinancialEntityById(partnersStore.myFinancialEntity.id)
+    selectedEntity.value = partnersStore.selectedEntity || partnersStore.myFinancialEntity
     showBenchmarksModal.value = true
   }
 }
@@ -218,7 +265,27 @@ const handleConfirmDeleteEntity = async () => {
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <input type="file" ref="logoFileInput" class="hidden" accept="image/*" @change="onLogoSelected" />
+          <input type="file" ref="bannerFileInput" class="hidden" accept="image/*" @change="onBannerSelected" />
+          <Button
+            label="Subir Logo"
+            icon="pi pi-image"
+            severity="secondary"
+            outlined
+            class="!rounded-2xl !text-xs font-semibold"
+            :loading="isUploadingLogo"
+            @click="triggerLogoUpload"
+          />
+          <Button
+            label="Subir Banner"
+            icon="pi pi-images"
+            severity="secondary"
+            outlined
+            class="!rounded-2xl !text-xs font-semibold"
+            :loading="isUploadingBanner"
+            @click="triggerBannerUpload"
+          />
           <Button
             label="Gestionar Tasas y Multimedia"
             icon="pi pi-cog"

@@ -42,7 +42,7 @@ export class CreateProfileCommand {
     this.email = params.email
     this.nationalId = params.nationalId || params.dni || ''
     this.fullLegalNames = params.fullLegalNames || `${params.firstName || ''} ${params.lastName || ''}`.trim()
-    this.dateOfBirth = params.dateOfBirth || '1995-01-01'
+    this.dateOfBirth = params.dateOfBirth || ''
     this.phoneCountryCode = params.phoneCountryCode || '+51'
     this.mobilePhone = params.mobilePhone || (params.phoneNumber ? params.phoneNumber.replace(/\D/g, '').slice(-9) : '')
     this.monthlyIncomeAmount = params.monthlyIncomeAmount || 0.0

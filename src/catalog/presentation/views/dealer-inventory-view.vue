@@ -236,6 +236,18 @@
             />
           </div>
         </div>
+        <div v-if="partnersStore.financialEntities.length > 0">
+          <label class="block text-xs font-bold text-gray-700 mb-1">Entidad Financiera Aliada (Obligatorio)</label>
+          <Select
+            v-model="editForm.financialEntityId"
+            :options="partnersStore.financialEntities"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Seleccionar banco o financiera"
+            class="w-full text-xs"
+            required
+          />
+        </div>
         <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
           <Button label="Cancelar" text severity="secondary" @click="isEditOpen = false" class="!text-xs" />
           <Button type="submit" label="Guardar Cambios" icon="pi pi-check" :loading="isSaving" class="!text-xs !bg-[#eb8f47] !border-[#eb8f47]" />
@@ -278,11 +290,13 @@ import Select from 'primevue/select'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import type { Vehicle } from '@/catalog/domain/vehicle.entity'
 import { useIamStore } from '@/iam/application/iam.store'
+import { usePartnersStore } from '@/partners/application/partners.store'
 
 const { t } = useI18n()
 
 const catalogStore = useCatalogStore()
 const iamStore = useIamStore()
+const partnersStore = usePartnersStore()
 const userSpecificVehicles = ref<Vehicle[]>([])
 const isLoadingInventory = ref(true)
 const feedbackMessage = ref<string | null>(null)
@@ -292,6 +306,7 @@ const isEditOpen = ref(false)
 const isSaving = ref(false)
 const vehicleToEdit = ref<Vehicle | null>(null)
 const editForm = reactive({
+  financialEntityId: '',
   brand: '',
   model: '',
   manufactureYear: 2024,
@@ -309,7 +324,10 @@ const loadInventory = async () => {
   isLoadingInventory.value = true
   try {
     const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '')
-    const list = await catalogStore.fetchVehiclesByUserId(currentUserId)
+    const [list] = await Promise.all([
+      catalogStore.fetchVehiclesByUserId(currentUserId),
+      partnersStore.fetchFinancialEntities()
+    ])
     userSpecificVehicles.value = list || []
   } catch {
     userSpecificVehicles.value = []
@@ -343,6 +361,7 @@ const handleStatusChange = async (car: Vehicle, newStatus: string) => {
 
 const openEditDialog = (car: Vehicle) => {
   vehicleToEdit.value = car
+  editForm.financialEntityId = car.financialEntityId || partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
   editForm.brand = car.brand
   editForm.model = car.model
   editForm.manufactureYear = car.manufactureYear
@@ -356,7 +375,9 @@ const handleSaveEdit = async () => {
   if (!vehicleToEdit.value) return
   isSaving.value = true
   try {
+    const fallbackEntityId = vehicleToEdit.value.financialEntityId || partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
     const updated = await catalogStore.updateVehicle(vehicleToEdit.value.id, {
+      financialEntityId: editForm.financialEntityId || fallbackEntityId,
       brand: editForm.brand,
       model: editForm.model,
       manufactureYear: editForm.manufactureYear,
