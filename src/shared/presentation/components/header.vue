@@ -1,40 +1,80 @@
 <template>
-  <header class="bg-white border-b border-gray-200 shadow-xs">
-    <div class="flex justify-between items-center px-8 py-3.5">
-      <!-- Breadcrumbs matching mockup -->
-      <div class="flex items-center space-x-2 text-sm flex-wrap">
-        <template v-for="(crumb, idx) in breadcrumbTrail" :key="idx">
-          <span v-if="idx > 0" class="text-gray-400">/</span>
-          <span :class="[idx === breadcrumbTrail.length - 1 ? 'text-blue-950 font-bold' : 'text-gray-500 font-medium']">
-            {{ crumb }}
-          </span>
-        </template>
+  <header class="bg-white/80 dark:bg-surface-900/80 backdrop-blur-md border-b border-surface-200/80 dark:border-surface-800 shadow-xs sticky top-0 z-20 transition-colors">
+    <div class="flex justify-between items-center px-4 md:px-8 py-3">
+      <!-- Left side: Mobile Toggle & Breadcrumbs -->
+      <div class="flex items-center space-x-3 text-sm flex-wrap">
+        <!-- Mobile Sidebar Toggle -->
+        <button
+          type="button"
+          @click="layoutStore.toggleMobile"
+          class="lg:hidden p-2 rounded-xl text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+          aria-label="Abrir menú"
+        >
+          <i class="pi pi-bars text-lg" />
+        </button>
+
+        <!-- Desktop Quick Slim Toggle -->
+        <button
+          type="button"
+          @click="layoutStore.toggleSlim"
+          v-tooltip.bottom="layoutStore.isSlim ? 'Expandir barra lateral' : 'Contraer a modo Slim'"
+          class="hidden lg:flex items-center justify-center w-8 h-8 rounded-xl text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+        >
+          <i :class="['pi text-sm', layoutStore.isSlim ? 'pi-align-left' : 'pi-align-justify']" />
+        </button>
+
+        <!-- Breadcrumbs matching mockup -->
+        <div class="hidden sm:flex items-center space-x-2 text-xs md:text-sm flex-wrap">
+          <template v-for="(crumb, idx) in breadcrumbTrail" :key="idx">
+            <span v-if="idx > 0" class="text-surface-400 dark:text-surface-600">/</span>
+            <span :class="[idx === breadcrumbTrail.length - 1 ? 'text-blue-900 dark:text-blue-400 font-bold' : 'text-surface-500 dark:text-surface-400 font-medium']">
+              {{ crumb }}
+            </span>
+          </template>
+        </div>
       </div>
 
-      <div class="flex items-center space-x-5">
+      <!-- Right side: Multi-column Toggle, Language Switcher, Profile, Auth -->
+      <div class="flex items-center space-x-3 md:space-x-4">
+        <!-- Multi-Column Context Rail Toggle -->
+        <button
+          type="button"
+          @click="layoutStore.toggleContextRail"
+          v-tooltip.bottom="layoutStore.isContextRailOpen ? 'Ocultar panel lateral (Multi-Column)' : 'Mostrar panel lateral (Multi-Column)'"
+          class="flex items-center justify-center w-9 h-9 rounded-xl border transition-all"
+          :class="[
+            layoutStore.isContextRailOpen
+              ? 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-950/60 dark:border-blue-800 dark:text-blue-400 shadow-xs'
+              : 'border-surface-200 dark:border-surface-700 text-surface-500 hover:text-surface-800 dark:text-surface-400 dark:hover:text-surface-100 hover:bg-surface-50 dark:hover:bg-surface-800'
+          ]"
+        >
+          <i class="pi pi-table text-sm" />
+        </button>
+
         <!-- Language Switcher -->
         <LanguageSwitcher />
 
-        <!-- User Profile Pill matching mockup (Carlos Mendoza / Comprador Pre-aprobado) -->
-        <div class="flex items-center space-x-3 text-right">
-          <div>
-            <div class="text-sm font-bold text-gray-900 leading-tight">
+        <!-- User Profile Pill -->
+        <div class="flex items-center space-x-2.5 md:space-x-3 text-right">
+          <div class="hidden sm:block">
+            <div class="text-xs md:text-sm font-bold text-surface-900 dark:text-surface-100 leading-tight">
               {{ userDisplayName }}
             </div>
-            <div class="text-[11px] text-gray-500 font-medium">
+            <div class="text-[10px] md:text-[11px] text-surface-500 dark:text-surface-400 font-medium">
               {{ userRoleSubtitle }}
             </div>
           </div>
           <router-link
             to="/user"
-            class="w-9 h-9 rounded-full bg-[#0d2a5c] text-white flex items-center justify-center font-bold text-xs shadow-xs hover:opacity-90 transition-opacity shrink-0"
+            class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0d2a5c] to-blue-700 text-white flex items-center justify-center font-bold text-xs shadow-xs hover:opacity-90 transition-opacity shrink-0"
+            v-tooltip.bottom="'Ver perfil'"
           >
             {{ userInitials }}
           </router-link>
         </div>
 
         <!-- Auth Section / Sign Out -->
-        <div class="pl-2 border-l border-gray-200">
+        <div class="pl-2 border-l border-surface-200 dark:border-surface-700">
           <AuthenticationSection />
         </div>
       </div>
@@ -50,6 +90,7 @@ import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useLayoutStore } from '@/shared/application/layout.store'
 import LanguageSwitcher from './language-switcher.vue'
 import AuthenticationSection from '@/iam/presentation/components/authentication-section.vue'
 
@@ -59,6 +100,7 @@ const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
 const catalogStore = useCatalogStore()
 const partnersStore = usePartnersStore()
+const layoutStore = useLayoutStore()
 
 const currentPanelTitle = computed(() => {
   const roles = iamStore.roles
