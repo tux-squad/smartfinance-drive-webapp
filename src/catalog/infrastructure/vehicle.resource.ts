@@ -43,6 +43,7 @@ export interface CreateVehicleResource {
  * Infrastructure DTO for updating an existing Vehicle.
  */
 export interface UpdateVehicleResource {
+  financialEntityId: string
   brand?: string
   model?: string
   manufactureYear?: number
@@ -50,3 +51,4 @@ export interface UpdateVehicleResource {
   priceAmount?: number
   currency?: string
 }
+

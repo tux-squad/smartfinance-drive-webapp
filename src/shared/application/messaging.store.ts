@@ -54,16 +54,9 @@ export const useMessagingStore = defineStore('messaging', () => {
       const msg = await api.sendMessage(activeConversation.value.id, content)
       currentMessages.value.push(msg)
       return msg
-    } catch {
-      // Local optimistic fallback
-      const fallbackMsg = new ChatMessage(
-        String(Date.now()),
-        activeConversation.value.id,
-        'me',
-        content
-      )
-      currentMessages.value.push(fallbackMsg)
-      return fallbackMsg
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al enviar el mensaje.'
+      return null
     }
   }
 

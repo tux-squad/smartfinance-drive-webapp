@@ -181,6 +181,48 @@ export const useCrmStore = defineStore('crm', () => {
     }
   }
 
+  /**
+   * Registers a new customer prospect (2.41 / 11.1).
+   */
+  const createProspect = async (command: CreateProspectCommand): Promise<Prospect | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const p = await crmApi.createProspect(command)
+      prospects.value.unshift(p)
+      currentProspect.value = p
+      return p
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al registrar el prospecto.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetches single test drive details by UUID (2.44 / 11.9).
+   */
+  const fetchTestDriveById = async (id: string): Promise<TestDrive | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const drive = await crmApi.getTestDriveById(id)
+      const idx = testDrives.value.findIndex(t => t.id === id)
+      if (idx !== -1) {
+        testDrives.value[idx] = drive
+      } else {
+        testDrives.value.unshift(drive)
+      }
+      return drive
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al consultar la prueba de manejo.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     prospects,
     currentProspect,
@@ -192,11 +234,13 @@ export const useCrmStore = defineStore('crm', () => {
     hasTestDrives,
     fetchDealerProspects,
     fetchProspectById,
+    createProspect,
     addProspectNote,
     fetchProspectTimeline,
     updateProspectStatus,
     scheduleTestDrive,
     fetchMyTestDrives,
+    fetchTestDriveById,
     updateTestDriveStatus,
     cancelTestDrive
   }

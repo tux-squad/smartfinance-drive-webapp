@@ -4,32 +4,86 @@ import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import { EvaluateScoreCommand } from '../../domain/evaluate-score.command'
 import { useScoringStore } from '../../application/scoring.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
 import { useIamStore } from '@/iam/application/iam.store'
+import { useFinancingStore } from '@/financing/application/financing.store'
 
 const { t } = useI18n()
 const scoringStore = useScoringStore()
 const profilesStore = useProfilesStore()
 const iamStore = useIamStore()
+const financingStore = useFinancingStore()
 
 const selectedProfileId = ref<string>('')
+const selectedSimulationId = ref<string>('')
 
 onMounted(async () => {
+  const promises: Promise<any>[] = [financingStore.fetchSimulations()]
   if (iamStore.currentUser?.id) {
-    await profilesStore.fetchProfileByUserId(iamStore.currentUser.id)
-    if (profilesStore.currentProfile?.id) {
-      selectedProfileId.value = profilesStore.currentProfile.id
-    }
+    promises.push(profilesStore.fetchProfileByUserId(iamStore.currentUser.id))
+  }
+  await Promise.all(promises)
+  if (profilesStore.currentProfile?.id) {
+    selectedProfileId.value = profilesStore.currentProfile.id
+  }
+  if (financingStore.simulations.length > 0) {
+    selectedSimulationId.value = financingStore.simulations[0]?.id || ''
   }
 })
 
 const hasActiveProfile = computed(() => !!profilesStore.currentProfile)
 
 const handleEvaluate = async () => {
-  const profileIdToUse = profilesStore.currentProfile?.id || selectedProfileId.value
-  const command = new EvaluateScoreCommand(profileIdToUse)
+  const profile = profilesStore.currentProfile
+  const profileIdToUse = profile?.id || selectedProfileId.value
+  let simId = selectedSimulationId.value || financingStore.simulations[0]?.id
+  let activeSim = financingStore.simulations.find(s => s.id === simId) || financingStore.simulations[0]
+
+  if (!simId) {
+    const todayStr = new Date().toISOString().split('T')[0] ?? '2026-09-19'
+    const success = await financingStore.createSimulation({
+      title: 'Simulación base de evaluación',
+      userId: String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'),
+      vehicleId: '1',
+      financialEntityId: 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566',
+      vehiclePriceAmount: 25000,
+      currency: 'USD',
+      downPaymentPercentage: 20,
+      balloonPaymentPercentage: 0,
+      annualEffectiveRate: 11.5,
+      monthlyCreditLifeInsuranceRate: 0.05,
+      vehicleInsuranceFeeAmount: 70,
+      vehicleInsuranceType: 'FULL_COVERAGE',
+      loanTermMonths: 36,
+      gracePeriodType: 'NONE',
+      gracePeriodMonths: 0,
+      initialFeesAmount: 100,
+      discountRate: 8.5,
+      startDate: todayStr
+    })
+    if (success && financingStore.currentSimulation) {
+      simId = financingStore.currentSimulation.id
+      activeSim = financingStore.currentSimulation
+      selectedSimulationId.value = simId
+    }
+  }
+
+  if (!simId) return
+
+  const income = profile?.monthlyIncomeAmount && profile.monthlyIncomeAmount > 0 ? profile.monthlyIncomeAmount : 3500
+  const installment = activeSim?.monthlyPaymentAmount && activeSim.monthlyPaymentAmount > 0 ? activeSim.monthlyPaymentAmount : 500
+  const currency = profile?.currency || activeSim?.currency || 'USD'
+
+  const command = new EvaluateScoreCommand(
+    profileIdToUse,
+    simId,
+    income,
+    installment,
+    currency
+  )
   await scoringStore.evaluateCreditScore(command)
 }
 </script>
@@ -55,6 +109,26 @@ const handleEvaluate = async () => {
     <Message v-if="scoringStore.error" severity="error" class="!rounded-xl !text-xs">
       {{ scoringStore.error }}
     </Message>
+
+    <!-- Simulation Selector Card -->
+    <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 p-4 border border-gray-100 dark:border-gray-700 space-y-2">
+      <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">
+        Simulación de Crédito a Contrastar
+      </label>
+      <div v-if="financingStore.simulations.length > 0">
+        <Select
+          v-model="selectedSimulationId"
+          :options="financingStore.simulations"
+          optionLabel="title"
+          optionValue="id"
+          placeholder="Seleccionar simulación de crédito..."
+          class="w-full text-xs"
+        />
+      </div>
+      <p v-else class="text-xs text-gray-500 dark:text-gray-400">
+        No se encontraron simulaciones previas. Al evaluar, el sistema creará automáticamente una simulación paramétrica real asociada.
+      </p>
+    </div>
 
     <!-- Active Profile Overview Card -->
     <div v-if="hasActiveProfile && profilesStore.currentProfile" class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 p-4 border border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

@@ -109,6 +109,17 @@
               />
             </div>
 
+            <!-- Fecha de Nacimiento -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Fecha de Nacimiento</label>
+              <input
+                v-model="form.dateOfBirth"
+                type="date"
+                required
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
+            </div>
+
             <!-- Correo Electrónico -->
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-700">Correo Electrónico</label>
@@ -364,8 +375,8 @@
         </div>
       </div>
 
-      <!-- Action Button: Guardar cambios -->
-      <div class="flex justify-start">
+      <!-- Action Button: Guardar cambios y Eliminar perfil -->
+      <div class="flex justify-between items-center pt-2">
         <button
           type="submit"
           :disabled="isSaving"
@@ -374,6 +385,16 @@
           <i v-if="isSaving" class="pi pi-spin pi-spinner text-xs"></i>
           <i v-else class="pi pi-save text-xs"></i>
           <span>Guardar cambios</span>
+        </button>
+
+        <button
+          v-if="profilesStore.hasProfile"
+          type="button"
+          @click="handleDeleteProfile"
+          class="px-4 py-2 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors flex items-center gap-1.5"
+        >
+          <i class="pi pi-trash text-xs"></i>
+          <span>Eliminar perfil</span>
         </button>
       </div>
     </form>
@@ -422,6 +443,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useProfilesStore } from '../../application/profiles.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
@@ -430,6 +452,7 @@ import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
 import DealerRoleRequestCard from '@/iam/presentation/components/dealer-role-request-card.vue'
 
+const route = useRoute()
 const iamStore = useIamStore()
 const profilesStore = useProfilesStore()
 const catalogStore = useCatalogStore()
@@ -486,6 +509,7 @@ const form = reactive({
   lastName: '',
   email: '',
   dni: '',
+  dateOfBirth: '',
   phoneNumber: '',
   monthlyIncomeAmount: 0,
   currency: 'PEN',
@@ -493,24 +517,19 @@ const form = reactive({
 })
 
 // Dealer Data
-const dealerBusinessName = ref('AutoSur Motors SAC')
-const dealerRuc = ref('20100138019')
-const dealerAddress = ref('Av. Javier Prado Este 4520, Surco, Lima')
+const dealerBusinessName = ref('')
+const dealerRuc = ref('')
+const dealerAddress = ref('')
 const dealerVehiclesCount = computed(() => catalogStore.vehicles.length)
 
 // Bank Data
-const bankEntityName = ref('Banco de Crédito del Perú (BCP)')
-const bankRuc = ref('20100047218')
+const bankEntityName = ref('')
+const bankRuc = ref('')
 const bankBenchmarks = computed(() => {
   if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.rateBenchmarks) {
     return partnersStore.financialEntities[0].rateBenchmarks
   }
-  return [
-    { loanTermMonths: 24, annualEffectiveRate: 8.90 },
-    { loanTermMonths: 36, annualEffectiveRate: 9.50 },
-    { loanTermMonths: 48, annualEffectiveRate: 10.20 },
-    { loanTermMonths: 60, annualEffectiveRate: 10.80 }
-  ]
+  return []
 })
 
 const populateFormData = () => {
@@ -520,6 +539,7 @@ const populateFormData = () => {
     form.lastName = p.lastName || ''
     form.email = p.email || ''
     form.dni = p.dni || ''
+    form.dateOfBirth = p.dateOfBirth || ''
     form.phoneNumber = p.phoneNumber || ''
     form.monthlyIncomeAmount = p.monthlyIncomeAmount || 0
     form.currency = p.currency || 'PEN'
@@ -533,24 +553,35 @@ const populateFormData = () => {
 
 onMounted(async () => {
   const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
+  const profileIdParam = (route.query.profileId as string) || ''
   const promises: Promise<any>[] = []
 
-  if (userId) {
+  if (profileIdParam) {
+    promises.push(profilesStore.fetchProfileById(profileIdParam))
+  } else if (userId) {
     promises.push(profilesStore.fetchProfileByUserId(userId))
   }
   if (isDealer.value) {
     promises.push(catalogStore.fetchVehicles())
+    promises.push(partnersStore.fetchMyDealership().then(d => {
+      if (d) {
+        dealerBusinessName.value = d.name || ''
+        dealerRuc.value = d.ruc || ''
+        dealerAddress.value = d.address || ''
+      }
+    }))
   }
   if (isFinancialInstitution.value) {
-    promises.push(partnersStore.fetchFinancialEntities())
+    promises.push(partnersStore.fetchFinancialEntities().then(() => {
+      if (partnersStore.financialEntities.length > 0) {
+        bankEntityName.value = partnersStore.financialEntities[0]?.name || ''
+        bankRuc.value = partnersStore.financialEntities[0]?.ruc || ''
+      }
+    }))
   }
 
   await Promise.all(promises)
   populateFormData()
-
-  if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.name) {
-    bankEntityName.value = partnersStore.financialEntities[0].name
-  }
 })
 
 const handleSaveProfile = async () => {
@@ -565,9 +596,11 @@ const handleSaveProfile = async () => {
         lastName: form.lastName,
         email: form.email,
         dni: form.dni,
+        dateOfBirth: form.dateOfBirth,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency
+        currency: form.currency,
+        employmentStatus: form.employmentStatus
       })
       const success = await profilesStore.updateProfile(command)
       if (success) {
@@ -575,13 +608,16 @@ const handleSaveProfile = async () => {
       }
     } else {
       const command = new CreateProfileCommand({
+        userId: String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'),
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         dni: form.dni,
+        dateOfBirth: form.dateOfBirth,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency
+        currency: form.currency,
+        employmentStatus: form.employmentStatus
       })
       const success = await profilesStore.createProfile(command)
       if (success) {
@@ -595,6 +631,25 @@ const handleSaveProfile = async () => {
     setTimeout(() => {
       saveSuccessMessage.value = null
     }, 4000)
+  }
+}
+
+const handleDeleteProfile = async () => {
+  if (!profilesStore.currentProfile?.id) return
+  if (!window.confirm('¿Está seguro de que desea eliminar su perfil de cliente? Esta acción no se puede deshacer.')) return
+  isSaving.value = true
+  try {
+    const success = await profilesStore.deleteProfile(profilesStore.currentProfile.id)
+    if (success) {
+      saveSuccessMessage.value = 'Perfil eliminado con éxito.'
+      form.firstName = ''
+      form.lastName = ''
+      form.email = ''
+      form.dni = ''
+      form.phoneNumber = ''
+    }
+  } finally {
+    isSaving.value = false
   }
 }
 </script>

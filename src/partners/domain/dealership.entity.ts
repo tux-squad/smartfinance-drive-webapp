@@ -2,6 +2,9 @@
  * Domain entity representing a certified automotive dealership (Concesionaria B2B).
  */
 export class Dealership {
+  public readonly operatingHours: string | null
+  public readonly hours: string | null
+
   constructor(
     public readonly id: string,
     public readonly userId: string,
@@ -12,13 +15,18 @@ export class Dealership {
     public readonly email: string | null = null,
     public readonly logoUrl: string | null = null,
     public readonly bannerUrl: string | null = null,
-    public readonly hours: string | null = null,
+    hours: string | null = null,
     public readonly description: string | null = null,
     public readonly active: boolean = true,
     public readonly createdAt: string = new Date().toISOString(),
     public readonly updatedAt: string = new Date().toISOString(),
-    public readonly vehicleCount: number = 0
-  ) {}
+    public readonly vehicleCount: number = 0,
+    operatingHours?: string | null
+  ) {
+    const effectiveHours = operatingHours || hours || null
+    this.hours = effectiveHours
+    this.operatingHours = effectiveHours
+  }
 
   get displayName(): string {
     return this.name

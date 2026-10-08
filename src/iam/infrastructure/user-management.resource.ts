@@ -19,4 +19,6 @@ export interface UpdateUserRoleRequestResource {
 
 export interface RucRoleRequestResource {
   ruc: string
+  companyName?: string
 }
+

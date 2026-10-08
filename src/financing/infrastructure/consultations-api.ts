@@ -48,14 +48,16 @@ export class ConsultationsApi extends BaseApi {
     }
 
     const c = res.data
+    const category = c.recommendedVehicleCategory || c.recommendedCategory || null
     return new Consultation(
       c.id || String(Date.now()),
       c.userId || '',
       c.prompt || command.prompt,
       c.recommendationText || c.response || c.content || '',
-      c.recommendedCategory || null,
+      category,
       Number(c.estimatedMaxMonthlyFee) || 0,
-      c.createdAt || new Date().toISOString()
+      c.createdAt || new Date().toISOString(),
+      category
     )
   }
 
@@ -76,14 +78,18 @@ export class ConsultationsApi extends BaseApi {
     }
 
     const list = Array.isArray(res.data) ? res.data : []
-    return list.map((c: any) => new Consultation(
-      c.id || String(Date.now()),
-      c.userId || '',
-      c.prompt || '',
-      c.recommendationText || c.response || '',
-      c.recommendedCategory || null,
-      Number(c.estimatedMaxMonthlyFee) || 0,
-      c.createdAt || new Date().toISOString()
-    ))
+    return list.map((c: any) => {
+      const category = c.recommendedVehicleCategory || c.recommendedCategory || null
+      return new Consultation(
+        c.id || String(Date.now()),
+        c.userId || '',
+        c.prompt || '',
+        c.recommendationText || c.response || '',
+        category,
+        Number(c.estimatedMaxMonthlyFee) || 0,
+        c.createdAt || new Date().toISOString(),
+        category
+      )
+    })
   }
 }

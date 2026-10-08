@@ -8,6 +8,17 @@ export interface CheckoutSessionCommand {
   cancelUrl: string
 }
 
+export interface CreateBillingPlanResource {
+  name: string
+  description?: string
+  price: number
+  currency: string
+  billingCycle?: 'MONTHLY' | 'ANNUAL' | string
+  maxVehicleListings: number
+  maxSimulationsPerMonth: number
+  stripePriceId?: string
+}
+
 export class BillingApi extends BaseApi {
   /**
    * 8.1 List all active commercial billing plans.
@@ -47,18 +58,40 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.4 Get current user active subscription.
+   * 8.3 Create new commercial billing plan (Admin) (#98).
+   * POST /api/v1/billing/plans
+   */
+  public async createPlan(resource: CreateBillingPlanResource): Promise<BillingPlan> {
+    const response: AxiosResponse<any> = await this.http.post('/api/v1/billing/plans', resource)
+    const p = response.data
+    return new BillingPlan(
+      p.id,
+      p.name,
+      p.description || '',
+      p.price,
+      p.currency || 'USD',
+      p.billingCycle || 'MONTHLY',
+      p.maxVehicleListings || 100,
+      p.maxSimulationsPerMonth || 500,
+      p.stripePriceId
+    )
+  }
+
+  /**
+   * 8.4 Get current user active subscription (API Doc 2.49).
    */
   public async getCurrentSubscription(): Promise<Subscription | null> {
     try {
       const response: AxiosResponse<any> = await this.http.get('/api/v1/billing/subscriptions/me')
       if (!response.data) return null
+      const planId = response.data.plan?.id || response.data.planId || 1
+      const endDate = response.data.endDate || response.data.currentPeriodEnd
       return new Subscription(
         response.data.id,
-        response.data.planId,
+        planId,
         response.data.status || 'ACTIVE',
         response.data.autoRenew ?? true,
-        response.data.currentPeriodEnd,
+        endDate,
         response.data.plan ? new BillingPlan(
           response.data.plan.id,
           response.data.plan.name,
@@ -73,7 +106,7 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.8 Get current user invoices.
+   * 8.8 Get current user invoices (API Doc 2.53).
    */
   public async getInvoices(): Promise<Invoice[]> {
     try {
@@ -83,7 +116,7 @@ export class BillingApi extends BaseApi {
         inv.amount,
         inv.currency || 'USD',
         inv.status || 'PAID',
-        inv.createdAt
+        inv.issuedAt || inv.createdAt
       ))
     } catch {
       return []
@@ -102,18 +135,28 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.5 Create a direct subscription.
+   * 8.5 Create a direct subscription (API Doc 2.50).
    */
   public async createSubscription(planId: number, autoRenew: boolean = true): Promise<Subscription> {
     const response: AxiosResponse<any> = await this.http.post('/api/v1/billing/subscriptions', {
       planId,
       autoRenew
     })
+    const resolvedPlanId = response.data.plan?.id || response.data.planId || planId
+    const endDate = response.data.endDate || response.data.currentPeriodEnd
     return new Subscription(
       response.data.id,
-      response.data.planId,
+      resolvedPlanId,
       response.data.status || 'ACTIVE',
-      response.data.autoRenew ?? true
+      response.data.autoRenew ?? true,
+      endDate,
+      response.data.plan ? new BillingPlan(
+        response.data.plan.id,
+        response.data.plan.name,
+        response.data.plan.description || '',
+        response.data.plan.price,
+        response.data.plan.currency || 'USD'
+      ) : undefined
     )
   }
 
@@ -167,5 +210,22 @@ export class BillingApi extends BaseApi {
       m.activeListingsCount ?? 8,
       m.period ?? 'LAST_30_DAYS'
     )
+  }
+
+  /**
+   * 8.13 Process Stripe Webhook event (#106).
+   * POST /api/v1/billing/webhooks/stripe
+   */
+  public async postStripeWebhook(payload: any, signature?: string): Promise<string> {
+    const headers: Record<string, string> = {}
+    if (signature) {
+      headers['Stripe-Signature'] = signature
+    }
+    const response: AxiosResponse<string> = await this.http.post(
+      '/api/v1/billing/webhooks/stripe',
+      payload,
+      { headers }
+    )
+    return response.data
   }
 }

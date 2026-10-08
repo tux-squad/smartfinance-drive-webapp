@@ -1,13 +1,20 @@
 /**
- * Infrastructure DTO matching backend JSON for a Credit Score evaluation.
+ * Infrastructure DTO matching backend JSON for a Credit Score evaluation (API Doc 2.28).
  */
 export interface CreditScoreResource {
   id: string
   profileId: string
-  score: number
-  riskTier: string
-  maxRecommendedLoanAmount?: number
+  simulationId?: string
   currency?: string
+  monthlyIncomeAmount?: number
+  projectedMonthlyInstallmentAmount?: number
+  dtiRatio?: number
+  riskTier: string
+  rateAdjustment?: number
+  status?: string
+  assessmentNotes?: string
+  score?: number
+  maxRecommendedLoanAmount?: number
 }
 
 /**
@@ -20,8 +27,12 @@ export interface CreditScorePageResource {
 }
 
 /**
- * Infrastructure DTO for triggering a Credit Score evaluation request.
+ * Infrastructure DTO for triggering a Credit Score evaluation request (API Doc 2.28).
  */
 export interface EvaluateCreditScoreRequestResource {
   profileId: string
+  simulationId: string
+  monthlyIncomeAmount: number
+  projectedMonthlyInstallmentAmount: number
+  currency: string
 }

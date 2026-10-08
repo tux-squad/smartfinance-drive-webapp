@@ -1,5 +1,5 @@
 <template>
-  <div class="inline-flex items-center bg-gray-100 rounded-lg p-1 border border-gray-200">
+  <div class="inline-flex items-center bg-surface-100 dark:bg-surface-800 rounded-lg p-1 border border-surface-200 dark:border-surface-700">
     <button
       v-for="lang in availableLocales"
       :key="lang"
@@ -8,8 +8,8 @@
       class="px-2.5 py-1 text-xs font-bold rounded-md transition-all uppercase"
       :class="[
         locale === lang
-          ? 'bg-blue-900 text-white shadow-xs'
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/60'
+          ? 'bg-primary text-primary-contrast shadow-xs'
+          : 'text-surface-600 dark:text-surface-300 hover:text-surface-900 dark:hover:text-surface-100 hover:bg-surface-200/60 dark:hover:bg-surface-700/60'
       ]"
     >
       {{ lang }}

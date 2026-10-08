@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete', id: string): void
+  (e: 'select', id: string): void
 }>()
 
 const { t } = useI18n()
@@ -17,11 +18,16 @@ const { t } = useI18n()
 const onDelete = () => {
   emit('delete', props.creditScore.id)
 }
+
+const onSelect = () => {
+  emit('select', props.creditScore.id)
+}
 </script>
 
 <template>
   <div
-    class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-purple-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+    @click="onSelect"
+    class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-purple-300 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900 cursor-pointer"
   >
     <!-- Header -->
     <div class="flex items-start justify-between">

@@ -248,6 +248,100 @@
         </div>
       </div>
     </div>
+    <!-- Section: Panel de Administración de Usuarios y Roles (1.8 / 1.10) -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100 flex-wrap gap-2">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <i class="pi pi-users text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-gray-900">Gestión de Usuarios y Roles (Admin)</h2>
+            <p class="text-xs text-gray-500">Administra los accesos globales y asignación de roles de la plataforma.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="loadAdminUsers"
+          :disabled="isLoadingUsers"
+          class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-bold flex items-center gap-1.5 transition-colors"
+        >
+          <i :class="isLoadingUsers ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" class="text-xs"></i>
+          <span>{{ iamStore.userList.length > 0 ? 'Actualizar Lista' : 'Cargar Usuarios' }}</span>
+        </button>
+      </div>
+
+      <div v-if="adminFeedbackMsg" class="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center justify-between">
+        <span>{{ adminFeedbackMsg }}</span>
+        <button @click="adminFeedbackMsg = null" class="text-emerald-600 hover:text-emerald-800"><i class="pi pi-times text-[10px]"></i></button>
+      </div>
+
+      <div v-if="iamStore.userList.length > 0" class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="text-[11px] uppercase tracking-wider text-gray-500 bg-gray-50 rounded-xl">
+            <tr>
+              <th class="py-2.5 px-3 font-semibold">ID</th>
+              <th class="py-2.5 px-3 font-semibold">Usuario</th>
+              <th class="py-2.5 px-3 font-semibold">Roles Actuales</th>
+              <th class="py-2.5 px-3 font-semibold">Asignar Nuevo Rol</th>
+              <th class="py-2.5 px-3 font-semibold text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-for="user in iamStore.userList" :key="user.id" class="hover:bg-gray-50/50">
+              <td class="py-3 px-3 font-mono font-medium text-gray-600">{{ user.id }}</td>
+              <td class="py-3 px-3 font-bold text-gray-900">{{ user.username }}</td>
+              <td class="py-3 px-3">
+                <div class="flex flex-wrap gap-1">
+                  <span
+                    v-for="r in user.roles"
+                    :key="r"
+                    class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700"
+                  >
+                    {{ r }}
+                  </span>
+                </div>
+              </td>
+              <td class="py-3 px-3">
+                <select
+                  v-model="selectedUserRoles[user.id]"
+                  class="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="ROLE_USER">ROLE_USER</option>
+                  <option value="ROLE_DEALER">ROLE_DEALER</option>
+                  <option value="ROLE_FINANCIAL_INSTITUTION">ROLE_FINANCIAL_INSTITUTION</option>
+                  <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                </select>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <div class="inline-flex items-center gap-2">
+                  <button
+                    type="button"
+                    @click="handleUpdateRole(user.id)"
+                    :disabled="isUpdatingRole === user.id"
+                    class="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors flex items-center gap-1"
+                  >
+                    <i v-if="isUpdatingRole === user.id" class="pi pi-spin pi-spinner text-[10px]"></i>
+                    <span>Guardar Rol</span>
+                  </button>
+                  <button
+                    type="button"
+                    @click="router.push(`/user/profile?profileId=${user.id}`)"
+                    class="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-700 text-xs font-medium"
+                    title="Ver perfil por ID"
+                  >
+                    <i class="pi pi-user text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else class="text-xs text-gray-400 py-3 text-center">
+        Haz clic en "Cargar Usuarios" para consultar el listado institucional de cuentas registradas.
+      </div>
+    </div>
   </div>
 </template>
 
@@ -302,6 +396,38 @@ const handleConfirmDelete = () => {
   showDeleteConfirm.value = false
   iamStore.signOut()
   router.push('/sign-in')
+}
+
+// Admin User Management State & Actions (1.8 / 1.10)
+const isLoadingUsers = ref(false)
+const isUpdatingRole = ref<number | string | null>(null)
+const selectedUserRoles = reactive<Record<string | number, string>>({})
+const adminFeedbackMsg = ref<string | null>(null)
+
+const loadAdminUsers = async () => {
+  isLoadingUsers.value = true
+  try {
+    await iamStore.fetchUsers(0, 20)
+    iamStore.userList.forEach(u => {
+      selectedUserRoles[u.id] = u.roles[0] || 'ROLE_USER'
+    })
+  } finally {
+    isLoadingUsers.value = false
+  }
+}
+
+const handleUpdateRole = async (userId: number | string) => {
+  const role = selectedUserRoles[userId]
+  if (!role) return
+  isUpdatingRole.value = userId
+  try {
+    const ok = await iamStore.updateUserRole(userId, role)
+    if (ok) {
+      adminFeedbackMsg.value = `Rol del usuario #${userId} actualizado a ${role} con éxito.`
+    }
+  } finally {
+    isUpdatingRole.value = null
+  }
 }
 </script>
 

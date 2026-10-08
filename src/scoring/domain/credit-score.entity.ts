@@ -8,7 +8,14 @@ export class CreditScore {
     public readonly score: number,
     public readonly riskTier: 'LOW_RISK' | 'MEDIUM_RISK' | 'HIGH_RISK' | string,
     public readonly maxRecommendedLoanAmount: number,
-    public readonly currency: string = 'USD'
+    public readonly currency: string = 'USD',
+    public readonly simulationId?: string,
+    public readonly monthlyIncomeAmount?: number,
+    public readonly projectedMonthlyInstallmentAmount?: number,
+    public readonly dtiRatio?: number,
+    public readonly rateAdjustment?: number,
+    public readonly status?: string,
+    public readonly assessmentNotes?: string
   ) {}
 
   /**
