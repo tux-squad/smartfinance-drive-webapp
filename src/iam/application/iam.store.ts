@@ -18,13 +18,26 @@ import { firebasePhoneAuthService } from '../infrastructure/firebase-phone-auth.
 
 const iamApi = new IamApi()
 
-const formatIamErrorMessage = (rawMsg?: string): string => {
-  if (!rawMsg) return ''
+const formatIamErrorMessage = (errOrMsg: any): string => {
+  if (!errOrMsg) return ''
+  let rawMsg = ''
+  if (typeof errOrMsg === 'string') {
+    rawMsg = errOrMsg
+  } else if (errOrMsg.response?.data?.message) {
+    rawMsg = String(errOrMsg.response.data.message)
+  } else if (errOrMsg.response?.data?.error) {
+    rawMsg = String(errOrMsg.response.data.error)
+  } else if (errOrMsg.message) {
+    rawMsg = String(errOrMsg.message)
+  } else {
+    rawMsg = JSON.stringify(errOrMsg)
+  }
+
   if (rawMsg.includes('missingUppercase')) {
-    return 'La contraseña debe incluir al menos una letra mayúscula (ej: Password123!).'
+    return 'La contraseña debe incluir al menos una letra mayúscula (ejemplo: Password123!).'
   }
   if (rawMsg.includes('alreadyExists') || rawMsg.includes('duplicate') || rawMsg.includes('exists')) {
-    return 'El correo electrónico ya se encuentra registrado.'
+    return 'El correo electrónico ya se encuentra registrado. Por favor, haz clic en "Inicia sesión" abajo.'
   }
   if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
     return 'Credenciales incorrectas. Verifique su correo y contraseña.'
@@ -177,8 +190,7 @@ export const useIamStore = defineStore('iam', () => {
 
       return true
     } catch (err: any) {
-      const rawMsg = err.response?.data?.message
-      error.value = formatIamErrorMessage(rawMsg) || 'Error al iniciar sesión. Verifique sus credenciales.'
+      error.value = formatIamErrorMessage(err) || 'Error al iniciar sesión. Verifique sus credenciales.'
       return false
     } finally {
       isLoading.value = false
@@ -228,8 +240,7 @@ export const useIamStore = defineStore('iam', () => {
       const response = await iamApi.signUp(resourcePayload)
       return response.data
     } catch (err: any) {
-      const rawMsg = err.response?.data?.message
-      error.value = formatIamErrorMessage(rawMsg) || 'Error al registrar usuario.'
+      error.value = formatIamErrorMessage(err) || 'Error al registrar usuario.'
       return null
     } finally {
       isLoading.value = false
