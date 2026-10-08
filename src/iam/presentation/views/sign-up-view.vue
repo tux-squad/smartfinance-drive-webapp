@@ -407,28 +407,39 @@ const fillDemoData = () => {
 
 const handleSignUp = async () => {
   iamStore.error = null
+
+  const emailInput = document.getElementById('reg-username') as HTMLInputElement | null
+  const passwordInput =
+    (document.querySelector('#reg-password input') as HTMLInputElement | null) ||
+    (document.getElementById('reg-password') as HTMLInputElement | null)
+  const dniInput = document.getElementById('reg-dni') as HTMLInputElement | null
+
+  const cleanEmail = (emailInput?.value || username.value || '').trim()
+  const cleanPassword = (passwordInput?.value || password.value || '').trim()
+  const cleanDni = (dniInput?.value || dni.value || '').trim()
+
   const command = new SignUpCommand({
-    username: username.value,
-    password: password.value,
+    username: cleanEmail,
+    password: cleanPassword,
     roles: ['ROLE_USER']
   })
 
   const createdUser = await iamStore.signUp(command)
   if (createdUser && createdUser.id) {
     const signInOk = await iamStore.signIn({
-      username: username.value,
-      password: password.value
+      username: cleanEmail,
+      password: cleanPassword
     })
 
-    if (signInOk && dni.value && dni.value.length === 8) {
+    if (signInOk && cleanDni && cleanDni.length === 8) {
       try {
         const { useProfilesStore } = await import('@/profiles/application/profiles.store')
         const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
         const profilesStore = useProfilesStore()
         await profilesStore.createProfile(new CreateProfileCommand({
-          fullLegalNames: iamStore.reniecData?.fullLegalName || username.value.split('@')[0],
-          email: username.value,
-          nationalId: dni.value,
+          fullLegalNames: iamStore.reniecData?.fullLegalName || cleanEmail.split('@')[0],
+          email: cleanEmail,
+          nationalId: cleanDni,
           mobilePhone: phoneNumber.value || '',
           monthlyIncomeAmount: 3500,
           monthlyIncomeCurrency: 'PEN'

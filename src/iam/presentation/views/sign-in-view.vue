@@ -274,8 +274,15 @@ onMounted(() => {
 
 const handleSignIn = async () => {
   iamStore.error = null
-  const cleanEmail = username.value.trim()
-  const cleanPassword = password.value.trim()
+
+  // Capture DOM values directly in case browser autofill did not trigger v-model events
+  const emailInput = document.getElementById('username') as HTMLInputElement | null
+  const passwordInput =
+    (document.querySelector('#password input') as HTMLInputElement | null) ||
+    (document.getElementById('password') as HTMLInputElement | null)
+
+  const cleanEmail = (emailInput?.value || username.value || '').trim()
+  const cleanPassword = (passwordInput?.value || password.value || '').trim()
 
   if (rememberMe.value && typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_REMEMBERED_EMAIL, cleanEmail)
