@@ -29,262 +29,255 @@
       </Message>
 
       <!-- Form Inputs -->
-      <Fluid>
-        <form class="space-y-4" @submit.prevent="handleSignUp">
-          <!-- Step 1: DNI RENIEC Lookup -->
-          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Documento de Identidad (DNI)
-              </label>
-              <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
-            </div>
-
-            <div class="flex gap-2">
-              <IconField class="flex-1">
-                <InputIcon class="pi pi-id-card text-surface-400 text-xs" />
-                <InputText
-                  id="reg-dni"
-                  v-model="dni"
-                  maxlength="8"
-                  placeholder="Ingrese 8 dígitos de su DNI"
-                  class="w-full"
-                  fluid
-                />
-              </IconField>
-              <Button
-                type="button"
-                severity="secondary"
-                variant="outlined"
-                :loading="iamStore.isLookingUpDni"
-                :disabled="dni.length !== 8"
-                @click="searchDni"
-                v-tooltip.top="'Consultar nombres en RENIEC'"
-              >
-                <i class="pi pi-search" />
-              </Button>
-            </div>
-
-            <!-- RENIEC Verified Result Card -->
-            <div
-              v-if="iamStore.reniecData"
-              class="p-2.5 rounded-xl bg-primary-50/70 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-xs space-y-1"
-            >
-              <div class="flex items-center gap-1.5 font-bold text-primary">
-                <i class="pi pi-check-circle text-xs" />
-                <span>{{ iamStore.reniecData.fullLegalName }}</span>
-              </div>
-              <p v-if="iamStore.reniecData.district" class="text-[10px] text-surface-500">
-                {{ iamStore.reniecData.district }}, {{ iamStore.reniecData.province }} - {{ iamStore.reniecData.department }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Step 2: Email & Verification OTP -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.email') }}
-              </label>
-              <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                <i class="pi pi-check" /> Verificado
-              </span>
-            </div>
-
-            <div class="flex gap-2">
-              <IconField class="flex-1">
-                <InputIcon class="pi pi-envelope text-surface-400 text-xs" />
-                <InputText
-                  id="reg-username"
-                  v-model="username"
-                  type="email"
-                  required
-                  fluid
-                  :placeholder="t('iam.emailPlaceholder')"
-                />
-              </IconField>
-              <Button
-                type="button"
-                severity="secondary"
-                variant="outlined"
-                :disabled="!username || otpCooldown > 0 || iamStore.emailVerified"
-                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
-                @click="sendOtp"
-                class="text-xs shrink-0"
-              >
-                {{ otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : 'Enviar OTP') }}
-              </Button>
-            </div>
-
-            <!-- OTP Code Verification Input -->
-            <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
-              <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-                Ingrese el código de 6 dígitos enviado a su correo:
-              </span>
-              <div class="flex gap-2">
-                <InputText
-                  v-model="otpCode"
-                  maxlength="6"
-                  placeholder="Ej: 849201"
-                  fluid
-                  class="font-mono text-center tracking-widest text-sm"
-                />
-                <Button
-                  type="button"
-                  severity="primary"
-                  :disabled="otpCode.length !== 6"
-                  :loading="iamStore.isVerifyingOtp"
-                  @click="confirmOtp"
-                  class="text-xs shrink-0"
-                  label="Validar"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2.5: Phone Verification (Firebase SMS Auth) -->
-          <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
-            <div class="flex items-center justify-between">
-              <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Verificación Telefónica (SMS Firebase)
-              </label>
-              <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                <i class="pi pi-check" /> Verificado
-              </span>
-            </div>
-
-            <!-- Invisible reCAPTCHA container for Firebase Phone Auth -->
-            <div id="recaptcha-phone-container" class="hidden"></div>
-
-            <div class="flex gap-2">
-              <IconField class="flex-1">
-                <InputIcon class="pi pi-phone text-surface-400 text-xs" />
-                <InputText
-                  id="reg-phone"
-                  v-model="phoneNumber"
-                  placeholder="+51 987 654 321"
-                  :disabled="iamStore.phoneVerified"
-                  fluid
-                />
-              </IconField>
-              <Button
-                type="button"
-                severity="secondary"
-                variant="outlined"
-                :disabled="!phoneNumber || smsCooldown > 0 || iamStore.phoneVerified"
-                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
-                @click="handleSendSms"
-                class="text-xs shrink-0"
-              >
-                {{ smsCooldown > 0 ? `${smsCooldown}s` : (iamStore.phoneVerified ? 'Verificado' : 'Enviar SMS') }}
-              </Button>
-            </div>
-
-            <!-- SMS Code Verification Input -->
-            <div v-if="smsSent && !iamStore.phoneVerified" class="p-3 rounded-2xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 space-y-2">
-              <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-                Ingrese el código de 6 dígitos recibido por SMS:
-              </span>
-              <div class="flex gap-2">
-                <InputText
-                  v-model="phoneSmsCode"
-                  maxlength="6"
-                  placeholder="Ej: 123456"
-                  fluid
-                  class="font-mono text-center tracking-widest text-sm"
-                />
-                <Button
-                  type="button"
-                  severity="primary"
-                  :disabled="phoneSmsCode.length !== 6"
-                  :loading="iamStore.isVerifyingOtp"
-                  @click="handleVerifySms"
-                  class="text-xs shrink-0"
-                  label="Validar SMS"
-                />
-              </div>
-            </div>
-
-            <!-- Fallback manual token toggle -->
-            <div v-if="!iamStore.phoneVerified" class="pt-1">
-              <button
-                type="button"
-                @click="manualTokenPrompt = !manualTokenPrompt"
-                class="text-[10px] text-surface-500 hover:text-primary transition-colors underline"
-              >
-                {{ manualTokenPrompt ? 'Ocultar ingreso manual' : '¿Ya cuentas con un Firebase ID Token? Ingresar manualmente' }}
-              </button>
-
-              <div v-if="manualTokenPrompt" class="mt-2 flex gap-2">
-                <InputText
-                  v-model="phoneFirebaseToken"
-                  placeholder="Pegar Firebase ID Token..."
-                  fluid
-                  class="font-mono text-[11px]"
-                />
-                <Button
-                  type="button"
-                  severity="secondary"
-                  :disabled="!phoneFirebaseToken"
-                  :loading="iamStore.isLoading"
-                  @click="confirmPhoneToken"
-                  class="text-xs shrink-0"
-                  label="Validar Token"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3: Password -->
-          <div class="space-y-1.5">
-            <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.password') }}
+      <form class="space-y-4" @submit.prevent="handleSignUp">
+        <!-- Step 1: DNI RENIEC Lookup -->
+        <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+              Documento de Identidad (DNI)
             </label>
-            <Password
-              id="reg-password"
-              v-model="password"
-              required
-              toggleMask
-              fluid
-              :placeholder="t('iam.passwordPlaceholder')"
-            />
-            <span class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
-              <i class="pi pi-info-circle text-[10px]" />
-              <span>{{ t('iam.passwordHelp') }}</span>
+            <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <i class="pi pi-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <InputText
+                id="reg-dni"
+                v-model="dni"
+                maxlength="8"
+                placeholder="Ingrese 8 dígitos de su DNI"
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+              />
+            </div>
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              :loading="iamStore.isLookingUpDni"
+              :disabled="dni.length !== 8"
+              @click="searchDni"
+              class="!px-3.5 !py-2.5 !rounded-xl shrink-0"
+              v-tooltip.top="'Consultar nombres en RENIEC'"
+            >
+              <i class="pi pi-search text-xs" />
+            </Button>
+          </div>
+
+          <!-- RENIEC Verified Result Card -->
+          <div
+            v-if="iamStore.reniecData"
+            class="p-2.5 rounded-xl bg-primary-50/70 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-xs space-y-1"
+          >
+            <div class="flex items-center gap-1.5 font-bold text-primary">
+              <i class="pi pi-check-circle text-xs" />
+              <span>{{ iamStore.reniecData.fullLegalName }}</span>
+            </div>
+            <p v-if="iamStore.reniecData.district" class="text-[10px] text-surface-500">
+              {{ iamStore.reniecData.district }}, {{ iamStore.reniecData.province }} - {{ iamStore.reniecData.department }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2: Email & Verification OTP -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+              {{ t('iam.email') }}
+            </label>
+            <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+              <i class="pi pi-check" /> Verificado
             </span>
           </div>
 
-          <!-- Quick Fill Demo Button -->
-          <div class="flex justify-end pt-1">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <InputText
+                id="reg-username"
+                v-model="username"
+                type="email"
+                required
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+                :placeholder="t('iam.emailPlaceholder')"
+              />
+            </div>
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              :disabled="!username || otpCooldown > 0 || iamStore.emailVerified"
+              :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
+              @click="sendOtp"
+              class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
+              :label="otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : 'Enviar OTP')"
+            />
+          </div>
+
+          <!-- OTP Code Verification Input -->
+          <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
+            <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
+              Ingrese el código de 6 dígitos enviado a su correo:
+            </span>
+            <div class="flex items-center gap-2">
+              <InputText
+                v-model="otpCode"
+                maxlength="6"
+                placeholder="Ej: 849201"
+                class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
+              />
+              <Button
+                type="button"
+                severity="primary"
+                :disabled="otpCode.length !== 6"
+                :loading="iamStore.isVerifyingOtp"
+                @click="confirmOtp"
+                class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
+                label="Validar"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2.5: Phone Verification (Firebase SMS Auth) -->
+        <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
+          <div class="flex items-center justify-between">
+            <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+              Verificación Telefónica (SMS Firebase)
+            </label>
+            <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+              <i class="pi pi-check" /> Verificado
+            </span>
+          </div>
+
+          <!-- Invisible reCAPTCHA container for Firebase Phone Auth -->
+          <div id="recaptcha-phone-container" class="hidden"></div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <InputText
+                id="reg-phone"
+                v-model="phoneNumber"
+                placeholder="+51 987 654 321"
+                :disabled="iamStore.phoneVerified"
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+              />
+            </div>
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              :disabled="!phoneNumber || smsCooldown > 0 || iamStore.phoneVerified"
+              :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
+              @click="handleSendSms"
+              class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
+              :label="smsCooldown > 0 ? `${smsCooldown}s` : (iamStore.phoneVerified ? 'Verificado' : 'Enviar SMS')"
+            />
+          </div>
+
+          <!-- SMS Code Verification Input -->
+          <div v-if="smsSent && !iamStore.phoneVerified" class="p-3 rounded-2xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 space-y-2">
+            <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
+              Ingrese el código de 6 dígitos recibido por SMS:
+            </span>
+            <div class="flex items-center gap-2">
+              <InputText
+                v-model="phoneSmsCode"
+                maxlength="6"
+                placeholder="Ej: 123456"
+                class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
+              />
+              <Button
+                type="button"
+                severity="primary"
+                :disabled="phoneSmsCode.length !== 6"
+                :loading="iamStore.isVerifyingOtp"
+                @click="handleVerifySms"
+                class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
+                label="Validar SMS"
+              />
+            </div>
+          </div>
+
+          <!-- Fallback manual token toggle -->
+          <div v-if="!iamStore.phoneVerified" class="pt-1">
             <button
               type="button"
-              @click="fillDemoData"
-              class="text-xs text-primary hover:underline font-semibold flex items-center space-x-1"
+              @click="manualTokenPrompt = !manualTokenPrompt"
+              class="text-[10px] text-surface-500 hover:text-primary transition-colors underline"
             >
-              <i class="pi pi-sparkles text-xs"></i>
-              <span>{{ t('iam.fillDemoBtn') }}</span>
+              {{ manualTokenPrompt ? 'Ocultar ingreso manual' : '¿Ya cuentas con un Firebase ID Token? Ingresar manualmente' }}
             </button>
-          </div>
 
-          <!-- Informative note about Dealer / Financial Partner elevation -->
-          <div class="p-3 bg-surface-50 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 flex items-start space-x-2 text-xs text-surface-600 dark:text-surface-400">
-            <i class="pi pi-info-circle text-primary mt-0.5 shrink-0"></i>
-            <span>{{ t('iam.dealerNotice') }}</span>
+            <div v-if="manualTokenPrompt" class="mt-2 flex items-center gap-2">
+              <InputText
+                v-model="phoneFirebaseToken"
+                placeholder="Pegar Firebase ID Token..."
+                class="w-full font-mono !text-[11px] !py-2 !rounded-xl"
+              />
+              <Button
+                type="button"
+                severity="secondary"
+                :disabled="!phoneFirebaseToken"
+                :loading="iamStore.isLoading"
+                @click="confirmPhoneToken"
+                class="!text-xs !px-3 !py-2 !rounded-xl shrink-0"
+                label="Validar Token"
+              />
+            </div>
           </div>
+        </div>
 
-          <!-- Submit Button -->
-          <Button
-            type="submit"
-            :loading="iamStore.isLoading"
-            :label="iamStore.isLoading ? t('iam.registering') : t('iam.signUpBtn')"
-            icon="pi pi-user-plus"
-            iconPos="right"
-            severity="primary"
-            fluid
-            class="font-bold !py-2.5 shadow-md shadow-primary/20 rounded-xl transition-all"
+        <!-- Step 3: Password -->
+        <div class="space-y-1.5">
+          <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+            {{ t('iam.password') }}
+          </label>
+          <Password
+            id="reg-password"
+            v-model="password"
+            required
+            toggleMask
+            class="w-full !rounded-xl"
+            inputClass="w-full !text-xs !py-2.5 !rounded-xl"
+            :placeholder="t('iam.passwordPlaceholder')"
           />
-        </form>
-      </Fluid>
+          <span class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
+            <i class="pi pi-info-circle text-[10px]" />
+            <span>{{ t('iam.passwordHelp') }}</span>
+          </span>
+        </div>
+
+        <!-- Quick Fill Demo Button -->
+        <div class="flex justify-end pt-1">
+          <button
+            type="button"
+            @click="fillDemoData"
+            class="text-xs text-primary hover:underline font-semibold flex items-center space-x-1"
+          >
+            <i class="pi pi-sparkles text-xs"></i>
+            <span>{{ t('iam.fillDemoBtn') }}</span>
+          </button>
+        </div>
+
+        <!-- Informative note about Dealer / Financial Partner elevation -->
+        <div class="p-3 bg-surface-50 dark:bg-surface-800 rounded-xl border border-surface-200 dark:border-surface-700 flex items-start space-x-2 text-xs text-surface-600 dark:text-surface-400">
+          <i class="pi pi-info-circle text-primary mt-0.5 shrink-0"></i>
+          <span>{{ t('iam.dealerNotice') }}</span>
+        </div>
+
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          :loading="iamStore.isLoading"
+          :label="iamStore.isLoading ? t('iam.registering') : t('iam.signUpBtn')"
+          icon="pi pi-user-plus"
+          iconPos="right"
+          severity="primary"
+          class="w-full font-bold !py-3 shadow-md shadow-primary/20 !rounded-xl transition-all !text-xs"
+        />
+      </form>
 
       <!-- Footer navigation link -->
       <div class="text-center text-xs text-surface-500 pt-2 border-t border-surface-100 dark:border-surface-800">
@@ -310,9 +303,6 @@ import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
-import Fluid from 'primevue/fluid'
-import IconField from 'primevue/iconfield'
-import InputIcon from 'primevue/inputicon'
 
 const { t } = useI18n()
 const router = useRouter()
