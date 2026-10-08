@@ -3,9 +3,10 @@
     <div class="max-w-lg w-full space-y-6 bg-surface-0 dark:bg-surface-900 p-6 sm:p-8 rounded-3xl border border-surface-200 dark:border-surface-800 shadow-xl">
       <!-- Form Header -->
       <div class="text-center space-y-2">
-        <router-link to="/home" class="inline-flex items-center space-x-2 text-primary font-bold mb-1">
-          <div class="w-10 h-10 rounded-xl bg-primary text-primary-contrast flex items-center justify-center text-lg shadow-md">
-            <i class="pi pi-car"></i>
+        <router-link to="/home" class="inline-flex items-center space-x-2.5 text-primary font-bold mb-1">
+          <div class="w-10 h-10 rounded-xl bg-surface-100 dark:bg-surface-800 p-1 flex items-center justify-center shadow-xs border border-surface-200 dark:border-surface-700">
+            <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain dark:hidden" />
+            <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain hidden dark:block" />
           </div>
           <span class="text-xl font-black text-surface-900 dark:text-surface-0">SmartFinance Drive</span>
         </router-link>

@@ -13,6 +13,12 @@
           <i class="pi pi-bars text-lg" />
         </button>
 
+        <!-- Mobile Brand Logo -->
+        <router-link to="/home" class="lg:hidden flex items-center gap-2">
+          <img src="/logo.svg" alt="SmartFinance Logo" class="h-6 w-auto object-contain dark:hidden" />
+          <img src="/logo-white.svg" alt="SmartFinance Logo" class="h-6 w-auto object-contain hidden dark:block" />
+        </router-link>
+
         <!-- Desktop Quick Slim Toggle -->
         <button
           type="button"

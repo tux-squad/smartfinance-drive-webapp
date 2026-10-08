@@ -29,9 +29,9 @@
             @click="layoutStore.closeMobile"
           >
             <div
-              class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white text-xl shrink-0 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform"
+              class="w-11 h-11 rounded-2xl bg-white/10 p-1.5 flex items-center justify-center shrink-0 shadow-lg shadow-black/20 group-hover:scale-105 transition-transform border border-white/10"
             >
-              <i class="pi pi-car"></i>
+              <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain" />
             </div>
             <div v-if="!layoutStore.isSlim" class="overflow-hidden transition-all duration-300">
               <div class="text-sm font-black leading-tight tracking-wide text-white">SmartFinance</div>
