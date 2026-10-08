@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans antialiased text-surface-800 dark:text-surface-100">
+  <div class="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans antialiased text-surface-800 dark:text-surface-100 overflow-y-auto">
     <div class="max-w-lg w-full space-y-6 bg-surface-0 dark:bg-surface-900 p-6 sm:p-8 rounded-3xl border border-surface-200 dark:border-surface-800 shadow-xl">
       <!-- Form Header -->
       <div class="text-center space-y-2">
@@ -48,8 +48,8 @@
                   v-model="dni"
                   maxlength="8"
                   placeholder="Ingrese 8 dígitos de su DNI"
+                  class="w-full"
                   fluid
-                  @input="handleDniInput"
                 />
               </IconField>
               <Button
@@ -154,7 +154,7 @@
             </div>
 
             <!-- Invisible reCAPTCHA container for Firebase Phone Auth -->
-            <div id="recaptcha-phone-container"></div>
+            <div id="recaptcha-phone-container" class="hidden"></div>
 
             <div class="flex gap-2">
               <IconField class="flex-1">
@@ -298,7 +298,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
@@ -334,12 +334,16 @@ const smsCooldown = ref(0)
 const phoneFirebaseToken = ref('')
 const manualTokenPrompt = ref(false)
 
-const handleDniInput = () => {
-  dni.value = dni.value.replace(/\D/g, '').slice(0, 8)
-  if (dni.value.length === 8) {
+watch(dni, (val) => {
+  if (!val) return
+  const clean = val.replace(/\D/g, '').slice(0, 8)
+  if (clean !== val) {
+    dni.value = clean
+  }
+  if (clean.length === 8) {
     searchDni()
   }
-}
+})
 
 const searchDni = async () => {
   if (dni.value.length === 8) {
