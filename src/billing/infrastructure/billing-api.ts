@@ -8,6 +8,17 @@ export interface CheckoutSessionCommand {
   cancelUrl: string
 }
 
+export interface CreateBillingPlanResource {
+  name: string
+  description?: string
+  price: number
+  currency: string
+  billingCycle?: 'MONTHLY' | 'ANNUAL' | string
+  maxVehicleListings: number
+  maxSimulationsPerMonth: number
+  stripePriceId?: string
+}
+
 export class BillingApi extends BaseApi {
   /**
    * 8.1 List all active commercial billing plans.
@@ -32,6 +43,26 @@ export class BillingApi extends BaseApi {
    */
   public async getPlanById(planId: number): Promise<BillingPlan> {
     const response: AxiosResponse<any> = await this.http.get(`/api/v1/billing/plans/${planId}`)
+    const p = response.data
+    return new BillingPlan(
+      p.id,
+      p.name,
+      p.description || '',
+      p.price,
+      p.currency || 'USD',
+      p.billingCycle || 'MONTHLY',
+      p.maxVehicleListings || 100,
+      p.maxSimulationsPerMonth || 500,
+      p.stripePriceId
+    )
+  }
+
+  /**
+   * 8.3 Create new commercial billing plan (Admin) (#98).
+   * POST /api/v1/billing/plans
+   */
+  public async createPlan(resource: CreateBillingPlanResource): Promise<BillingPlan> {
+    const response: AxiosResponse<any> = await this.http.post('/api/v1/billing/plans', resource)
     const p = response.data
     return new BillingPlan(
       p.id,
@@ -167,5 +198,22 @@ export class BillingApi extends BaseApi {
       m.activeListingsCount ?? 8,
       m.period ?? 'LAST_30_DAYS'
     )
+  }
+
+  /**
+   * 8.13 Process Stripe Webhook event (#106).
+   * POST /api/v1/billing/webhooks/stripe
+   */
+  public async postStripeWebhook(payload: any, signature?: string): Promise<string> {
+    const headers: Record<string, string> = {}
+    if (signature) {
+      headers['Stripe-Signature'] = signature
+    }
+    const response: AxiosResponse<string> = await this.http.post(
+      '/api/v1/billing/webhooks/stripe',
+      payload,
+      { headers }
+    )
+    return response.data
   }
 }

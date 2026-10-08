@@ -280,5 +280,35 @@ export class PartnersApi extends BaseApi {
     )
     return response.data
   }
+
+  /**
+   * 4.17 Initiate Corporate Verification by User ID (Admin / Self) (#34).
+   * POST /api/v1/users/{userId}/corporate-verification/initiate
+   */
+  public async initiateCorporateVerificationForUser(
+    userId: string | number,
+    resource: import('./corporate-verification.resource').InitiateCorporateVerificationResource
+  ): Promise<{ message: string, corporateEmail: string, expiresInSeconds: number }> {
+    const response = await this.http.post<{ message: string, corporateEmail: string, expiresInSeconds: number }>(
+      `/api/v1/users/${userId}/corporate-verification/initiate`,
+      resource
+    )
+    return response.data
+  }
+
+  /**
+   * 4.18 Confirm Corporate Verification by User ID (Admin / Self) (#35).
+   * POST /api/v1/users/{userId}/corporate-verification/confirm
+   */
+  public async confirmCorporateVerificationForUser(
+    userId: string | number,
+    resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource
+  ): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
+      `/api/v1/users/${userId}/corporate-verification/confirm`,
+      resource
+    )
+    return response.data
+  }
 }
 

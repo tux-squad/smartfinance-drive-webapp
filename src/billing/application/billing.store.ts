@@ -123,6 +123,30 @@ export const useBillingStore = defineStore('billing', () => {
     }
   }
 
+  const createPlan = async (resource: import('../infrastructure/billing-api').CreateBillingPlanResource): Promise<BillingPlan | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const newPlan = await billingApi.createPlan(resource)
+      plans.value.push(newPlan)
+      return newPlan
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al crear el plan de facturación.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const triggerStripeWebhook = async (payload: any, signature?: string): Promise<string | null> => {
+    try {
+      return await billingApi.postStripeWebhook(payload, signature)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al procesar el webhook de Stripe.'
+      return null
+    }
+  }
+
   return {
     plans,
     currentSubscription,
@@ -137,7 +161,9 @@ export const useBillingStore = defineStore('billing', () => {
     downloadInvoicePdf,
     reconcileInvoice,
     getCheckoutUrl,
-    cancelCurrentSubscription
+    cancelCurrentSubscription,
+    createPlan,
+    triggerStripeWebhook
   }
 })
 

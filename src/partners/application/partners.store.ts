@@ -217,11 +217,13 @@ export const usePartnersStore = defineStore('partners', () => {
     }
   }
 
-  const initiateCorporateVerification = async (ruc: string, corporateEmail: string): Promise<boolean> => {
+  const initiateCorporateVerification = async (ruc: string, corporateEmail: string, userId?: string | number): Promise<boolean> => {
     corporateLoading.value = true
     corporateError.value = null
     try {
-      const res = await partnersApi.initiateCorporateVerification({ ruc, corporateEmail })
+      const res = userId
+        ? await partnersApi.initiateCorporateVerificationForUser(userId, { ruc, corporateEmail })
+        : await partnersApi.initiateCorporateVerification({ ruc, corporateEmail })
       corporateSuccess.value = res.message || 'Código OTP enviado al correo corporativo.'
       return true
     } catch (err: any) {
@@ -232,11 +234,13 @@ export const usePartnersStore = defineStore('partners', () => {
     }
   }
 
-  const confirmCorporateVerification = async (ruc: string, verificationCode: string): Promise<boolean> => {
+  const confirmCorporateVerification = async (ruc: string, verificationCode: string, userId?: string | number): Promise<boolean> => {
     corporateLoading.value = true
     corporateError.value = null
     try {
-      const res = await partnersApi.confirmCorporateVerification({ ruc, verificationCode })
+      const res = userId
+        ? await partnersApi.confirmCorporateVerificationForUser(userId, { ruc, verificationCode })
+        : await partnersApi.confirmCorporateVerification({ ruc, verificationCode })
       corporateSuccess.value = res.message || 'Verificación corporativa confirmada con éxito.'
       return true
     } catch (err: any) {
