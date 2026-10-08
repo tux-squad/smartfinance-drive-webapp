@@ -284,7 +284,7 @@ const galleryImages = computed<string[]>(() => {
     return vehicle.value.images.slice(0, 4)
   }
   if (vehicle.value.imagePath) {
-    return [vehicle.value.imagePath, vehicle.value.imagePath, vehicle.value.imagePath, vehicle.value.imagePath]
+    return [vehicle.value.imagePath]
   }
   return []
 })
@@ -296,16 +296,9 @@ const currentHeroImage = computed<string>(() => {
   return vehicle.value?.imagePath || ''
 })
 
-const onImageError = (event: Event, brand?: string) => {
+const onImageError = (event: Event, _brand?: string) => {
   const target = event.target as HTMLImageElement
-  const b = (brand || '').toLowerCase()
-  if (b.includes('toyota')) {
-    target.src = 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=1200&q=80'
-  } else if (b.includes('honda')) {
-    target.src = 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80'
-  } else {
-    target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
-  }
+  target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
 }
 
 onMounted(async () => {
@@ -324,7 +317,7 @@ const isHybridOrEfficient = computed(() => {
 })
 
 const estimatedMonthlyPayment = computed(() => {
-  if (!vehicle.value) return '250'
+  if (!vehicle.value) return '0'
   const price = vehicle.value.priceAmount
   // Standard 48 months with 10% down payment and ~8.9% rate:
   const financed = price * 0.9
@@ -340,7 +333,7 @@ const dealerEntity = computed(() => {
 })
 
 const dealerName = computed(() => {
-  return dealerEntity.value?.name || 'AutoPlaza Oficial'
+  return dealerEntity.value?.name || 'Concesionaria Oficial'
 })
 
 const dealerInitials = computed(() => {

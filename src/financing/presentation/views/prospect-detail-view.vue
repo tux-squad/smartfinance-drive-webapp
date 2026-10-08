@@ -213,35 +213,20 @@ const catalogStore = useCatalogStore()
 const financingStore = useFinancingStore()
 const crmStore = useCrmStore()
 
-const prospectName = ref('Carlos Mendoza')
-const prospectStatus = ref('Pre-evaluado')
+const prospectName = ref('')
+const prospectStatus = ref('')
 const actionSuccessMessage = ref<string | null>(null)
 const newNote = ref('')
 
 const financialData = reactive({
-  monthlyIncome: 3500,
-  tenure: '3 años (Indefinido)',
-  bankName: 'BCP - Banco de Crédito',
-  creditScore: 720,
-  scoreCategory: 'Bueno',
-  downPaymentPercent: 20,
-  downPaymentAmount: 5380
+  monthlyIncome: 0,
+  tenure: '-',
+  bankName: '-',
+  creditScore: 0,
+  scoreCategory: '-',
+  downPaymentPercent: 0,
+  downPaymentAmount: 0
 })
-
-const defaultLogs = [
-  {
-    time: 'Hoy, 10:30 AM',
-    content: 'Contacto telefónico realizado por el asesor. Cliente interesado en agendar cita para ver el vehículo.'
-  },
-  {
-    time: 'Ayer, 04:15 PM',
-    content: 'Pre-evaluación completada con éxito. Capacidad de pago validada para crédito automotriz.'
-  },
-  {
-    time: '18 Sep, 02:00 PM',
-    content: 'Solicitud web recibida a través del portal SmartFinance Drive.'
-  }
-]
 
 const activityLogs = computed(() => {
   if (crmStore.timelineNotes.length > 0) {
@@ -250,7 +235,7 @@ const activityLogs = computed(() => {
       content: n.content
     }))
   }
-  return defaultLogs
+  return []
 })
 
 onMounted(async () => {
@@ -263,15 +248,15 @@ onMounted(async () => {
   ])
 
   if (crmStore.currentProspect) {
-    prospectName.value = crmStore.currentProspect.fullName
-    prospectStatus.value = crmStore.currentProspect.statusLabel
-    financialData.monthlyIncome = crmStore.currentProspect.monthlyIncome || 3500
-    financialData.downPaymentAmount = crmStore.currentProspect.downPayment || 5380
+    prospectName.value = crmStore.currentProspect.fullName || 'Prospecto'
+    prospectStatus.value = crmStore.currentProspect.statusLabel || 'En seguimiento'
+    financialData.monthlyIncome = crmStore.currentProspect.monthlyIncome || 0
+    financialData.downPaymentAmount = crmStore.currentProspect.downPayment || 0
     return
   }
 
-  // If a specific simulation ID was passed, customize prospect name and amounts
-  if (paramId && paramId !== 'carlos-mendoza') {
+  // If a simulation ID was passed as route param
+  if (paramId) {
     const simulation = financingStore.simulations.find(s => s.id === paramId)
     if (simulation) {
       prospectName.value = `Prospecto #${paramId.substring(0, 8)}`
@@ -282,10 +267,10 @@ onMounted(async () => {
 })
 
 const vehicle = computed(() => {
-  if (catalogStore.vehicles.length > 0) {
-    return catalogStore.vehicles[0]
+  if (crmStore.currentProspect?.interestedVehicleId) {
+    return catalogStore.vehicles.find(v => v.id === crmStore.currentProspect?.interestedVehicleId) || null
   }
-  return null
+  return catalogStore.vehicles[0] || null
 })
 
 const goToVehicleDetail = () => {
@@ -296,9 +281,9 @@ const goToVehicleDetail = () => {
 
 const handleAddNote = async () => {
   const noteContent = newNote.value.trim()
-  if (!noteContent) return
+  const paramId = String(route.params.id || '')
+  if (!noteContent || !paramId) return
 
-  const paramId = String(route.params.id || 'carlos-mendoza')
   await crmStore.addProspectNote(paramId, noteContent)
 
   newNote.value = ''
@@ -307,12 +292,12 @@ const handleAddNote = async () => {
 
 const handleScheduleTestDrive = async () => {
   const paramId = String(route.params.id || '')
-  const vId = vehicle.value?.id || 'v-1'
+  if (!paramId || !vehicle.value?.id) return
   const targetDate = new Date(Date.now() + 86400000 * 2).toISOString()
 
   await crmStore.scheduleTestDrive({
-    vehicleId: vId,
-    dealershipId: 'dealership-1',
+    vehicleId: vehicle.value.id,
+    dealershipId: vehicle.value.financialEntityId || '',
     scheduledDateTime: targetDate,
     notes: `Prueba de manejo para ${prospectName.value}`
   })

@@ -147,7 +147,6 @@ onMounted(async () => {
 })
 
 const filteredDealers = computed<ConcessionaireCard[]>(() => {
-  // If real dealerships are loaded from GET /api/v1/dealerships
   if (partnersStore.dealerships.length > 0) {
     return partnersStore.dealerships.map((dealer) => ({
       id: dealer.id,
@@ -164,22 +163,7 @@ const filteredDealers = computed<ConcessionaireCard[]>(() => {
     })
   }
 
-  // Fallback to financial entities with rates
-  const list: ConcessionaireCard[] = partnersStore.financialEntities.map((entity) => ({
-    id: entity.id,
-    name: entity.name,
-    location: entity.ruc ? `RUC: ${entity.ruc} · Perú` : 'Lima, Perú',
-    tag: entity.rateBenchmarks.length > 0 ? `${entity.rateBenchmarks.length} Planes de tasa disponibles` : 'Entidad Verificada'
-  }))
-
-  return list.filter(d => {
-    const q = searchQuery.value.toLowerCase().trim()
-    const matchesSearch = !q ||
-      d.name.toLowerCase().includes(q) ||
-      d.location.toLowerCase().includes(q)
-    const matchesLocation = !selectedLocation.value || d.location.includes(selectedLocation.value)
-    return matchesSearch && matchesLocation
-  })
+  return []
 })
 
 const handleViewInventory = (dealer: ConcessionaireCard) => {

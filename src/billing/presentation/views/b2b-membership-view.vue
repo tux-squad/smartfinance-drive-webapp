@@ -205,46 +205,46 @@ const billingStore = useBillingStore()
 const feedbackMessage = ref<string | null>(null)
 
 const planName = computed(() => {
-  return billingStore.activePlan?.name || 'Plan Concesionaria Premium'
+  return billingStore.activePlan?.name || 'Sin plan asignado'
 })
 
 const planPrice = computed(() => {
-  return billingStore.activePlan?.price || 349
+  return billingStore.activePlan?.price ?? 0
 })
 
 const maxListings = computed(() => {
-  return billingStore.activePlan?.maxVehicleListings || 100
+  return billingStore.activePlan?.maxVehicleListings ?? 0
 })
 
 const maxSimulations = computed(() => {
-  return billingStore.activePlan?.maxSimulationsPerMonth || 500
+  return billingStore.activePlan?.maxSimulationsPerMonth ?? 0
 })
 
 const totalLeadsCount = computed(() => {
-  return billingStore.dealerMetrics?.totalLeadsGenerated || 45
+  return billingStore.dealerMetrics?.totalLeadsGenerated ?? 0
 })
 
 const conversionRateValue = computed(() => {
-  return billingStore.dealerMetrics?.conversionRate || 18.2
+  return billingStore.dealerMetrics?.conversionRate ?? 0
 })
 
 const vehicleViewsCount = computed(() => {
-  return billingStore.dealerMetrics?.totalVehicleViews || 1850
+  return billingStore.dealerMetrics?.totalVehicleViews ?? 0
 })
 
 const activeListingsCount = computed(() => {
-  return billingStore.dealerMetrics?.activeListingsCount || 12
+  return billingStore.dealerMetrics?.activeListingsCount ?? 0
 })
 
 const roiValue = computed(() => {
-  return billingStore.dealerMetrics?.membershipRoi || '5.4x'
+  return billingStore.dealerMetrics?.membershipRoi || '0.0x'
 })
 
 const subscriptionStatus = computed(() => {
   if (billingStore.currentSubscription?.status === 'ACTIVE') {
     return 'Suscripción Activa'
   }
-  return 'Suscripción Activa'
+  return billingStore.currentSubscription?.status || 'Sin suscripción'
 })
 
 const nextBillingDate = computed(() => {

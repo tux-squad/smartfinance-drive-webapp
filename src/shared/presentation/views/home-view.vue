@@ -302,9 +302,9 @@
             <span>{{ t('dashboard.buyer.scoreTitle') }}</span>
             <i class="pi pi-shield text-indigo-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">745 pts</div>
+          <div class="text-2xl font-extrabold text-gray-950">{{ buyerScore }}</div>
           <span class="inline-block text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-            {{ t('dashboard.buyer.scoreLevel') }}
+            {{ buyerScoreLevel }}
           </span>
         </div>
 
@@ -313,7 +313,7 @@
             <span>{{ t('dashboard.buyer.capacityTitle') }}</span>
             <i class="pi pi-dollar text-emerald-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">$ 35,000 USD</div>
+          <div class="text-2xl font-extrabold text-gray-950">{{ buyerCapacity }}</div>
           <span class="inline-block text-[11px] font-medium text-gray-500">
             {{ t('dashboard.buyer.capacitySub') }}
           </span>
@@ -324,7 +324,7 @@
             <span>{{ t('dashboard.buyer.simulationsTitle') }}</span>
             <i class="pi pi-calculator text-blue-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">{{ t('dashboard.buyer.simulationsCount') }}</div>
+          <div class="text-2xl font-extrabold text-gray-950">{{ buyerSimulationsCount }}</div>
           <router-link to="/simulations" class="inline-block text-[11px] font-bold text-blue-600 hover:underline">
             {{ t('dashboard.buyer.simulationsLink') }}
           </router-link>
@@ -335,8 +335,8 @@
             <span>{{ t('dashboard.buyer.applicationsTitle') }}</span>
             <i class="pi pi-check-circle text-teal-600"></i>
           </div>
-          <div class="text-2xl font-extrabold text-gray-950">{{ t('dashboard.buyer.applicationsStatus') }}</div>
-          <router-link to="/applications" class="inline-block text-[11px] font-bold text-teal-600 hover:underline">
+          <div class="text-2xl font-extrabold text-gray-950">{{ buyerApplicationsStatus }}</div>
+          <router-link to="/reports/applications" class="inline-block text-[11px] font-bold text-teal-600 hover:underline">
             {{ t('dashboard.buyer.applicationsLink') }}
           </router-link>
         </div>
@@ -396,22 +396,22 @@
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.receivedTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">124</div>
+          <div class="text-3xl font-black text-gray-950">{{ bankReceivedCount }}</div>
           <span class="text-xs text-emerald-600 font-semibold">{{ t('dashboard.bank.receivedGrowth') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.approvedTitle') }}</span>
-          <div class="text-3xl font-black text-emerald-600">86</div>
+          <div class="text-3xl font-black text-emerald-600">{{ bankApprovedCount }}</div>
           <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.approvalRate') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.rateTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">9.85%</div>
+          <div class="text-3xl font-black text-gray-950">{{ bankAvgRate }}</div>
           <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.rateSub') }}</span>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.portfolioTitle') }}</span>
-          <div class="text-3xl font-black text-blue-900">$ 1.85M</div>
+          <div class="text-3xl font-black text-blue-900">{{ bankEntitiesCount }} activas</div>
           <span class="text-xs text-blue-600 font-medium">{{ t('dashboard.bank.portfolioSub') }}</span>
         </div>
       </div>
@@ -432,19 +432,19 @@
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.dealersTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">28</div>
+          <div class="text-3xl font-black text-gray-950">{{ adminDealersCount }}</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.banksTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">6</div>
+          <div class="text-3xl font-black text-gray-950">{{ adminBanksCount }}</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.vehiclesTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">142</div>
+          <div class="text-3xl font-black text-gray-950">{{ adminVehiclesCount }}</div>
         </div>
         <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.usersTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">1,840</div>
+          <div class="text-3xl font-black text-gray-950">{{ adminUsersCount }}</div>
         </div>
       </div>
     </template>
@@ -458,27 +458,74 @@ import { useI18n } from 'vue-i18n'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useBillingStore } from '@/billing/application/billing.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
+import { useScoringStore } from '@/scoring/application/scoring.store'
+import { useFinancingStore } from '@/financing/application/financing.store'
+import { usePartnersStore } from '@/partners/application/partners.store'
 
 const { t } = useI18n()
 const iamStore = useIamStore()
 const billingStore = useBillingStore()
 const catalogStore = useCatalogStore()
+const scoringStore = useScoringStore()
+const financingStore = useFinancingStore()
+const partnersStore = usePartnersStore()
 
 const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
 const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
 const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
-// Dealer Metrics with hardcoded fallback if API returns empty
-const dealerLeadsCount = computed(() => billingStore.dealerMetrics?.totalLeadsGenerated || 45)
-const dealerConversionRate = computed(() => billingStore.dealerMetrics?.conversionRate || 18.2)
-const dealerViewsCount = computed(() => billingStore.dealerMetrics?.totalVehicleViews || 1850)
-const dealerListingsCount = computed(() => billingStore.dealerMetrics?.activeListingsCount || 12)
-const dealerRoiValue = computed(() => billingStore.dealerMetrics?.membershipRoi || '5.4x')
+// Dealer Metrics directly from real store without hardcoded fallbacks
+const dealerLeadsCount = computed(() => billingStore.dealerMetrics?.totalLeadsGenerated ?? 0)
+const dealerConversionRate = computed(() => billingStore.dealerMetrics?.conversionRate ?? 0)
+const dealerViewsCount = computed(() => billingStore.dealerMetrics?.totalVehicleViews ?? 0)
+const dealerListingsCount = computed(() => billingStore.dealerMetrics?.activeListingsCount ?? catalogStore.vehicles.length)
+const dealerRoiValue = computed(() => billingStore.dealerMetrics?.membershipRoi || '0.0x')
+
+// Buyer Metrics from real stores
+const buyerScore = computed(() => scoringStore.currentScore ? `${scoringStore.currentScore.score} pts` : 'Sin evaluar')
+const buyerScoreLevel = computed(() => scoringStore.currentScore?.riskTierLabel || 'Sin registro')
+const buyerCapacity = computed(() => scoringStore.currentScore ? scoringStore.currentScore.formattedMaxLoan : 'Pendiente')
+const buyerSimulationsCount = computed(() => financingStore.simulations.length)
+const buyerApplicationsStatus = computed(() => `${financingStore.creditApplications.length} activas`)
+
+// Bank & Admin Metrics
+const bankReceivedCount = computed(() => financingStore.simulations.length)
+const bankApprovedCount = computed(() => financingStore.simulations.filter(s => s.tcea > 0).length)
+const bankAvgRate = computed(() => {
+  if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.rateBenchmarks?.length) {
+    const firstRate = partnersStore.financialEntities[0].rateBenchmarks[0]?.annualEffectiveRate
+    return firstRate ? `${firstRate}%` : '-'
+  }
+  return '-'
+})
+const bankEntitiesCount = computed(() => partnersStore.financialEntities.length)
+
+const adminDealersCount = computed(() => partnersStore.dealerships.length)
+const adminBanksCount = computed(() => partnersStore.financialEntities.length)
+const adminVehiclesCount = computed(() => catalogStore.vehicles.length)
+const adminUsersCount = computed(() => partnersStore.dealerships.length + partnersStore.financialEntities.length)
 
 onMounted(async () => {
   if (isDealer.value) {
     await Promise.all([
       billingStore.fetchBillingData(),
+      catalogStore.fetchVehicles()
+    ])
+  } else if (isBank.value) {
+    await Promise.all([
+      partnersStore.fetchFinancialEntities(),
+      financingStore.fetchSimulations()
+    ])
+  } else if (isAdmin.value) {
+    await Promise.all([
+      partnersStore.fetchDealerships(),
+      partnersStore.fetchFinancialEntities(),
+      catalogStore.fetchVehicles()
+    ])
+  } else {
+    await Promise.all([
+      scoringStore.fetchCreditScores(),
+      financingStore.fetchSimulations(),
       catalogStore.fetchVehicles()
     ])
   }

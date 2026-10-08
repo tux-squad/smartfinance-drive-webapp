@@ -184,87 +184,15 @@ onMounted(async () => {
   await loadInventory()
 })
 
-const fallbackVehicles: Vehicle[] = [
-  {
-    id: 'v-toyota-cross-2023',
-    userId: 'dealer-user-1',
-    financialEntityId: 'fe-bcp-1',
-    brand: 'Toyota',
-    model: 'Corolla Cross',
-    manufactureYear: 2023,
-    condition: 'NEW',
-    priceAmount: 26900,
-    currency: 'USD',
-    imagePath: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=80',
-    status: 'ACTIVE',
-    images: [],
-    formattedPrice: '$ 26,900.00',
-    displayName: 'Toyota Corolla Cross (2023)'
-  } as unknown as Vehicle,
-  {
-    id: 'v-honda-crv-2024',
-    userId: 'dealer-user-1',
-    financialEntityId: 'fe-bbva-1',
-    brand: 'Honda',
-    model: 'CR-V',
-    manufactureYear: 2024,
-    condition: 'NEW',
-    priceAmount: 34500,
-    currency: 'USD',
-    imagePath: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80',
-    status: 'RESERVED',
-    images: [],
-    formattedPrice: '$ 34,500.00',
-    displayName: 'Honda CR-V (2024)'
-  } as unknown as Vehicle,
-  {
-    id: 'v-mazda-cx5-2023',
-    userId: 'dealer-user-1',
-    financialEntityId: 'fe-interbank-1',
-    brand: 'Mazda',
-    model: 'CX-5',
-    manufactureYear: 2023,
-    condition: 'NEW',
-    priceAmount: 29800,
-    currency: 'USD',
-    imagePath: 'https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=800&q=80',
-    status: 'ACTIVE',
-    images: [],
-    formattedPrice: '$ 29,800.00',
-    displayName: 'Mazda CX-5 (2023)'
-  } as unknown as Vehicle,
-  {
-    id: 'v-hyundai-tucson-2023',
-    userId: 'dealer-user-1',
-    financialEntityId: 'fe-banbif-1',
-    brand: 'Hyundai',
-    model: 'Tucson',
-    manufactureYear: 2023,
-    condition: 'NEW',
-    priceAmount: 28900,
-    currency: 'USD',
-    imagePath: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
-    status: 'SOLD',
-    images: [],
-    formattedPrice: '$ 28,900.00',
-    displayName: 'Hyundai Tucson (2023)'
-  } as unknown as Vehicle
-]
-
 const dealerVehicles = computed(() => {
   if (userSpecificVehicles.value.length > 0) {
     return userSpecificVehicles.value
   }
-  if (catalogStore.vehicles.length > 0) {
-    return catalogStore.vehicles
-  }
-  return fallbackVehicles
+  return catalogStore.vehicles || []
 })
 
-const getDaysPublished = (index: number): string => {
-  const days = [4, 14, 28, 2, 45, 11, 7, 19]
-  const val = days[index % days.length] ?? 5
-  return `${val} días`
+const getDaysPublished = (_index: number): string => {
+  return '-'
 }
 
 const handleStatusChange = async (car: Vehicle, newStatus: string) => {

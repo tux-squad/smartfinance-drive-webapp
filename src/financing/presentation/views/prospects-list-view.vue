@@ -145,7 +145,6 @@ onMounted(async () => {
 })
 
 const prospectsList = computed(() => {
-  // If CRM backend returns prospects from GET /api/v1/dealers/me/prospects
   if (crmStore.prospects.length > 0) {
     return crmStore.prospects.map((p) => {
       const v = catalogStore.vehicles.find(car => car.id === p.interestedVehicleId)
@@ -154,68 +153,16 @@ const prospectsList = computed(() => {
         name: p.fullName,
         email: p.email,
         vehicleName: v?.displayName || p.vehicleName || 'Vehículo de Interés',
-        vehiclePrice: v?.priceAmount || 25000,
+        vehiclePrice: v?.priceAmount || 0,
         status: p.statusLabel,
-        monthlyIncome: p.monthlyIncome || 3500,
-        downPayment: p.downPayment || 5000,
-        downPaymentPercent: 20
+        monthlyIncome: p.monthlyIncome || 0,
+        downPayment: p.downPayment || 0,
+        downPaymentPercent: p.downPayment && v?.priceAmount ? Math.round((p.downPayment / v.priceAmount) * 100) : 0
       }
     })
   }
 
-  // Fallback from simulations or default leads based on real data
-  const defaultLeads = [
-    {
-      id: 'carlos-mendoza',
-      name: 'Carlos Mendoza',
-      email: 'carlos.mendoza@gmail.com',
-      vehicleName: 'Toyota Corolla Cross (2023)',
-      vehiclePrice: 26900,
-      status: 'Pre-evaluado',
-      monthlyIncome: 3500,
-      downPayment: 5380,
-      downPaymentPercent: 20
-    },
-    {
-      id: 'ana-valdivia',
-      name: 'Ana Sofía Valdivia',
-      email: 'ana.valdivia@outlook.com',
-      vehicleName: 'Honda CR-V (2024)',
-      vehiclePrice: 35500,
-      status: 'Crédito Aprobado',
-      monthlyIncome: 4200,
-      downPayment: 7100,
-      downPaymentPercent: 20
-    },
-    {
-      id: 'roberto-gomez',
-      name: 'Roberto Gómez',
-      email: 'roberto.gomez@empresa.com',
-      vehicleName: 'Mazda CX-5 (2023)',
-      vehiclePrice: 28990,
-      status: 'En Evaluación',
-      monthlyIncome: 2800,
-      downPayment: 4348,
-      downPaymentPercent: 15
-    }
-  ]
-
-  if (financingStore.simulations.length > 0) {
-    const fromSimulations = financingStore.simulations.map((sim, idx) => ({
-      id: sim.id,
-      name: idx === 0 ? 'Carlos Mendoza' : `Cliente #${sim.id.substring(0, 6)}`,
-      email: `contacto_${sim.id.substring(0, 6)}@smartfinance.com`,
-      vehicleName: catalogStore.vehicles[idx % (catalogStore.vehicles.length || 1)]?.displayName || 'Vehículo en Catálogo',
-      vehiclePrice: sim.vehiclePriceAmount,
-      status: 'Pre-evaluado',
-      monthlyIncome: Math.round(sim.monthlyPaymentAmount * 3.5),
-      downPayment: sim.downPaymentAmount,
-      downPaymentPercent: Math.round((sim.downPaymentAmount / (sim.vehiclePriceAmount || 1)) * 100)
-    }))
-    return fromSimulations
-  }
-
-  return defaultLeads
+  return []
 })
 </script>
 

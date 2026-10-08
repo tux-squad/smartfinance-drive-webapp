@@ -190,7 +190,6 @@ onMounted(async () => {
 })
 
 const applications = computed<ApplicationRow[]>(() => {
-  // If user has formal credit applications from API /api/v1/credit-applications/me
   if (financingStore.creditApplications.length > 0) {
     return financingStore.creditApplications.map((app) => {
       const entity = partnersStore.financialEntities.find(e => e.id === app.financialEntityId)
@@ -208,22 +207,7 @@ const applications = computed<ApplicationRow[]>(() => {
     })
   }
 
-  // Fallback: list existing credit simulations
-  return financingStore.simulations.map((sim) => {
-    const entity = partnersStore.financialEntities.find(e => e.id === sim.financialEntityId)
-    const entityName = entity ? entity.name : 'Entidad Financiera Aliada'
-    const dateFormatted = sim.startDate ? new Date(sim.startDate).toLocaleDateString('es-PE') : 'Reciente'
-    const statusVal = sim.tcea > 0 ? 'Pre-evaluado' : 'En evaluación'
-
-    return {
-      id: sim.id,
-      vehicle: sim.title || `Simulación Crédito (${sim.currency} ${sim.vehiclePriceAmount.toLocaleString()})`,
-      concessionaire: entityName,
-      date: dateFormatted,
-      status: statusVal,
-      isSimulationPromotion: true
-    }
-  })
+  return []
 })
 
 const filteredApplications = computed(() => {

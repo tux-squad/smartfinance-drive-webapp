@@ -493,24 +493,19 @@ const form = reactive({
 })
 
 // Dealer Data
-const dealerBusinessName = ref('AutoSur Motors SAC')
-const dealerRuc = ref('20100138019')
-const dealerAddress = ref('Av. Javier Prado Este 4520, Surco, Lima')
+const dealerBusinessName = ref('')
+const dealerRuc = ref('')
+const dealerAddress = ref('')
 const dealerVehiclesCount = computed(() => catalogStore.vehicles.length)
 
 // Bank Data
-const bankEntityName = ref('Banco de Crédito del Perú (BCP)')
-const bankRuc = ref('20100047218')
+const bankEntityName = ref('')
+const bankRuc = ref('')
 const bankBenchmarks = computed(() => {
   if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.rateBenchmarks) {
     return partnersStore.financialEntities[0].rateBenchmarks
   }
-  return [
-    { loanTermMonths: 24, annualEffectiveRate: 8.90 },
-    { loanTermMonths: 36, annualEffectiveRate: 9.50 },
-    { loanTermMonths: 48, annualEffectiveRate: 10.20 },
-    { loanTermMonths: 60, annualEffectiveRate: 10.80 }
-  ]
+  return []
 })
 
 const populateFormData = () => {
@@ -540,17 +535,25 @@ onMounted(async () => {
   }
   if (isDealer.value) {
     promises.push(catalogStore.fetchVehicles())
+    promises.push(partnersStore.fetchMyDealership().then(d => {
+      if (d) {
+        dealerBusinessName.value = d.name || ''
+        dealerRuc.value = d.ruc || ''
+        dealerAddress.value = d.address || ''
+      }
+    }))
   }
   if (isFinancialInstitution.value) {
-    promises.push(partnersStore.fetchFinancialEntities())
+    promises.push(partnersStore.fetchFinancialEntities().then(() => {
+      if (partnersStore.financialEntities.length > 0) {
+        bankEntityName.value = partnersStore.financialEntities[0]?.name || ''
+        bankRuc.value = partnersStore.financialEntities[0]?.ruc || ''
+      }
+    }))
   }
 
   await Promise.all(promises)
   populateFormData()
-
-  if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.name) {
-    bankEntityName.value = partnersStore.financialEntities[0].name
-  }
 })
 
 const handleSaveProfile = async () => {
