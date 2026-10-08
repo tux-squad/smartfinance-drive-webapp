@@ -183,18 +183,31 @@ interface NavItem {
 }
 
 const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
-const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
+const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION') || iamStore.roles.includes('ROLE_FINANCIAL_ANALYST'))
 const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
 const isCurrentRoute = (targetPath: string): boolean => {
   if (targetPath === '/home') return $route.path === '/home'
+  if (targetPath === '/vehicles') return $route.path === '/vehicles' || (!isDealer.value && !isBank.value && !isAdmin.value && $route.path === '/')
+  if (targetPath === '/simulations') return $route.path.startsWith('/simulations')
+  if (targetPath === '/scoring') return $route.path.startsWith('/scoring')
+  if (targetPath === '/reports/depreciation') return $route.path.startsWith('/reports/depreciation') || $route.path.startsWith('/projections')
+  if (targetPath === '/reports/applications') return $route.path.startsWith('/reports/applications')
+  if (targetPath === '/concessionaries/entities') return $route.path.startsWith('/concessionaries/entities')
+  if (targetPath === '/concessionaries') return $route.path === '/concessionaries' || ($route.path.startsWith('/concessionaries/') && !$route.path.startsWith('/concessionaries/entities'))
+  if (targetPath === '/dealer/inventory/new') return $route.path === '/dealer/inventory/new'
+  if (targetPath === '/dealer/inventory') return $route.path === '/dealer/inventory'
+  if (targetPath === '/dealer/prospects') return $route.path.startsWith('/dealer/prospects')
+  if (targetPath === '/dealer/messages') return $route.path === '/dealer/messages'
   if (targetPath === '/dealer/settings/appearance') return $route.path.startsWith('/dealer/settings')
-  if (targetPath === '/vehicles' && ($route.path === '/vehicles' || (!isDealer.value && $route.path === '/home'))) return true
+  if (targetPath === '/billing') return $route.path.startsWith('/billing')
+  if (targetPath === '/user') return $route.path.startsWith('/user')
+  if (targetPath === '/settings') return $route.path === '/settings'
   return $route.path.startsWith(targetPath)
 }
 
 const navItems = computed<NavItem[]>(() => {
-  // Dealership portal links
+  // 1. Concesionario Automotriz (ROLE_DEALER)
   if (isDealer.value) {
     return [
       {
@@ -208,9 +221,19 @@ const navItems = computed<NavItem[]>(() => {
         icon: 'pi-car'
       },
       {
+        labelKey: 'nav.dealerPublishVehicle',
+        to: '/dealer/inventory/new',
+        icon: 'pi-plus-circle'
+      },
+      {
         labelKey: 'nav.dealerProspects',
         to: '/dealer/prospects',
         icon: 'pi-users'
+      },
+      {
+        labelKey: 'nav.dealerMessages',
+        to: '/dealer/messages',
+        icon: 'pi-comment'
       },
       {
         labelKey: 'nav.dealerMembership',
@@ -218,43 +241,68 @@ const navItems = computed<NavItem[]>(() => {
         icon: 'pi-id-card'
       },
       {
-        labelKey: 'nav.dealerSettings',
+        labelKey: 'nav.dealerStoreProfile',
         to: '/dealer/settings/appearance',
+        icon: 'pi-building'
+      },
+      {
+        labelKey: 'nav.dealerSettings',
+        to: '/settings',
         icon: 'pi-cog'
       }
     ]
   }
 
-  // Buyer portal links
-  if (!isDealer.value && !isBank.value && !isAdmin.value) {
+  // 2. Administrador Global (ROLE_ADMIN)
+  if (isAdmin.value) {
     return [
       {
-        labelKey: 'nav.buyerVehicles',
+        labelKey: 'nav.adminDashboard',
+        to: '/home',
+        icon: 'pi-th-large'
+      },
+      {
+        labelKey: 'nav.adminVehicles',
         to: '/vehicles',
         icon: 'pi-car'
       },
       {
-        labelKey: 'nav.buyerConcessionaires',
+        labelKey: 'nav.adminDealerships',
         to: '/concessionaries',
         icon: 'pi-building'
       },
       {
-        labelKey: 'nav.buyerMessages',
-        to: '/messages',
-        icon: 'pi-comment'
+        labelKey: 'nav.adminEntities',
+        to: '/concessionaries/entities',
+        icon: 'pi-building-columns'
       },
       {
-        labelKey: 'nav.buyerAiConsultation',
-        to: '/consultation',
-        icon: 'pi-comments'
-      },
-      {
-        labelKey: 'nav.buyerReport',
+        labelKey: 'nav.adminApplications',
         to: '/reports/applications',
-        icon: 'pi-file'
+        icon: 'pi-file-check'
       },
       {
-        labelKey: 'nav.buyerProfile',
+        labelKey: 'nav.commercialSimulations',
+        to: '/simulations',
+        icon: 'pi-calculator'
+      },
+      {
+        labelKey: 'nav.riskScoring',
+        to: '/scoring',
+        icon: 'pi-shield'
+      },
+      {
+        labelKey: 'nav.reports',
+        to: '/reports/depreciation',
+        icon: 'pi-chart-line'
+      },
+      {
+        labelKey: 'nav.adminBilling',
+        to: '/billing',
+        icon: 'pi-id-card'
+      },
+      {
+        labelKey: 'nav.user',
         to: '/user',
         icon: 'pi-user'
       },
@@ -266,7 +314,7 @@ const navItems = computed<NavItem[]>(() => {
     ]
   }
 
-  // Bank portal links
+  // 3. Entidad Financiera / Analista (ROLE_FINANCIAL_INSTITUTION / ROLE_FINANCIAL_ANALYST)
   if (isBank.value) {
     return [
       {
@@ -278,6 +326,11 @@ const navItems = computed<NavItem[]>(() => {
         labelKey: 'nav.bankEntities',
         to: '/concessionaries/entities',
         icon: 'pi-building-columns'
+      },
+      {
+        labelKey: 'nav.bankApplications',
+        to: '/reports/applications',
+        icon: 'pi-check-square'
       },
       {
         labelKey: 'nav.commercialSimulations',
@@ -307,35 +360,55 @@ const navItems = computed<NavItem[]>(() => {
     ]
   }
 
-  // Admin / General fallback
+  // 4. Comprador / Cliente Final (ROLE_USER)
   return [
     {
-      labelKey: 'nav.vehicles',
+      labelKey: 'nav.buyerVehicles',
       to: '/vehicles',
       icon: 'pi-car'
     },
     {
-      labelKey: 'nav.bankEntities',
-      to: '/concessionaries/entities',
-      icon: 'pi-building'
-    },
-    {
-      labelKey: 'nav.commercialSimulations',
+      labelKey: 'nav.buyerSimulations',
       to: '/simulations',
       icon: 'pi-calculator'
     },
     {
-      labelKey: 'nav.riskScoring',
+      labelKey: 'nav.buyerApplications',
+      to: '/reports/applications',
+      icon: 'pi-file-check'
+    },
+    {
+      labelKey: 'nav.buyerScoring',
       to: '/scoring',
       icon: 'pi-shield'
     },
     {
-      labelKey: 'nav.reports',
+      labelKey: 'nav.buyerDepreciation',
       to: '/reports/depreciation',
       icon: 'pi-chart-line'
     },
     {
-      labelKey: 'nav.user',
+      labelKey: 'nav.buyerConcessionaires',
+      to: '/concessionaries',
+      icon: 'pi-building'
+    },
+    {
+      labelKey: 'nav.buyerFinancialEntities',
+      to: '/concessionaries/entities',
+      icon: 'pi-building-columns'
+    },
+    {
+      labelKey: 'nav.buyerMessages',
+      to: '/messages',
+      icon: 'pi-comment'
+    },
+    {
+      labelKey: 'nav.buyerAiConsultation',
+      to: '/consultation',
+      icon: 'pi-sparkles'
+    },
+    {
+      labelKey: 'nav.buyerProfile',
       to: '/user',
       icon: 'pi-user'
     },
