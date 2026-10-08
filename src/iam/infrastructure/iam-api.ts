@@ -110,7 +110,7 @@ export class IamApi extends BaseApi {
 
   /** 1.19 Verificación Telefónica con Firebase */
   public verifyPhone(resource: import('./verification.resource').PhoneVerificationRequest): Promise<AxiosResponse<import('./verification.resource').PhoneVerificationResponse>> {
-    return this.http.post<import('./verification.resource').PhoneVerificationResponse>('/api/v1/auth/phone-verification', resource)
+    return this.http.post<import('./verification.resource').PhoneVerificationResponse>('/api/v1/auth/phone-verification/firebase', resource)
   }
 
   /** 1.20 Consulta RENIEC por DNI */

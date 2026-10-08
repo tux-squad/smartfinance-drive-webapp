@@ -273,6 +273,14 @@ onMounted(() => {
   }
 })
 
+const getRoleRedirect = (userRoles: string[] = []): string => {
+  if (userRoles.includes('ROLE_ADMIN')) return '/admin/dashboard'
+  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION')) return '/bank/dashboard'
+  if (userRoles.includes('ROLE_DEALER')) return '/dealer/dashboard'
+  if (userRoles.includes('ROLE_SALES_AGENT')) return '/agent/dashboard'
+  return '/catalog'
+}
+
 const handleSignIn = async () => {
   iamStore.error = null
 
@@ -298,7 +306,10 @@ const handleSignIn = async () => {
 
   const success = await iamStore.signIn(command)
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }
@@ -306,7 +317,10 @@ const handleSignIn = async () => {
 const handleQuickDemoSignIn = async () => {
   const success = await iamStore.signInDemo()
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }
@@ -315,7 +329,10 @@ const handleGoogleSignIn = async () => {
   const demoIdToken = 'google_oauth_demo_token_' + Date.now()
   const success = await iamStore.signInWithGoogle(demoIdToken)
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }

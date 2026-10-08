@@ -26,6 +26,26 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: 'Inicio' }
       },
       {
+        path: 'catalog',
+        redirect: '/vehicles'
+      },
+      {
+        path: 'admin/dashboard',
+        redirect: '/settings'
+      },
+      {
+        path: 'bank/dashboard',
+        redirect: '/concessionaries'
+      },
+      {
+        path: 'dealer/dashboard',
+        redirect: '/dealer/inventory'
+      },
+      {
+        path: 'agent/dashboard',
+        redirect: '/dealer/prospects'
+      },
+      {
         path: 'user',
         children: profilesRoutes
       },

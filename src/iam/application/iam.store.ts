@@ -415,7 +415,8 @@ export const useIamStore = defineStore('iam', () => {
       const companyName = command.companyName || (command.ruc === '20100047218' ? 'Banco de Crédito del Perú BCP' : undefined)
       const res = await iamApi.requestFinancialInstitutionRole(command.userId, {
         ruc: command.ruc,
-        companyName
+        companyName,
+        institutionName: companyName
       })
       if (currentUser.value && res.data.roles) {
         currentUser.value.roles = res.data.roles
