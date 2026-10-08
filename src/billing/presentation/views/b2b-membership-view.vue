@@ -141,6 +141,18 @@
           <span>{{ t('b2bMembership.invoicesSubtitle') }}</span>
           <i class="pi pi-external-link text-[10px]"></i>
         </button>
+
+        <button
+          v-if="billingStore.hasSubscription"
+          type="button"
+          @click="handleCancelSubscription"
+          :disabled="isCancelling"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 sm:ml-auto"
+        >
+          <i v-if="isCancelling" class="pi pi-spin pi-spinner text-xs"></i>
+          <i v-else class="pi pi-times-circle text-xs"></i>
+          <span>Cancelar Suscripción</span>
+        </button>
       </div>
     </div>
 
@@ -554,6 +566,23 @@ const handleManagePayment = async () => {
     window.open(url, '_blank')
   } else {
     feedbackMessage.value = 'Redirigiendo a la pasarela segura de actualización de tarjetas de crédito...'
+  }
+}
+
+const isCancelling = ref(false)
+const handleCancelSubscription = async () => {
+  if (!window.confirm('¿Está seguro de que desea cancelar su suscripción B2B activa?')) return
+  isCancelling.value = true
+  try {
+    const success = await billingStore.cancelCurrentSubscription()
+    if (success) {
+      feedbackMessage.value = 'Tu suscripción ha sido cancelada correctamente.'
+      await billingStore.fetchBillingData()
+    } else {
+      feedbackMessage.value = billingStore.error || 'No se pudo cancelar la suscripción.'
+    }
+  } finally {
+    isCancelling.value = false
   }
 }
 </script>

@@ -94,7 +94,7 @@
               :key="index"
               @click="activeThumbnailIndex = index"
               :class="[
-                'h-20 rounded-2xl border-2 overflow-hidden flex items-center justify-center bg-gray-50 transition-all cursor-pointer',
+                'h-20 rounded-2xl border-2 overflow-hidden flex items-center justify-center bg-gray-50 transition-all cursor-pointer relative group',
                 activeThumbnailIndex === index ? 'border-blue-600 shadow-xs ring-2 ring-blue-400/30' : 'border-gray-200 hover:border-gray-300'
               ]"
             >
@@ -104,6 +104,15 @@
                 class="w-full h-full object-cover"
                 @error="onImageError($event, vehicle.brand)"
               />
+              <button
+                v-if="isDealerOrOwner"
+                type="button"
+                @click.stop="handleDeleteGalleryImage(index)"
+                title="Eliminar foto de la galería"
+                class="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600/90 hover:bg-red-700 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+              >
+                <i class="pi pi-times text-[9px]"></i>
+              </button>
             </div>
           </div>
 
@@ -272,6 +281,15 @@
                 class="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs text-center transition-colors"
               >
                 Solicitar Pre-evaluación Financiera
+              </button>
+
+              <button
+                type="button"
+                @click="router.push(`/projections?vehicleId=${vehicleId}`)"
+                class="w-full py-2 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
+              >
+                <i class="pi pi-chart-line text-xs"></i>
+                <span>Ver Proyección de Depreciación</span>
               </button>
             </div>
 
@@ -462,6 +480,28 @@ const vehicleId = computed(() => route.params.id as string)
 const vehicle = computed(() => catalogStore.selectedVehicle)
 const activeThumbnailIndex = ref<number>(0)
 const bannerFeedback = ref<string | null>(null)
+
+const isDealerOrOwner = computed(() => {
+  return iamStore.roles.includes('ROLE_DEALER') ||
+         iamStore.roles.includes('ROLE_ADMIN') ||
+         Boolean(vehicle.value && iamStore.currentUser?.id && String(iamStore.currentUser.id) === String(vehicle.value.userId))
+})
+
+const handleDeleteGalleryImage = async (index: number) => {
+  if (!vehicle.value?.id) return
+  if (!window.confirm(`¿Estás seguro de eliminar la imagen #${index + 1} de la galería?`)) return
+  try {
+    const success = await catalogStore.deleteGalleryImage(vehicle.value.id, index)
+    if (success) {
+      bannerFeedback.value = `Imagen #${index + 1} eliminada exitosamente.`
+      if (activeThumbnailIndex.value >= galleryImages.value.length) {
+        activeThumbnailIndex.value = Math.max(0, galleryImages.value.length - 1)
+      }
+    }
+  } catch (e: any) {
+    bannerFeedback.value = `Error al eliminar la imagen: ${e?.message || 'Error desconocido'}`
+  }
+}
 
 // 2.41 createProspect state
 const isProspectOpen = ref(false)

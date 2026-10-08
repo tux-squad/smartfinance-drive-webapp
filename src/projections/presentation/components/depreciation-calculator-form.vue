@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -10,6 +11,7 @@ import { useProjectionsStore } from '../../application/projections.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 
 const { t } = useI18n()
+const route = useRoute()
 const projectionsStore = useProjectionsStore()
 const catalogStore = useCatalogStore()
 
@@ -29,7 +31,12 @@ onMounted(async () => {
   if (!catalogStore.hasVehicles) {
     await catalogStore.fetchVehicles({ size: 50 })
   }
-  if (catalogStore.vehicles.length > 0 && catalogStore.vehicles[0]?.id) {
+  const qVehicleId = route.query.vehicleId as string | undefined
+  if (qVehicleId) {
+    selectedVehicleId.value = qVehicleId
+    manualVehicleId.value = qVehicleId
+    await projectionsStore.fetchDepreciationByVehicleId(qVehicleId)
+  } else if (catalogStore.vehicles.length > 0 && catalogStore.vehicles[0]?.id) {
     selectedVehicleId.value = catalogStore.vehicles[0].id
   }
 })
@@ -39,6 +46,16 @@ watch(selectedVehicleId, (newId) => {
     manualVehicleId.value = newId
   }
 })
+
+const handleFetchByVehicle = async () => {
+  validationError.value = null
+  const vehicleIdToUse = selectedVehicleId.value.trim() || manualVehicleId.value.trim()
+  if (!vehicleIdToUse) {
+    validationError.value = 'Por favor selecciona o ingresa un UUID de vehículo.'
+    return
+  }
+  await projectionsStore.fetchDepreciationByVehicleId(vehicleIdToUse)
+}
 
 const handleCalculate = async () => {
   validationError.value = null
@@ -129,14 +146,23 @@ const handleCalculate = async () => {
       />
     </div>
 
-    <!-- Submit Action -->
-    <div class="pt-2">
+    <!-- Submit Actions -->
+    <div class="pt-2 space-y-2">
       <Button
         :label="t('projections.form.calculateBtn')"
         icon="pi pi-chart-line"
         :loading="projectionsStore.isLoading"
         class="w-full !rounded-xl py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-blue-600/20"
         @click="handleCalculate"
+      />
+      <Button
+        label="Consultar Proyección de este Vehículo"
+        icon="pi pi-search"
+        outlined
+        severity="secondary"
+        :loading="projectionsStore.isLoading"
+        class="w-full !rounded-xl !text-xs"
+        @click="handleFetchByVehicle"
       />
     </div>
   </div>

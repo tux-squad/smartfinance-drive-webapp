@@ -173,6 +173,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import type { FinancialEntity } from '@/partners/domain/financial-entity.entity'
+import type { Dealership } from '@/partners/domain/dealership.entity'
 
 const route = useRoute()
 const router = useRouter()
@@ -183,10 +184,19 @@ const isLoading = ref(true)
 const conditionFilter = ref<string>('')
 const brandFilter = ref<string>('')
 const priceRangeFilter = ref<string>('')
+const specificDealership = ref<Dealership | null>(null)
 
 const entityId = computed(() => route.params.id as string)
 
-const currentEntity = computed<FinancialEntity | undefined>(() => {
+const currentEntity = computed(() => {
+  if (specificDealership.value) {
+    return {
+      id: specificDealership.value.id,
+      name: specificDealership.value.name,
+      ruc: specificDealership.value.ruc,
+      description: specificDealership.value.description
+    }
+  }
   return partnersStore.financialEntities.find(e => e.id === entityId.value)
 })
 
@@ -200,11 +210,13 @@ const locationText = computed(() => {
 const loadData = async (id: string) => {
   isLoading.value = true
   try {
-    await Promise.all([
+    const [dealer] = await Promise.all([
+      partnersStore.fetchDealershipById(id),
       partnersStore.fetchFinancialEntities(),
       partnersStore.fetchDealershipVehicles(id),
       catalogStore.fetchVehicles()
     ])
+    specificDealership.value = dealer
   } finally {
     isLoading.value = false
   }

@@ -1,20 +1,66 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
 import Paginator, { type PageState } from 'primevue/paginator'
+import Button from 'primevue/button'
 import { useScoringStore } from '../../application/scoring.store'
+import { useProfilesStore } from '@/profiles/application/profiles.store'
+import { useIamStore } from '@/iam/application/iam.store'
 import EvaluateScoreForm from '../components/evaluate-score-form.vue'
 import CreditScoreGauge from '../components/credit-score-gauge.vue'
 import RiskTierCard from '../components/risk-tier-card.vue'
 import CreditScoreHistoryCard from '../components/credit-score-history-card.vue'
 
 const { t } = useI18n()
+const route = useRoute()
 const scoringStore = useScoringStore()
+const profilesStore = useProfilesStore()
+const iamStore = useIamStore()
 
-onMounted(() => {
-  scoringStore.fetchCreditScores()
+const filterMode = ref<'all' | 'profile'>('all')
+
+const currentProfileId = computed(() => profilesStore.currentProfile?.id)
+
+onMounted(async () => {
+  if (iamStore.currentUser?.id && !profilesStore.currentProfile) {
+    await profilesStore.fetchProfileByUserId(iamStore.currentUser.id)
+  }
+
+  const queryScoreId = route.query.scoreId as string | undefined
+  const queryProfileId = route.query.profileId as string | undefined
+
+  if (queryScoreId) {
+    await scoringStore.fetchCreditScoreById(queryScoreId)
+  }
+
+  if (queryProfileId) {
+    filterMode.value = 'profile'
+    await scoringStore.fetchScoresByProfileId(queryProfileId)
+  } else {
+    await scoringStore.fetchCreditScores()
+  }
 })
+
+const handleToggleFilter = async (mode: 'all' | 'profile') => {
+  filterMode.value = mode
+  if (mode === 'profile') {
+    const pId = currentProfileId.value || (route.query.profileId as string)
+    if (pId) {
+      await scoringStore.fetchScoresByProfileId(pId)
+    } else {
+      await scoringStore.fetchCreditScores()
+    }
+  } else {
+    await scoringStore.fetchCreditScores()
+  }
+}
+
+const handleSelectScore = async (id: string) => {
+  await scoringStore.fetchCreditScoreById(id)
+  window.scrollTo({ top: 400, behavior: 'smooth' })
+}
 
 const onPageChange = (event: PageState) => {
   scoringStore.fetchCreditScores(event.page, event.rows)
@@ -73,7 +119,7 @@ const handleDelete = async (id: string) => {
 
     <!-- Evaluation History Section -->
     <div class="space-y-4 pt-4">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
             <i class="pi pi-history text-purple-600"></i>
@@ -82,6 +128,28 @@ const handleDelete = async (id: string) => {
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {{ t('scoring.historySubtitle') }}
           </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <Button
+            size="small"
+            :severity="filterMode === 'all' ? 'primary' : 'secondary'"
+            :outlined="filterMode !== 'all'"
+            label="Todas las Evaluaciones"
+            icon="pi pi-list"
+            class="!text-xs"
+            @click="handleToggleFilter('all')"
+          />
+          <Button
+            v-if="currentProfileId"
+            size="small"
+            :severity="filterMode === 'profile' ? 'primary' : 'secondary'"
+            :outlined="filterMode !== 'profile'"
+            label="Filtrar por Mi Perfil"
+            icon="pi pi-user"
+            class="!text-xs"
+            @click="handleToggleFilter('profile')"
+          />
         </div>
       </div>
 
@@ -114,6 +182,7 @@ const handleDelete = async (id: string) => {
           :key="item.id"
           :creditScore="item"
           @delete="handleDelete"
+          @select="handleSelectScore"
         />
       </div>
 

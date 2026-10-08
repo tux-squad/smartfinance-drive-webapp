@@ -361,7 +361,7 @@ const handleStatusChange = async (car: Vehicle, newStatus: string) => {
 
 const openEditDialog = (car: Vehicle) => {
   vehicleToEdit.value = car
-  editForm.financialEntityId = car.financialEntityId || partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
+  editForm.financialEntityId = car.financialEntityId || partnersStore.financialEntities[0]?.id || ''
   editForm.brand = car.brand
   editForm.model = car.model
   editForm.manufactureYear = car.manufactureYear
@@ -373,11 +373,15 @@ const openEditDialog = (car: Vehicle) => {
 
 const handleSaveEdit = async () => {
   if (!vehicleToEdit.value) return
+  const entityIdToUse = editForm.financialEntityId || vehicleToEdit.value.financialEntityId || partnersStore.financialEntities[0]?.id
+  if (!entityIdToUse) {
+    feedbackMessage.value = 'Debe seleccionar una entidad financiera aliada para el vehículo.'
+    return
+  }
   isSaving.value = true
   try {
-    const fallbackEntityId = vehicleToEdit.value.financialEntityId || partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
     const updated = await catalogStore.updateVehicle(vehicleToEdit.value.id, {
-      financialEntityId: editForm.financialEntityId || fallbackEntityId,
+      financialEntityId: entityIdToUse,
       brand: editForm.brand,
       model: editForm.model,
       manufactureYear: editForm.manufactureYear,
