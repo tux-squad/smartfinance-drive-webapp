@@ -15,7 +15,10 @@ export class DepreciationProjection {
     public readonly totalDepreciationAmount: number,
     public readonly yearlyProjections: YearlyDepreciation[],
     public readonly calculatedAt: string,
-    public readonly vehicleId?: string
+    public readonly vehicleId?: string,
+    public readonly recommendedAction?: string,
+    public readonly advisoryNotes?: string,
+    public readonly balloonPaymentAmount?: number
   ) {}
 
   /**
@@ -40,5 +43,21 @@ export class DepreciationProjection {
   get preservedValuePercentage(): number {
     if (!this.initialValueAmount) return 0;
     return Number(((this.projectedResidualValue / this.initialValueAmount) * 100).toFixed(2));
+  }
+
+  get initialValue(): number {
+    return this.initialValueAmount;
+  }
+
+  get initialVehiclePriceAmount(): number {
+    return this.initialValueAmount;
+  }
+
+  get annualDepreciationRate(): number {
+    return this.annualDepreciationRatePct / 100;
+  }
+
+  get projectedValues(): YearlyDepreciation[] {
+    return this.yearlyProjections;
   }
 }

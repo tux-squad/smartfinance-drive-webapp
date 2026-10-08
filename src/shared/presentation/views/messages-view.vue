@@ -181,6 +181,15 @@
             </form>
           </div>
         </template>
+        <div v-else class="flex flex-col items-center justify-center h-full p-8 text-center space-y-3">
+          <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+            <i class="pi pi-comments text-2xl"></i>
+          </div>
+          <h3 class="text-sm font-bold text-gray-900">Selecciona una conversación</h3>
+          <p class="text-xs text-gray-500 max-w-xs">
+            Comunícate directamente con la concesionaria para consultar disponibilidad o crédito vehicular.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -253,7 +262,7 @@ onMounted(async () => {
     userId ? profilesStore.fetchProfileByUserId(userId) : Promise.resolve()
   ])
 
-  // If real conversations exist from GET /api/v1/conversations
+  // Load real conversations from GET /api/v1/conversations
   if (messagingStore.conversations.length > 0) {
     chats.value = messagingStore.conversations.map((conv) => ({
       id: conv.id,
@@ -261,65 +270,23 @@ onMounted(async () => {
       dealerName: conv.dealerName || 'Concesionaria Oficial',
       vehicleId: conv.vehicleId || undefined,
       vehicleTitle: conv.vehicleTitle || 'Vehículo Solicitado',
-      vehiclePrice: conv.vehiclePrice || '$20,000 USD',
+      vehiclePrice: conv.vehiclePrice || '',
       lastActivity: conv.lastActivity,
       unreadCount: conv.unreadBuyerCount,
       messages: [
         {
           id: '1',
           sender: 'dealer',
-          text: conv.lastMessageContent || 'Hola, ¿en qué podemos ayudarte con este vehículo?',
-          time: '10:00 AM'
+          text: conv.lastMessageContent || 'Conversación iniciada.',
+          time: 'Reciente'
         }
       ]
     }))
   } else {
-    // Build initial threads based on API financial entities and vehicles
-    const defaultVehicles = catalogStore.vehicles
-
-    chats.value = partnersStore.financialEntities.map((entity, index) => {
-      const matchingVehicle = defaultVehicles[index % defaultVehicles.length]
-      const vTitle = matchingVehicle ? `${matchingVehicle.brand} ${matchingVehicle.model} ${matchingVehicle.manufactureYear}` : 'Vehículo Solicitado'
-      const vPrice = matchingVehicle ? matchingVehicle.formattedPrice : '$20,000 USD'
-      const vId = matchingVehicle ? matchingVehicle.id : undefined
-
-      return {
-        id: `chat-${entity.id}`,
-        dealerId: entity.id,
-        dealerName: entity.name,
-        vehicleId: vId,
-        vehicleTitle: vTitle,
-        vehiclePrice: vPrice,
-        lastActivity: index === 0 ? 'Hace 2 min' : 'Hoy',
-        unreadCount: index === 0 ? 2 : 0,
-        messages: [
-          {
-            id: '1',
-            sender: 'dealer',
-            text: `Hola ${userFirstName.value}, bienvenido a ${entity.name}. Vi que estás interesado en el ${vTitle}. ¿En qué puedo ayudarte?`,
-            time: '10:02 AM'
-          },
-          {
-            id: '2',
-            sender: 'user',
-            text: 'Hola, sí me interesa. Quisiera saber si el crédito pre-aprobado cubre la totalidad del enganche.',
-            time: '10:04 AM'
-          },
-          {
-            id: '3',
-            sender: 'dealer',
-            text: '¡Claro! Sí, tu crédito pre-aprobado de SmartFinance Drive cubre hasta el 100% del enganche de 36 mensualidades.',
-            time: '10:06 AM'
-          }
-        ]
-      }
-    })
+    chats.value = []
   }
 
-  // If query params passed (e.g. from vehicle detail "Agendar Visita")
-  const targetVehicleId = route.query.vehicleId as string | undefined
   const targetDealerId = route.query.dealerId as string | undefined
-
   if (targetDealerId) {
     const found = chats.value.find(c => c.dealerId === targetDealerId)
     if (found) {

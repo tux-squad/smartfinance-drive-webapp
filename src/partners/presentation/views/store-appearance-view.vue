@@ -201,23 +201,23 @@ const isSaving = ref(false)
 const savedMessage = ref<string | null>(null)
 
 const storeData = reactive({
-  name: 'AutoSur Motors SAC',
-  address: 'Av. Javier Prado Este 4520, Surco, Lima',
-  phone: '+51987654321',
-  email: 'contacto@autosur.pe',
-  hours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
-  description: 'Concesionaria oficial multimarca líder en vehículos nuevos y seminuevos garantizados. Brindamos asesoría en financiamiento directo con las mejores entidades bancarias del país.'
+  name: '',
+  address: '',
+  phone: '',
+  email: '',
+  hours: '',
+  description: ''
 })
 
 onMounted(async () => {
   const myDealership = await partnersStore.fetchMyDealership()
   if (myDealership) {
-    storeData.name = myDealership.name || storeData.name
-    storeData.address = myDealership.address || storeData.address
-    storeData.phone = myDealership.phone || storeData.phone
-    storeData.email = myDealership.email || storeData.email
-    storeData.hours = myDealership.hours || storeData.hours
-    storeData.description = myDealership.description || storeData.description
+    storeData.name = myDealership.name || ''
+    storeData.address = myDealership.address || ''
+    storeData.phone = myDealership.phone || ''
+    storeData.email = myDealership.email || ''
+    storeData.hours = myDealership.hours || ''
+    storeData.description = myDealership.description || ''
     if (myDealership.logoUrl) logoPreview.value = myDealership.logoUrl
     if (myDealership.bannerUrl) bannerPreview.value = myDealership.bannerUrl
   }

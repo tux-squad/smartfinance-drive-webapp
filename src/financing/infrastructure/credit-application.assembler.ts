@@ -6,7 +6,7 @@ export class CreditApplicationAssembler {
   public static toEntity(resource: CreditApplicationResource): CreditApplication {
     return new CreditApplication(
       resource.id,
-      resource.userId,
+      resource.applicantUserId || resource.userId || '',
       resource.simulationId || null,
       resource.financialEntityId || null,
       resource.vehicleId || null,
@@ -20,7 +20,9 @@ export class CreditApplicationAssembler {
       resource.createdAt || new Date().toISOString(),
       resource.updatedAt || new Date().toISOString(),
       resource.vehicleTitle,
-      resource.financialEntityName
+      resource.financialEntityName,
+      Number(resource.termMonths) || 36,
+      Number(resource.downPayment) || 0
     )
   }
 
@@ -30,6 +32,8 @@ export class CreditApplicationAssembler {
       financialEntityId: command.financialEntityId,
       vehicleId: command.vehicleId,
       requestedAmount: command.requestedAmount,
+      downPayment: command.downPayment ?? 0,
+      termMonths: command.termMonths && command.termMonths >= 1 && command.termMonths <= 120 ? command.termMonths : 36,
       currency: command.currency,
       monthlyIncome: command.monthlyIncome,
       employmentStatus: command.employmentStatus,

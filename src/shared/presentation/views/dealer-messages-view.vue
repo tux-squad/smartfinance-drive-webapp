@@ -23,6 +23,10 @@
 
         <!-- Chat List -->
         <div class="divide-y divide-gray-100 overflow-y-auto flex-1 max-h-[580px]">
+          <div v-if="conversations.length === 0" class="p-8 text-center text-xs text-gray-400 space-y-2">
+            <i class="pi pi-inbox text-3xl text-gray-300"></i>
+            <p>No tienes mensajes de prospectos aún.</p>
+          </div>
           <button
             v-for="chat in conversations"
             :key="chat.id"
@@ -30,7 +34,7 @@
             @click="selectChat(chat)"
             :class="[
               'w-full text-left p-5 transition-all flex items-start gap-4 hover:bg-gray-50/80',
-              activeChat.id === chat.id
+              activeChat?.id === chat.id
                 ? 'bg-blue-50/30 border-l-4 border-[#eb8f47]'
                 : 'border-l-4 border-transparent'
             ]"
@@ -78,8 +82,9 @@
 
       <!-- Right Column: Conversación Activa (approx 7-8 cols) -->
       <div class="lg:col-span-7 flex flex-col bg-white">
-        <!-- Active Chat Header matching Mockup -->
-        <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-4 bg-gray-50/30">
+        <template v-if="activeChat">
+          <!-- Active Chat Header matching Mockup -->
+          <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-4 bg-gray-50/30">
           <div class="flex items-center gap-3.5 min-w-0">
             <div class="relative shrink-0">
               <div class="w-10 h-10 rounded-2xl bg-[#0a1936] text-white flex items-center justify-center font-bold text-sm">
@@ -165,7 +170,7 @@
             <input
               v-model="inputMessage"
               type="text"
-              :placeholder="`Escribe un mensaje para ${activeChat.name}...`"
+              :placeholder="activeChat ? `Escribe un mensaje para ${activeChat.name}...` : 'Escribe un mensaje...'"
               class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
             />
 
@@ -179,6 +184,18 @@
               <i class="pi pi-send text-xs"></i>
             </button>
           </form>
+        </div>
+        </template>
+
+        <!-- Empty state when no active chat selected -->
+        <div v-else class="flex flex-col items-center justify-center h-full p-12 text-center space-y-3">
+          <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+            <i class="pi pi-comments text-2xl"></i>
+          </div>
+          <h3 class="text-sm font-bold text-gray-900">Bandeja de Entrada</h3>
+          <p class="text-xs text-gray-500 max-w-xs">
+            Selecciona una conversación o espera nuevos mensajes de prospectos interesados.
+          </p>
         </div>
       </div>
     </div>
@@ -215,98 +232,9 @@ interface ChatConversation {
   messages: ChatMessage[]
 }
 
-const conversations = reactive<ChatConversation[]>([
-  {
-    id: 'carlos-mendoza',
-    name: 'Carlos Mendoza',
-    isOnline: true,
-    vehicleOfInterest: 'Toyota Corolla Cross 2023',
-    statusBadge: 'Crédito Aprobado',
-    lastTime: '10:42 AM',
-    lastMessage: 'Excelente. Hoy a las 4:30 PM me queda perfecto. ¿Qué documentos debo llevar?',
-    messages: [
-      {
-        sender: 'buyer',
-        text: 'Buenos días, vi su publicación del Toyota Corolla Cross 2023 por $26,900. Ya tengo el crédito pre-evaluado con el BCP.',
-        time: '10:35 AM'
-      },
-      {
-        sender: 'buyer',
-        text: '¿Tienen disponibilidad en color gris oscuro para entrega inmediata?',
-        time: '10:36 AM'
-      },
-      {
-        sender: 'dealer',
-        text: '¡Hola Carlos! Sí, contamos con 2 unidades en color Gris Grafito disponibles para entrega esta misma semana.',
-        time: '10:40 AM'
-      },
-      {
-        sender: 'dealer',
-        text: '¿Te gustaría agendar una prueba de manejo para hoy en la tarde o mañana en la mañana?',
-        time: '10:41 AM'
-      },
-      {
-        sender: 'buyer',
-        text: 'Excelente. Hoy a las 4:30 PM me queda perfecto. ¿Qué documentos debo llevar?',
-        time: '10:42 AM'
-      }
-    ]
-  },
-  {
-    id: 'ana-valdivia',
-    name: 'Ana Sofía Valdivia',
-    isOnline: false,
-    vehicleOfInterest: 'Honda CR-V 2024',
-    statusBadge: 'Crédito Aprobado',
-    lastTime: 'Ayer',
-    lastMessage: '¿El precio incluye gastos notariales y de placas?',
-    messages: [
-      {
-        sender: 'buyer',
-        text: 'Hola, estoy interesada en la Honda CR-V 2024 anunciada en el portal.',
-        time: 'Ayer, 03:20 PM'
-      },
-      {
-        sender: 'buyer',
-        text: '¿El precio incluye gastos notariales y de placas?',
-        time: 'Ayer, 03:22 PM'
-      },
-      {
-        sender: 'dealer',
-        text: 'Hola Ana, sí incluye los trámites de placa y tarjeta de propiedad. Te esperamos en el concesionario.',
-        time: 'Ayer, 03:45 PM'
-      }
-    ]
-  },
-  {
-    id: 'roberto-gomez',
-    name: 'Roberto Gómez',
-    isOnline: false,
-    vehicleOfInterest: 'Mazda CX-5 2023',
-    statusBadge: 'En Evaluación',
-    lastTime: '16 Sep',
-    lastMessage: 'Envié los documentos que me solicitaron para el crédito.',
-    messages: [
-      {
-        sender: 'buyer',
-        text: 'Buenos días, estoy tramitando mi crédito para el Mazda CX-5.',
-        time: '16 Sep, 11:10 AM'
-      },
-      {
-        sender: 'buyer',
-        text: 'Envié los documentos que me solicitaron para el crédito.',
-        time: '16 Sep, 11:12 AM'
-      },
-      {
-        sender: 'dealer',
-        text: 'Recibido Roberto. El analista del banco está revisando tus boletas de pago.',
-        time: '16 Sep, 11:30 AM'
-      }
-    ]
-  }
-])
+const conversations = reactive<ChatConversation[]>([])
 
-const activeChat = ref<ChatConversation>(conversations[0]!)
+const activeChat = ref<ChatConversation | null>(null)
 
 const selectChat = async (chat: ChatConversation) => {
   activeChat.value = chat
@@ -327,7 +255,7 @@ const scrollToBottom = async () => {
 }
 
 const handleSendMessage = async () => {
-  if (!inputMessage.value.trim()) return
+  if (!inputMessage.value.trim() || !activeChat.value) return
 
   const now = new Date()
   const timeStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
@@ -346,7 +274,8 @@ const handleSendMessage = async () => {
   scrollToBottom()
 
   // If chat is linked to API conversation, invoke sendMessage
-  if (messagingStore.conversations.some(c => c.id === activeChat.value.id)) {
+  const currentChatId = activeChat.value.id
+  if (messagingStore.conversations.some(c => c.id === currentChatId)) {
     await messagingStore.sendMessage(textToSend)
   }
 }

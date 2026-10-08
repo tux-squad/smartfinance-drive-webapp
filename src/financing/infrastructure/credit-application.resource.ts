@@ -1,10 +1,13 @@
 export interface CreditApplicationResource {
   id: string
-  userId: string
+  userId?: string
+  applicantUserId?: string
   simulationId?: string
   financialEntityId?: string
   vehicleId?: string
   requestedAmount: number
+  downPayment?: number
+  termMonths?: number
   currency: string
   monthlyIncome: number
   employmentStatus: string
@@ -18,12 +21,14 @@ export interface CreditApplicationResource {
 }
 
 export interface CreateCreditApplicationResource {
-  simulationId?: string
-  financialEntityId?: string
   vehicleId?: string
+  financialEntityId?: string
+  simulationId?: string
   requestedAmount: number
-  currency: string
+  downPayment?: number
+  termMonths: number
   monthlyIncome: number
+  currency: string
   employmentStatus: string
   notes?: string
 }

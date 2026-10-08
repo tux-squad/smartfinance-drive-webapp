@@ -4,7 +4,9 @@ export interface ProspectNote {
   id: string
   prospectId: string
   authorName?: string
+  authorUserId?: string
   content: string
+  noteText?: string
   createdAt: string
 }
 

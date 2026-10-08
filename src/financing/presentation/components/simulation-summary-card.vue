@@ -1,13 +1,37 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Tag from 'primevue/tag'
+import Button from 'primevue/button'
 import type { Simulation } from '../../domain/simulation.entity'
+import { useFinancingStore } from '../../application/financing.store'
 
 const props = defineProps<{
   simulation: Simulation
 }>()
 
 const { t } = useI18n()
+const router = useRouter()
+const financingStore = useFinancingStore()
+const isApplying = ref(false)
+const applySuccess = ref(false)
+
+const handleApply = async () => {
+  if (!props.simulation?.id) return
+  isApplying.value = true
+  try {
+    const app = await financingStore.applySimulation(props.simulation.id)
+    if (app) {
+      applySuccess.value = true
+      setTimeout(() => {
+        router.push('/reports/applications')
+      }, 1000)
+    }
+  } finally {
+    isApplying.value = false
+  }
+}
 </script>
 
 <template>
@@ -80,6 +104,21 @@ const { t } = useI18n()
           TIR: {{ simulation.irr.toFixed(2) }}%
         </span>
       </div>
+    </div>
+
+    <!-- Action Bar: Apply Simulation to Formal Credit Application (#66) -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/20">
+      <div class="text-xs text-emerald-200/90 leading-relaxed text-center sm:text-left">
+        ¿Te interesan estas condiciones? Postula directamente para convertir esta simulación en una solicitud formal de crédito vehicular.
+      </div>
+      <Button
+        :label="applySuccess ? '¡Solicitud enviada!' : 'Solicitar este Crédito'"
+        :icon="applySuccess ? 'pi pi-check' : 'pi pi-send'"
+        :loading="isApplying"
+        severity="success"
+        class="!rounded-xl px-5 py-2.5 font-bold !bg-emerald-500 hover:!bg-emerald-600 text-white border-none shadow-md shrink-0 w-full sm:w-auto"
+        @click="handleApply"
+      />
     </div>
   </div>
 </template>

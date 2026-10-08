@@ -97,5 +97,25 @@ export class IamApi extends BaseApi {
   public reassignLeads(id: string, targetAgentId: string): Promise<AxiosResponse<void>> {
     return this.http.post<void>(`/api/v1/dealers/me/sales-agents/${id}/reassign-leads`, { targetAgentId })
   }
+
+  /** 1.17 Enviar Código OTP de Verificación de Correo */
+  public sendEmailVerificationOtp(resource: import('./verification.resource').EmailVerificationSendRequest): Promise<AxiosResponse<import('./verification.resource').EmailVerificationSendResponse>> {
+    return this.http.post<import('./verification.resource').EmailVerificationSendResponse>('/api/v1/auth/email-verification/send', resource)
+  }
+
+  /** 1.18 Confirmar Código OTP de Correo */
+  public verifyEmailOtp(resource: import('./verification.resource').EmailVerificationVerifyRequest): Promise<AxiosResponse<import('./verification.resource').EmailVerificationVerifyResponse>> {
+    return this.http.post<import('./verification.resource').EmailVerificationVerifyResponse>('/api/v1/auth/email-verification/verify', resource)
+  }
+
+  /** 1.19 Verificación Telefónica con Firebase */
+  public verifyPhone(resource: import('./verification.resource').PhoneVerificationRequest): Promise<AxiosResponse<import('./verification.resource').PhoneVerificationResponse>> {
+    return this.http.post<import('./verification.resource').PhoneVerificationResponse>('/api/v1/auth/phone-verification', resource)
+  }
+
+  /** 1.20 Consulta RENIEC por DNI */
+  public lookupDniReniec(dni: string): Promise<AxiosResponse<import('./verification.resource').ReniecDniResponse>> {
+    return this.http.get<import('./verification.resource').ReniecDniResponse>(`/api/v1/profiles/reniec/dni/${dni}`)
+  }
 }
 

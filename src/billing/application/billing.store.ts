@@ -31,20 +31,15 @@ export const useBillingStore = defineStore('billing', () => {
         billingApi.getInvoices()
       ])
 
-      plans.value = plansData.length > 0 ? plansData : [
-        new BillingPlan(1, 'Plan Concesionaria Premium', 'Publicaciones ilimitadas y CRM de clientes con scoring.', 349, 'USD', 'MONTHLY', 100, 500, 'price_1P_dealer_premium')
-      ]
+      plans.value = plansData || []
       currentSubscription.value = subData
-      invoices.value = invoicesData.length > 0 ? invoicesData : [
-        new Invoice(1048, 349.00, 'USD', 'PAID', new Date().toISOString()),
-        new Invoice(1047, 349.00, 'USD', 'PAID', new Date(Date.now() - 30 * 86400000).toISOString())
-      ]
+      invoices.value = invoicesData || []
 
-      // Try fetching dealer ROI metrics
+      // Fetch dealer ROI metrics directly from API
       try {
         dealerMetrics.value = await billingApi.getDealerMetrics()
       } catch {
-        dealerMetrics.value = new DealerMetrics(45, 18.2, 1850, '5.4x', 12, 'LAST_30_DAYS')
+        dealerMetrics.value = null
       }
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error al obtener la información de suscripción.'
@@ -73,19 +68,9 @@ export const useBillingStore = defineStore('billing', () => {
       link.remove()
       window.URL.revokeObjectURL(url)
       return true
-    } catch {
-      // Fallback: create mock PDF receipt blob
-      const mockPdfContent = `%PDF-1.4 Factura Electronica SmartFinance Drive FAC-${invoiceId} Monto Pagado`
-      const blob = new Blob([mockPdfContent], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `factura-FAC-${String(invoiceId).padStart(6, '0')}.pdf`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al descargar la factura PDF.'
+      return false
     }
   }
 
@@ -138,6 +123,50 @@ export const useBillingStore = defineStore('billing', () => {
     }
   }
 
+  const createPlan = async (resource: import('../infrastructure/billing-api').CreateBillingPlanResource): Promise<BillingPlan | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const newPlan = await billingApi.createPlan(resource)
+      plans.value.push(newPlan)
+      return newPlan
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al crear el plan de facturación.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Creates or activates a subscription directly (2.50 / 8.5).
+   */
+  const createSubscription = async (planId: number, autoRenew: boolean = true): Promise<Subscription | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const sub = await billingApi.createSubscription(planId, autoRenew)
+      currentSubscription.value = sub
+      // Refresh billing data to ensure all limits and features are synced
+      await fetchBillingData()
+      return sub
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al crear la suscripción directa.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const triggerStripeWebhook = async (payload: any, signature?: string): Promise<string | null> => {
+    try {
+      return await billingApi.postStripeWebhook(payload, signature)
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al procesar el webhook de Stripe.'
+      return null
+    }
+  }
+
   return {
     plans,
     currentSubscription,
@@ -152,7 +181,10 @@ export const useBillingStore = defineStore('billing', () => {
     downloadInvoicePdf,
     reconcileInvoice,
     getCheckoutUrl,
-    cancelCurrentSubscription
+    cancelCurrentSubscription,
+    createSubscription,
+    createPlan,
+    triggerStripeWebhook
   }
 })
 

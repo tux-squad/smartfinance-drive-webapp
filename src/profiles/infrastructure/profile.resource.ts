@@ -1,34 +1,60 @@
 /**
  * DTO Payload interfaces for Profiles API endpoints (/api/v1/profiles).
+ * API Doc 2.1 & 2.4.
  */
 export interface CreateProfileRequestResource {
-  firstName: string
-  lastName: string
+  userId: string
   email: string
-  dni: string
+  nationalId: string
+  fullLegalNames: string
+  dateOfBirth: string
+  phoneCountryCode: string
+  mobilePhone: string
+  monthlyIncomeAmount: number
+  monthlyIncomeCurrency: string
+  employmentStatus: string
+  // Optional legacy fields for resilience
+  firstName?: string
+  lastName?: string
+  dni?: string
   phoneNumber?: string
-  monthlyIncomeAmount?: number
   currency?: string
 }
 
 export interface UpdateProfileRequestResource {
-  firstName: string
-  lastName: string
   email: string
-  dni: string
+  nationalId: string
+  fullLegalNames: string
+  dateOfBirth: string
+  phoneCountryCode: string
+  mobilePhone: string
+  monthlyIncomeAmount: number
+  monthlyIncomeCurrency: string
+  employmentStatus: string
+  // Optional legacy fields for resilience
+  firstName?: string
+  lastName?: string
+  dni?: string
   phoneNumber?: string
-  monthlyIncomeAmount?: number
   currency?: string
 }
 
 export interface ProfileResponseResource {
   id: string
   userId: string
-  firstName: string
-  lastName: string
   email: string
-  dni: string
-  phoneNumber?: string
+  nationalId: string
+  fullLegalNames: string
+  dateOfBirth?: string
+  phoneCountryCode?: string
+  mobilePhone?: string
   monthlyIncomeAmount?: number
+  monthlyIncomeCurrency?: string
+  employmentStatus?: string
+  // Optional legacy aliases for backwards compatibility
+  firstName?: string
+  lastName?: string
+  dni?: string
+  phoneNumber?: string
   currency?: string
 }

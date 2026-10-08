@@ -16,9 +16,19 @@ export class PartnersApi extends BaseApi {
    * 4.1 List Financial Entities with rate benchmarks.
    */
   public async getFinancialEntities(): Promise<FinancialEntity[]> {
-    const response: AxiosResponse<FinancialEntityResource[]> = await this.http.get<FinancialEntityResource[]>('/api/v1/financial-entities')
-    const list = response.data || []
-    return list.map((item) => PartnersAssembler.toFinancialEntity(item))
+    if (!localStorage.getItem('access_token')) {
+      return []
+    }
+    try {
+      const response: AxiosResponse<FinancialEntityResource[]> = await this.http.get<FinancialEntityResource[]>('/api/v1/financial-entities')
+      const list = response.data || []
+      return list.map((item) => PartnersAssembler.toFinancialEntity(item))
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        return []
+      }
+      throw err
+    }
   }
 
   /**
@@ -59,7 +69,101 @@ export class PartnersApi extends BaseApi {
   }
 
   /**
-   * 4.6 Lookup SUNAT RUC validation.
+   * 4.6 Get my Financial Entity (for ROLE_FINANCIAL_INSTITUTION).
+   * GET /api/v1/financial-entities/me
+   */
+  public async getMyFinancialEntity(): Promise<FinancialEntity | null> {
+    try {
+      const response: AxiosResponse<FinancialEntityResource> = await this.http.get<FinancialEntityResource>(
+        '/api/v1/financial-entities/me'
+      )
+      return response.data ? PartnersAssembler.toFinancialEntity(response.data) : null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 4.7 Add Rate Benchmark to Financial Entity.
+   * POST /api/v1/financial-entities/{id}/rate-benchmarks
+   */
+  public async addRateBenchmark(id: string, resource: {
+    rateType: string
+    annualRate: number
+    currency: string
+    sourceLabel?: string
+    sourceUrl?: string
+    effectiveFrom?: string
+  }): Promise<FinancialEntity> {
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/rate-benchmarks`,
+      resource
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.8 Upload Financial Entity Logo.
+   * POST /api/v1/financial-entities/{id}/logo
+   */
+  public async uploadFinancialEntityLogo(id: string, file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/logo`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.9 Upload my Financial Entity Logo.
+   * POST /api/v1/financial-entities/me/logo
+   */
+  public async uploadMyFinancialEntityLogo(file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      '/api/v1/financial-entities/me/logo',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.10 Upload Financial Entity Banner.
+   * POST /api/v1/financial-entities/{id}/banner
+   */
+  public async uploadFinancialEntityBanner(id: string, file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      `/api/v1/financial-entities/${id}/banner`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.11 Upload my Financial Entity Banner.
+   * POST /api/v1/financial-entities/me/banner
+   */
+  public async uploadMyFinancialEntityBanner(file: File): Promise<FinancialEntity> {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
+      '/api/v1/financial-entities/me/banner',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return PartnersAssembler.toFinancialEntity(response.data)
+  }
+
+  /**
+   * 4.10 Lookup SUNAT RUC validation.
    */
   public async lookupSunatRuc(ruc: string): Promise<SunatRuc> {
     const response: AxiosResponse<SunatRucResource> = await this.http.get<SunatRucResource>(`/api/v1/partners/sunat/ruc/${ruc}`)
@@ -71,10 +175,20 @@ export class PartnersApi extends BaseApi {
    * GET /api/v1/dealerships
    */
   public async getDealerships(params?: { search?: string, location?: string, page?: number, size?: number }): Promise<Dealership[]> {
-    const response: AxiosResponse<any> = await this.http.get('/api/v1/dealerships', { params })
-    const data = response.data
-    const list = Array.isArray(data) ? data : (data?.content || [])
-    return list.map((item: DealershipResource) => DealershipAssembler.toEntity(item))
+    if (!localStorage.getItem('access_token')) {
+      return []
+    }
+    try {
+      const response: AxiosResponse<any> = await this.http.get('/api/v1/dealerships', { params })
+      const data = response.data
+      const list = Array.isArray(data) ? data : (data?.content || [])
+      return list.map((item: DealershipResource) => DealershipAssembler.toEntity(item))
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        return []
+      }
+      throw err
+    }
   }
 
   /**
@@ -95,9 +209,13 @@ export class PartnersApi extends BaseApi {
    * PUT /api/v1/dealerships/me
    */
   public async updateMyDealership(resource: UpdateDealershipResource): Promise<Dealership> {
+    const payload = {
+      ...resource,
+      operatingHours: resource.operatingHours || resource.hours || undefined
+    }
     const response: AxiosResponse<DealershipResource> = await this.http.put<DealershipResource>(
       '/api/v1/dealerships/me',
-      resource
+      payload
     )
     return DealershipAssembler.toEntity(response.data)
   }
@@ -150,6 +268,81 @@ export class PartnersApi extends BaseApi {
   public async getDealershipVehicles(id: string): Promise<any[]> {
     const response: AxiosResponse<any> = await this.http.get(`/api/v1/dealerships/${id}/vehicles`)
     return response.data || []
+  }
+
+  /**
+   * 4.14 Corporate Verification Lookup by RUC.
+   * GET /api/v1/partners/corporate-verification/lookup/{ruc}
+   */
+  public async lookupCorporateVerification(ruc: string): Promise<import('./corporate-verification.resource').CorporateVerificationLookupResource> {
+    const response = await this.http.get<import('./corporate-verification.resource').CorporateVerificationLookupResource>(
+      `/api/v1/partners/corporate-verification/lookup/${ruc}`
+    )
+    return response.data
+  }
+
+  /**
+   * 4.15 Initiate Corporate Verification (Current User).
+   * POST /api/v1/users/me/corporate-verification/initiate
+   */
+  public async initiateCorporateVerification(resource: import('./corporate-verification.resource').InitiateCorporateVerificationResource): Promise<{ message: string, corporateEmail: string, expiresInSeconds: number }> {
+    const response = await this.http.post<{ message: string, corporateEmail: string, expiresInSeconds: number }>(
+      '/api/v1/users/me/corporate-verification/initiate',
+      resource
+    )
+    return response.data
+  }
+
+  /**
+   * 4.16 Confirm Corporate Verification (Current User) (2.13).
+   * POST /api/v1/users/me/corporate-verification/confirm
+   * Body requires { ruc, code }
+   */
+  public async confirmCorporateVerification(resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const payload = {
+      ruc: resource.ruc,
+      code: resource.code || resource.verificationCode
+    }
+    const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
+      '/api/v1/users/me/corporate-verification/confirm',
+      payload
+    )
+    return response.data
+  }
+
+  /**
+   * 4.17 Initiate Corporate Verification by User ID (Admin / Self) (#34).
+   * POST /api/v1/users/{userId}/corporate-verification/initiate
+   */
+  public async initiateCorporateVerificationForUser(
+    userId: string | number,
+    resource: import('./corporate-verification.resource').InitiateCorporateVerificationResource
+  ): Promise<{ message: string, corporateEmail: string, expiresInSeconds: number }> {
+    const response = await this.http.post<{ message: string, corporateEmail: string, expiresInSeconds: number }>(
+      `/api/v1/users/${userId}/corporate-verification/initiate`,
+      resource
+    )
+    return response.data
+  }
+
+  /**
+   * 4.18 Confirm Corporate Verification by User ID (Admin / Self) (#35 / 2.15).
+   * POST /api/v1/users/{userId}/corporate-verification/confirm
+   * Body requires { ruc, code }
+   */
+  public async confirmCorporateVerificationForUser(
+    userId: string | number,
+    resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource
+  ): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const payload = {
+      ruc: resource.ruc,
+      code: resource.code || resource.verificationCode
+    }
+    const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
+      `/api/v1/users/${userId}/corporate-verification/confirm`,
+      payload
+    )
+    return response.data
   }
 }
 

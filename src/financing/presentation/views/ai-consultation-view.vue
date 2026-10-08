@@ -245,10 +245,13 @@ const handleSend = async () => {
   await scrollToBottom()
 
   try {
+    const userIncome = profilesStore.currentProfile?.monthlyIncomeAmount || 0
+    const userCurrency = profilesStore.currentProfile?.currency || 'PEN'
+
     const consultation = await consultationsStore.askAdvisor({
       prompt: text,
-      monthlyIncome: 4500,
-      currency: 'PEN'
+      monthlyIncome: userIncome,
+      currency: userCurrency
     })
 
     if (consultation && consultation.recommendationText) {

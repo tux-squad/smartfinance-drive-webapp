@@ -16,17 +16,41 @@ export class BillingPlan {
 }
 
 /**
- * Domain Entity representing an active user Subscription.
+ * Domain Entity representing an active user Subscription (API Doc 2.49).
  */
 export class Subscription {
+  public readonly id: number
+  public readonly status: string
+  public readonly autoRenew: boolean
+  public readonly endDate?: string
+  public readonly plan?: BillingPlan
+  private readonly _planId?: number
+  private readonly _legacyPeriodEnd?: string
+
   constructor(
-    public readonly id: number,
-    public readonly planId: number,
-    public readonly status: string,
-    public readonly autoRenew: boolean = true,
-    public readonly currentPeriodEnd?: string,
-    public readonly plan?: BillingPlan
-  ) {}
+    id: number,
+    planId: number,
+    status: string,
+    autoRenew: boolean = true,
+    endDate?: string,
+    plan?: BillingPlan
+  ) {
+    this.id = id
+    this._planId = planId
+    this.status = status
+    this.autoRenew = autoRenew
+    this.endDate = endDate
+    this._legacyPeriodEnd = endDate
+    this.plan = plan
+  }
+
+  get planId(): number {
+    return this.plan?.id || this._planId || 1
+  }
+
+  get currentPeriodEnd(): string | undefined {
+    return this.endDate || this._legacyPeriodEnd
+  }
 
   get isActive(): boolean {
     return this.status === 'ACTIVE'
@@ -34,17 +58,37 @@ export class Subscription {
 }
 
 /**
- * Domain Entity representing a Billing Invoice.
+ * Domain Entity representing a Billing Invoice (API Doc 2.53).
  */
 export class Invoice {
+  public readonly id: number
+  public readonly amount: number
+  public readonly currency: string
+  public readonly status: string
+  public readonly issuedAt?: string
+  public readonly pdfUrl?: string
+  private readonly _legacyCreatedAt?: string
+
   constructor(
-    public readonly id: number,
-    public readonly amount: number,
-    public readonly currency: string = 'USD',
-    public readonly status: string = 'PAID',
-    public readonly createdAt?: string,
-    public readonly pdfUrl?: string
-  ) {}
+    id: number,
+    amount: number,
+    currency: string = 'USD',
+    status: string = 'PAID',
+    issuedAt?: string,
+    pdfUrl?: string
+  ) {
+    this.id = id
+    this.amount = amount
+    this.currency = currency
+    this.status = status
+    this.issuedAt = issuedAt
+    this._legacyCreatedAt = issuedAt
+    this.pdfUrl = pdfUrl
+  }
+
+  get createdAt(): string | undefined {
+    return this.issuedAt || this._legacyCreatedAt
+  }
 }
 
 /**

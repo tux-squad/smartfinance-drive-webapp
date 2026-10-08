@@ -1,15 +1,18 @@
 export interface CreateCreditApplicationCommand {
-  simulationId?: string
-  financialEntityId?: string
   vehicleId?: string
+  financialEntityId?: string
+  simulationId?: string
   requestedAmount: number
-  currency: string
+  downPayment?: number
+  termMonths?: number
   monthlyIncome: number
+  currency: string
   employmentStatus: string
   notes?: string
 }
 
 export interface UpdateCreditApplicationStatusCommand {
-  status: string
+  status: 'PENDING' | 'IN_REVIEW' | 'PRE_APPROVED' | 'REJECTED' | 'DISBURSED' | string
+  notes?: string
   reviewerNotes?: string
 }

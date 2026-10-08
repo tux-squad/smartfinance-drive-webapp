@@ -245,8 +245,24 @@ const handleSubmit = async () => {
       startDate: todayStr
     })
 
-    if (success) {
-      // Navigate directly to applications report where the real simulation appears!
+    if (success && financingStore.currentSimulation?.id) {
+      // 1. Direct apply simulation (#66 POST /simulations/{id}/apply)
+      let application = await financingStore.applySimulation(financingStore.currentSimulation.id)
+
+      // 2. Fallback direct credit application if needed (#68 POST /credit-applications)
+      if (!application) {
+        application = await financingStore.createCreditApplication({
+          vehicleId: vehicle.value.id,
+          financialEntityId: form.selectedBankId,
+          requestedAmount: vehicle.value.priceAmount * 0.9,
+          termMonths: 48,
+          currency: vehicle.value.currency || 'USD',
+          monthlyIncome: form.monthlyIncome || 3500,
+          employmentStatus: 'EMPLOYED'
+        })
+      }
+
+      // Navigate directly to applications report where the real application appears!
       router.push('/reports/applications')
     } else {
       errorMessage.value = financingStore.error || 'Ocurrió un error al procesar la solicitud con el banco.'

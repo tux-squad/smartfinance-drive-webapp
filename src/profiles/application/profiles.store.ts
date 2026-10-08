@@ -96,12 +96,38 @@ export const useProfilesStore = defineStore('profiles', () => {
     }
   }
 
+  /**
+   * Fetches the client profile directly by profileId (2.2).
+   */
+  const fetchProfileById = async (profileId: string | number): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await profilesApi.getProfileById(profileId)
+      if (response.data) {
+        currentProfile.value = ProfileAssembler.toEntityFromResource(response.data)
+        return true
+      }
+      return false
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        currentProfile.value = null
+      } else {
+        error.value = err.response?.data?.message || 'Error al obtener el perfil.'
+      }
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     currentProfile,
     isLoading,
     error,
     hasProfile,
     fetchProfileByUserId,
+    fetchProfileById,
     createProfile,
     updateProfile,
     deleteProfile
