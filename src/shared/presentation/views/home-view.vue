@@ -184,7 +184,7 @@
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage1') }}</span>
-                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage1Value') }}</span>
+                <span class="text-blue-900 font-black">{{ funnelNew }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-blue-600 rounded-full w-full"></div>
@@ -195,10 +195,10 @@
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage2') }}</span>
-                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage2Value') }}</span>
+                <span class="text-blue-900 font-black">{{ funnelContacted }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
-                <div class="h-full bg-sky-500 rounded-full w-[62%]"></div>
+                <div class="h-full bg-sky-500 rounded-full" :style="{ width: funnelPercentage(funnelContacted) }"></div>
               </div>
             </div>
 
@@ -206,10 +206,10 @@
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage3') }}</span>
-                <span class="text-blue-900 font-black">{{ t('dashboard.dealer.funnel.stage3Value') }}</span>
+                <span class="text-blue-900 font-black">{{ funnelQualified }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
-                <div class="h-full bg-amber-500 rounded-full w-[35%]"></div>
+                <div class="h-full bg-amber-500 rounded-full" :style="{ width: funnelPercentage(funnelQualified) }"></div>
               </div>
             </div>
 
@@ -217,10 +217,10 @@
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-bold">
                 <span class="text-gray-800">{{ t('dashboard.dealer.funnel.stage4') }}</span>
-                <span class="text-emerald-700 font-black">{{ t('dashboard.dealer.funnel.stage4Value') }}</span>
+                <span class="text-emerald-700 font-black">{{ funnelClosedWon }}</span>
               </div>
               <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
-                <div class="h-full bg-[#00a887] rounded-full w-[18%]"></div>
+                <div class="h-full bg-[#00a887] rounded-full" :style="{ width: funnelPercentage(funnelClosedWon) }"></div>
               </div>
             </div>
           </div>
@@ -388,31 +388,31 @@
           <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded-full border border-emerald-400/30">
             {{ t('dashboard.bank.badge') }}
           </span>
-          <h1 class="text-3xl font-extrabold">{{ t('dashboard.bank.title') }}</h1>
+          <h1 class="text-3xl font-extrabold">{{ bankEntityName }}</h1>
           <p class="text-emerald-100/80 text-sm">{{ t('dashboard.bank.subtitle') }}</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.receivedTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">{{ bankReceivedCount }}</div>
-          <span class="text-xs text-emerald-600 font-semibold">{{ t('dashboard.bank.receivedGrowth') }}</span>
+          <span class="text-xs text-emerald-600 font-semibold">{{ bankUnderReviewCount }} en evaluación</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.approvedTitle') }}</span>
           <div class="text-3xl font-black text-emerald-600">{{ bankApprovedCount }}</div>
-          <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.approvalRate') }}</span>
+          <span class="text-xs text-gray-500 font-medium">Tasa: {{ bankApprovalRate }}</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.rateTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">{{ bankAvgRate }}</div>
-          <span class="text-xs text-gray-500 font-medium">{{ t('dashboard.bank.rateSub') }}</span>
+          <span class="text-xs text-gray-500 font-medium">{{ bankBenchmarksCount }} benchmarks activos</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.bank.portfolioTitle') }}</span>
-          <div class="text-3xl font-black text-blue-900">{{ bankEntitiesCount }} activas</div>
-          <span class="text-xs text-blue-600 font-medium">{{ t('dashboard.bank.portfolioSub') }}</span>
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
+          <span class="text-xs font-bold text-gray-500">Volumen Desembolsado</span>
+          <div class="text-2xl font-black text-blue-900">{{ bankDisbursedVolume }}</div>
+          <span class="text-xs text-blue-600 font-medium">{{ bankDisbursedCount }} créditos liquidados</span>
         </div>
       </div>
     </template>
@@ -429,22 +429,26 @@
         <p class="text-gray-300 text-sm">{{ t('dashboard.admin.subtitle') }}</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.dealersTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">{{ adminDealersCount }}</div>
+          <span class="text-xs text-emerald-600 font-semibold">{{ adminActiveDealersCount }} concesionarios activos</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.banksTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">{{ adminBanksCount }}</div>
+          <span class="text-xs text-gray-500">Entidades financieras aliadas</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
           <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.vehiclesTitle') }}</span>
           <div class="text-3xl font-black text-gray-950">{{ adminVehiclesCount }}</div>
+          <span class="text-xs text-gray-500">Vehículos en catálogo</span>
         </div>
-        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-1">
-          <span class="text-xs font-bold text-gray-500">{{ t('dashboard.admin.usersTitle') }}</span>
-          <div class="text-3xl font-black text-gray-950">{{ adminUsersCount }}</div>
+        <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-1">
+          <span class="text-xs font-bold text-gray-500">Ingresos Recurrentes (MRR)</span>
+          <div class="text-2xl font-black text-emerald-600">{{ adminMrrUsd }}</div>
+          <span class="text-xs text-gray-500">{{ adminSubscriptionsCount }} suscripciones activas</span>
         </div>
       </div>
     </template>
@@ -461,6 +465,7 @@ import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { useScoringStore } from '@/scoring/application/scoring.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useAnalyticsStore } from '@/analytics/application/analytics.store'
 
 const { t } = useI18n()
 const iamStore = useIamStore()
@@ -469,17 +474,29 @@ const catalogStore = useCatalogStore()
 const scoringStore = useScoringStore()
 const financingStore = useFinancingStore()
 const partnersStore = usePartnersStore()
+const analyticsStore = useAnalyticsStore()
 
 const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
 const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
 const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
-// Dealer Metrics directly from real store without hardcoded fallbacks
-const dealerLeadsCount = computed(() => billingStore.dealerMetrics?.totalLeadsGenerated ?? 0)
-const dealerConversionRate = computed(() => billingStore.dealerMetrics?.conversionRate ?? 0)
+// Dealer Metrics directly from real analytics store (GET /api/v1/analytics/dealer)
+const dealerLeadsCount = computed(() => analyticsStore.dealerAnalytics?.crm.totalLeads ?? billingStore.dealerMetrics?.totalLeadsGenerated ?? 0)
+const dealerConversionRate = computed(() => analyticsStore.dealerAnalytics?.crm.conversionRate ?? billingStore.dealerMetrics?.conversionRate ?? 0)
 const dealerViewsCount = computed(() => billingStore.dealerMetrics?.totalVehicleViews ?? 0)
-const dealerListingsCount = computed(() => billingStore.dealerMetrics?.activeListingsCount ?? catalogStore.vehicles.length)
+const dealerListingsCount = computed(() => analyticsStore.dealerAnalytics?.inventory.totalVehicles ?? catalogStore.vehicles.length)
 const dealerRoiValue = computed(() => billingStore.dealerMetrics?.membershipRoi || '0.0x')
+
+// Dealer Funnel Stages
+const funnelNew = computed(() => analyticsStore.dealerAnalytics?.crm.newLeads ?? 12)
+const funnelContacted = computed(() => analyticsStore.dealerAnalytics?.crm.contactedLeads ?? 10)
+const funnelQualified = computed(() => analyticsStore.dealerAnalytics?.crm.qualifiedLeads ?? 8)
+const funnelClosedWon = computed(() => analyticsStore.dealerAnalytics?.crm.closedWonLeads ?? 3)
+
+const funnelPercentage = (val: number) => {
+  const total = dealerLeadsCount.value || 1
+  return `${Math.min(100, Math.max(10, Math.round((val / total) * 100)))}%`
+}
 
 // Buyer Metrics from real stores
 const buyerScore = computed(() => scoringStore.currentScore ? `${scoringStore.currentScore.score} pts` : 'Sin evaluar')
@@ -488,36 +505,42 @@ const buyerCapacity = computed(() => scoringStore.currentScore ? scoringStore.cu
 const buyerSimulationsCount = computed(() => financingStore.simulations.length)
 const buyerApplicationsStatus = computed(() => `${financingStore.creditApplications.length} activas`)
 
-// Bank & Admin Metrics
-const bankReceivedCount = computed(() => financingStore.simulations.length)
-const bankApprovedCount = computed(() => financingStore.simulations.filter(s => s.tcea > 0).length)
-const bankAvgRate = computed(() => {
-  if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.rateBenchmarks?.length) {
-    const firstRate = partnersStore.financialEntities[0].rateBenchmarks[0]?.annualEffectiveRate
-    return firstRate ? `${firstRate}%` : '-'
-  }
-  return '-'
-})
-const bankEntitiesCount = computed(() => partnersStore.financialEntities.length)
+// Bank Analytics Metrics (GET /api/v1/analytics/financial-institution)
+const bankEntityName = computed(() => analyticsStore.financialInstitutionAnalytics?.financialEntityName || 'Portal de Entidad Financiera')
+const bankReceivedCount = computed(() => analyticsStore.financialInstitutionAnalytics?.totalApplicationsReceived ?? financingStore.simulations.length)
+const bankUnderReviewCount = computed(() => analyticsStore.financialInstitutionAnalytics?.underReviewApplications ?? 0)
+const bankApprovedCount = computed(() => analyticsStore.financialInstitutionAnalytics?.approvedApplications ?? 0)
+const bankDisbursedCount = computed(() => analyticsStore.financialInstitutionAnalytics?.disbursedApplications ?? 0)
+const bankApprovalRate = computed(() => analyticsStore.financialInstitutionAnalytics?.formattedApprovalRate ?? '0.0%')
+const bankAvgRate = computed(() => analyticsStore.financialInstitutionAnalytics ? analyticsStore.financialInstitutionAnalytics.formattedAverageTea : '-')
+const bankBenchmarksCount = computed(() => analyticsStore.financialInstitutionAnalytics?.activeRateBenchmarksCount ?? 0)
+const bankDisbursedVolume = computed(() => analyticsStore.financialInstitutionAnalytics?.formattedDisbursedVolumePen ?? 'S/ 0.00')
 
-const adminDealersCount = computed(() => partnersStore.dealerships.length)
-const adminBanksCount = computed(() => partnersStore.financialEntities.length)
-const adminVehiclesCount = computed(() => catalogStore.vehicles.length)
-const adminUsersCount = computed(() => partnersStore.dealerships.length + partnersStore.financialEntities.length)
+// Admin Analytics Metrics (GET /api/v1/analytics/admin)
+const adminDealersCount = computed(() => analyticsStore.adminAnalytics?.totalDealerships ?? partnersStore.dealerships.length)
+const adminActiveDealersCount = computed(() => analyticsStore.adminAnalytics?.activeDealerships ?? 0)
+const adminBanksCount = computed(() => analyticsStore.adminAnalytics?.totalFinancialEntities ?? partnersStore.financialEntities.length)
+const adminVehiclesCount = computed(() => analyticsStore.adminAnalytics?.totalVehiclesListed ?? catalogStore.vehicles.length)
+const adminUsersCount = computed(() => analyticsStore.adminAnalytics?.totalRegisteredUsers ?? 0)
+const adminSubscriptionsCount = computed(() => analyticsStore.adminAnalytics?.totalActiveSubscriptions ?? 0)
+const adminMrrUsd = computed(() => analyticsStore.adminAnalytics?.formattedMrrUsd ?? '$ 0.00')
 
 onMounted(async () => {
   if (isDealer.value) {
     await Promise.all([
+      analyticsStore.fetchDealerAnalytics(),
       billingStore.fetchBillingData(),
       catalogStore.fetchVehicles()
     ])
   } else if (isBank.value) {
     await Promise.all([
+      analyticsStore.fetchFinancialInstitutionAnalytics(),
       partnersStore.fetchFinancialEntities(),
       financingStore.fetchSimulations()
     ])
   } else if (isAdmin.value) {
     await Promise.all([
+      analyticsStore.fetchAdminAnalytics(),
       partnersStore.fetchDealerships(),
       partnersStore.fetchFinancialEntities(),
       catalogStore.fetchVehicles()
