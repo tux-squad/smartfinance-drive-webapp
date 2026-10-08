@@ -22,9 +22,9 @@
         class="inline-flex items-center space-x-3.5 mb-6 group"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-primary text-primary-contrast flex items-center justify-center text-xl shadow-lg shadow-black/20 group-hover:scale-105 transition-transform"
+          class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md p-1.5 flex items-center justify-center shadow-lg shadow-black/20 group-hover:scale-105 transition-transform border border-white/20"
         >
-          <i class="pi pi-car" />
+          <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain" />
         </div>
         <div>
           <span class="text-2xl font-black tracking-wide block leading-none text-white drop-shadow-md">SmartFinance</span>
@@ -63,8 +63,8 @@
         <div class="space-y-1.5">
           <!-- Mobile Brand Logo -->
           <div class="lg:hidden flex items-center space-x-2.5 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-primary text-primary-contrast flex items-center justify-center text-lg shadow-md">
-              <i class="pi pi-car" />
+            <div class="w-10 h-10 rounded-xl bg-surface-100 p-1 flex items-center justify-center shadow-xs border border-surface-200">
+              <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain" />
             </div>
             <div>
               <span class="text-base font-black text-surface-900 block leading-tight">SmartFinance</span>

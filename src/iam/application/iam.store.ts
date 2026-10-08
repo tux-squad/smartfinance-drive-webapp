@@ -13,6 +13,7 @@ import { SalesAgentAssembler } from '../infrastructure/sales-agent.assembler'
 import type { CreateSalesAgentResource, UpdateSalesAgentResource } from '../infrastructure/sales-agent.resource'
 import type { SignUpResponseResource } from '../infrastructure/sign-up.resource'
 import type { UserPaginatedResponseResource, UserResource } from '../infrastructure/user-management.resource'
+import { firebasePhoneAuthService } from '../infrastructure/firebase-phone-auth.service'
 
 
 const iamApi = new IamApi()
@@ -594,6 +595,41 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
+   * Enviar código SMS mediante Firebase Phone Authentication
+   */
+  const sendPhoneSms = async (phoneNumber: string, verifier?: any): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await firebasePhoneAuthService.sendVerificationCode(phoneNumber, verifier)
+      successMessage.value = 'Código de verificación SMS enviado exitosamente.'
+      return true
+    } catch (err: any) {
+      error.value = err.message || 'Error al enviar código SMS de verificación.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Validar código recibido por SMS (6 dígitos) y enviar Firebase ID Token al backend
+   */
+  const verifyPhoneSmsCode = async (code: string): Promise<boolean> => {
+    isVerifyingOtp.value = true
+    error.value = null
+    try {
+      const idToken = await firebasePhoneAuthService.confirmSmsCode(code)
+      return await verifyPhoneToken(idToken)
+    } catch (err: any) {
+      error.value = err.message || 'Código SMS inválido o expirado.'
+      return false
+    } finally {
+      isVerifyingOtp.value = false
+    }
+  }
+
+  /**
    * Consultar datos oficiales en RENIEC por número de DNI
    * GET /api/v1/profiles/reniec/dni/{dni}
    */
@@ -652,6 +688,8 @@ export const useIamStore = defineStore('iam', () => {
     sendEmailOtp,
     verifyEmailOtp,
     verifyPhoneToken,
+    sendPhoneSms,
+    verifyPhoneSmsCode,
     lookupDni,
     refreshSession,
     signOut

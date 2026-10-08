@@ -3,9 +3,10 @@
     <div class="max-w-lg w-full space-y-6 bg-surface-0 dark:bg-surface-900 p-6 sm:p-8 rounded-3xl border border-surface-200 dark:border-surface-800 shadow-xl">
       <!-- Form Header -->
       <div class="text-center space-y-2">
-        <router-link to="/home" class="inline-flex items-center space-x-2 text-primary font-bold mb-1">
-          <div class="w-10 h-10 rounded-xl bg-primary text-primary-contrast flex items-center justify-center text-lg shadow-md">
-            <i class="pi pi-car"></i>
+        <router-link to="/home" class="inline-flex items-center space-x-2.5 text-primary font-bold mb-1">
+          <div class="w-10 h-10 rounded-xl bg-surface-100 dark:bg-surface-800 p-1 flex items-center justify-center shadow-xs border border-surface-200 dark:border-surface-700">
+            <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain dark:hidden" />
+            <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain hidden dark:block" />
           </div>
           <span class="text-xl font-black text-surface-900 dark:text-surface-0">SmartFinance Drive</span>
         </router-link>
@@ -141,16 +142,19 @@
             </div>
           </div>
 
-          <!-- Step 2.5: Phone Verification (Firebase OTP) -->
-          <div class="space-y-2 p-3.5 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
+          <!-- Step 2.5: Phone Verification (Firebase SMS Auth) -->
+          <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
             <div class="flex items-center justify-between">
               <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Verificación Telefónica (Móvil)
+                Verificación Telefónica (SMS Firebase)
               </label>
               <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
                 <i class="pi pi-check" /> Verificado
               </span>
             </div>
+
+            <!-- Invisible reCAPTCHA container for Firebase Phone Auth -->
+            <div id="recaptcha-phone-container"></div>
 
             <div class="flex gap-2">
               <IconField class="flex-1">
@@ -159,6 +163,7 @@
                   id="reg-phone"
                   v-model="phoneNumber"
                   placeholder="+51 987 654 321"
+                  :disabled="iamStore.phoneVerified"
                   fluid
                 />
               </IconField>
@@ -166,34 +171,65 @@
                 type="button"
                 severity="secondary"
                 variant="outlined"
-                :disabled="!phoneNumber || iamStore.phoneVerified"
-                @click="phoneTokenPrompt = true"
+                :disabled="!phoneNumber || smsCooldown > 0 || iamStore.phoneVerified"
+                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
+                @click="handleSendSms"
                 class="text-xs shrink-0"
               >
-                {{ iamStore.phoneVerified ? 'Verificado' : 'Validar SMS' }}
+                {{ smsCooldown > 0 ? `${smsCooldown}s` : (iamStore.phoneVerified ? 'Verificado' : 'Enviar SMS') }}
               </Button>
             </div>
 
-            <!-- Phone Verification Token Input -->
-            <div v-if="phoneTokenPrompt && !iamStore.phoneVerified" class="pt-2 space-y-2">
+            <!-- SMS Code Verification Input -->
+            <div v-if="smsSent && !iamStore.phoneVerified" class="p-3 rounded-2xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 space-y-2">
               <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-                Token de Verificación SMS (Firebase ID Token):
+                Ingrese el código de 6 dígitos recibido por SMS:
               </span>
               <div class="flex gap-2">
                 <InputText
-                  v-model="phoneFirebaseToken"
-                  placeholder="Pegar token de verificación Firebase..."
+                  v-model="phoneSmsCode"
+                  maxlength="6"
+                  placeholder="Ej: 123456"
                   fluid
-                  class="font-mono text-xs"
+                  class="font-mono text-center tracking-widest text-sm"
                 />
                 <Button
                   type="button"
                   severity="primary"
+                  :disabled="phoneSmsCode.length !== 6"
+                  :loading="iamStore.isVerifyingOtp"
+                  @click="handleVerifySms"
+                  class="text-xs shrink-0"
+                  label="Validar SMS"
+                />
+              </div>
+            </div>
+
+            <!-- Fallback manual token toggle -->
+            <div v-if="!iamStore.phoneVerified" class="pt-1">
+              <button
+                type="button"
+                @click="manualTokenPrompt = !manualTokenPrompt"
+                class="text-[10px] text-surface-500 hover:text-primary transition-colors underline"
+              >
+                {{ manualTokenPrompt ? 'Ocultar ingreso manual' : '¿Ya cuentas con un Firebase ID Token? Ingresar manualmente' }}
+              </button>
+
+              <div v-if="manualTokenPrompt" class="mt-2 flex gap-2">
+                <InputText
+                  v-model="phoneFirebaseToken"
+                  placeholder="Pegar Firebase ID Token..."
+                  fluid
+                  class="font-mono text-[11px]"
+                />
+                <Button
+                  type="button"
+                  severity="secondary"
                   :disabled="!phoneFirebaseToken"
                   :loading="iamStore.isLoading"
                   @click="confirmPhoneToken"
                   class="text-xs shrink-0"
-                  label="Verificar"
+                  label="Validar Token"
                 />
               </div>
             </div>
@@ -262,11 +298,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
+import { firebasePhoneAuthService } from '@/iam/infrastructure/firebase-phone-auth.service'
 
 // PrimeVue Components
 import InputText from 'primevue/inputtext'
@@ -289,9 +326,13 @@ const otpSent = ref(false)
 const otpCooldown = ref(0)
 const successMessage = ref('')
 
+// Phone Verification with Firebase
 const phoneNumber = ref('')
+const phoneSmsCode = ref('')
+const smsSent = ref(false)
+const smsCooldown = ref(0)
 const phoneFirebaseToken = ref('')
-const phoneTokenPrompt = ref(false)
+const manualTokenPrompt = ref(false)
 
 const handleDniInput = () => {
   dni.value = dni.value.replace(/\D/g, '').slice(0, 8)
@@ -326,10 +367,39 @@ const confirmOtp = async () => {
   await iamStore.verifyEmailOtp(username.value, otpCode.value)
 }
 
+const handleSendSms = async () => {
+  if (!phoneNumber.value) return
+  try {
+    firebasePhoneAuthService.setupRecaptcha('recaptcha-phone-container')
+    const ok = await iamStore.sendPhoneSms(phoneNumber.value)
+    if (ok) {
+      smsSent.value = true
+      smsCooldown.value = 60
+      const timer = setInterval(() => {
+        smsCooldown.value--
+        if (smsCooldown.value <= 0) {
+          clearInterval(timer)
+        }
+      }, 1000)
+    }
+  } catch (err: any) {
+    console.error('Error al inicializar o enviar SMS:', err)
+  }
+}
+
+const handleVerifySms = async () => {
+  if (phoneSmsCode.value.length !== 6) return
+  await iamStore.verifyPhoneSmsCode(phoneSmsCode.value)
+}
+
 const confirmPhoneToken = async () => {
   if (!phoneFirebaseToken.value) return
   await iamStore.verifyPhoneToken(phoneFirebaseToken.value)
 }
+
+onUnmounted(() => {
+  firebasePhoneAuthService.clearRecaptcha()
+})
 
 const fillDemoData = () => {
   dni.value = '72849102'
@@ -337,7 +407,7 @@ const fillDemoData = () => {
   password.value = 'Password123!'
   phoneNumber.value = '+51 987654321'
   phoneFirebaseToken.value = 'demo-firebase-id-token-valid'
-  phoneTokenPrompt.value = true
+  manualTokenPrompt.value = true
   searchDni()
 }
 
