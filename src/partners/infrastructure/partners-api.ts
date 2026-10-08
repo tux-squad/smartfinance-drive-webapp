@@ -151,5 +151,40 @@ export class PartnersApi extends BaseApi {
     const response: AxiosResponse<any> = await this.http.get(`/api/v1/dealerships/${id}/vehicles`)
     return response.data || []
   }
+
+  /**
+   * 4.14 Corporate Verification Lookup by RUC.
+   * GET /api/v1/partners/corporate-verification/lookup/{ruc}
+   */
+  public async lookupCorporateVerification(ruc: string): Promise<import('./corporate-verification.resource').CorporateVerificationLookupResource> {
+    const response = await this.http.get<import('./corporate-verification.resource').CorporateVerificationLookupResource>(
+      `/api/v1/partners/corporate-verification/lookup/${ruc}`
+    )
+    return response.data
+  }
+
+  /**
+   * 4.15 Initiate Corporate Verification (Current User).
+   * POST /api/v1/users/me/corporate-verification/initiate
+   */
+  public async initiateCorporateVerification(resource: import('./corporate-verification.resource').InitiateCorporateVerificationResource): Promise<{ message: string, corporateEmail: string, expiresInSeconds: number }> {
+    const response = await this.http.post<{ message: string, corporateEmail: string, expiresInSeconds: number }>(
+      '/api/v1/users/me/corporate-verification/initiate',
+      resource
+    )
+    return response.data
+  }
+
+  /**
+   * 4.16 Confirm Corporate Verification (Current User).
+   * POST /api/v1/users/me/corporate-verification/confirm
+   */
+  public async confirmCorporateVerification(resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
+      '/api/v1/users/me/corporate-verification/confirm',
+      resource
+    )
+    return response.data
+  }
 }
 

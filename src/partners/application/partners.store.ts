@@ -194,6 +194,58 @@ export const usePartnersStore = defineStore('partners', () => {
     sunatError.value = null
   }
 
+  // --- Phase 2: Corporate Verification Actions ---
+  const corporateLookup = ref<import('../infrastructure/corporate-verification.resource').CorporateVerificationLookupResource | null>(null)
+  const corporateLoading = ref<boolean>(false)
+  const corporateError = ref<string | null>(null)
+  const corporateSuccess = ref<string | null>(null)
+
+  const lookupCorporateRuc = async (ruc: string): Promise<import('../infrastructure/corporate-verification.resource').CorporateVerificationLookupResource | null> => {
+    corporateLoading.value = true
+    corporateError.value = null
+    corporateLookup.value = null
+    try {
+      const res = await partnersApi.lookupCorporateVerification(ruc)
+      corporateLookup.value = res
+      return res
+    } catch (err: any) {
+      corporateError.value = err.response?.data?.message || 'Error al consultar verificación corporativa por RUC.'
+      return null
+    } finally {
+      corporateLoading.value = false
+    }
+  }
+
+  const initiateCorporateVerification = async (ruc: string, corporateEmail: string): Promise<boolean> => {
+    corporateLoading.value = true
+    corporateError.value = null
+    try {
+      const res = await partnersApi.initiateCorporateVerification({ ruc, corporateEmail })
+      corporateSuccess.value = res.message || 'Código OTP enviado al correo corporativo.'
+      return true
+    } catch (err: any) {
+      corporateError.value = err.response?.data?.message || 'Error al iniciar la verificación corporativa.'
+      return false
+    } finally {
+      corporateLoading.value = false
+    }
+  }
+
+  const confirmCorporateVerification = async (ruc: string, verificationCode: string): Promise<boolean> => {
+    corporateLoading.value = true
+    corporateError.value = null
+    try {
+      const res = await partnersApi.confirmCorporateVerification({ ruc, verificationCode })
+      corporateSuccess.value = res.message || 'Verificación corporativa confirmada con éxito.'
+      return true
+    } catch (err: any) {
+      corporateError.value = err.response?.data?.message || 'Código OTP corporativo inválido.'
+      return false
+    } finally {
+      corporateLoading.value = false
+    }
+  }
+
   return {
     financialEntities,
     selectedEntity,
@@ -204,6 +256,10 @@ export const usePartnersStore = defineStore('partners', () => {
     isSunatLoading,
     error,
     sunatError,
+    corporateLookup,
+    corporateLoading,
+    corporateError,
+    corporateSuccess,
     hasEntities,
     hasSunatResult,
     hasDealerships,
@@ -216,7 +272,10 @@ export const usePartnersStore = defineStore('partners', () => {
     uploadDealershipLogo,
     uploadDealershipBanner,
     fetchDealershipById,
-    clearSunatResult
+    clearSunatResult,
+    lookupCorporateRuc,
+    initiateCorporateVerification,
+    confirmCorporateVerification
   }
 })
 

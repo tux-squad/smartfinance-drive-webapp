@@ -141,25 +141,92 @@
                 <span>{{ t('iam.fillDemoRucBtn') }}</span>
               </button>
             </div>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                <i class="pi pi-car text-sm"></i>
-              </span>
-              <input
-                id="dealer-ruc"
-                v-model="ruc"
-                type="text"
-                required
-                maxlength="11"
-                minlength="11"
-                pattern="[0-9]{11}"
-                placeholder="20100138019"
-                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white transition-all"
-              />
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                  <i class="pi pi-car text-sm"></i>
+                </span>
+                <input
+                  id="dealer-ruc"
+                  v-model="ruc"
+                  type="text"
+                  required
+                  maxlength="11"
+                  minlength="11"
+                  pattern="[0-9]{11}"
+                  placeholder="20100138019"
+                  @input="handleRucInput"
+                  class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white transition-all"
+                />
+              </div>
+              <button
+                type="button"
+                :disabled="partnersStore.corporateLoading || ruc.length !== 11"
+                @click="searchCorporateRuc"
+                class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-xl text-xs font-bold transition-colors"
+              >
+                <i v-if="partnersStore.corporateLoading" class="pi pi-spin pi-spinner"></i>
+                <i v-else class="pi pi-search"></i>
+              </button>
             </div>
             <p class="text-[11px] text-gray-500 mt-1">
               {{ t('iam.rucFormatHint') }}
             </p>
+          </div>
+
+          <!-- Corporate Lookup Result Card -->
+          <div
+            v-if="partnersStore.corporateLookup"
+            class="p-4 rounded-xl bg-blue-50/80 border border-blue-200 space-y-2 text-xs"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-blue-950 text-sm">{{ partnersStore.corporateLookup.suggestedName }}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-200 text-blue-900">
+                {{ partnersStore.corporateLookup.entityType }}
+              </span>
+            </div>
+            <p class="text-blue-900 text-[11px]">{{ partnersStore.corporateLookup.fiscalAddress }}</p>
+            <div v-if="partnersStore.corporateLookup.allowedEmailDomains?.length" class="text-[11px] text-blue-800">
+              <span class="font-semibold">Dominios corporativos autorizados: </span>
+              <span class="font-mono">{{ partnersStore.corporateLookup.allowedEmailDomains.join(', ') }}</span>
+            </div>
+
+            <!-- Corporate Email OTP Verification Flow -->
+            <div class="pt-2 border-t border-blue-200/70 space-y-2">
+              <div class="flex gap-2">
+                <input
+                  v-model="corporateEmail"
+                  type="email"
+                  placeholder="correo@concesionario.pe"
+                  class="flex-1 px-3 py-1.5 bg-white border border-blue-300 rounded-lg text-xs"
+                />
+                <button
+                  type="button"
+                  :disabled="!corporateEmail || partnersStore.corporateLoading"
+                  @click="handleSendCorporateOtp"
+                  class="px-3 py-1.5 bg-blue-900 text-white rounded-lg text-xs font-semibold hover:bg-blue-800"
+                >
+                  Enviar OTP
+                </button>
+              </div>
+
+              <div v-if="corporateOtpSent" class="flex gap-2">
+                <input
+                  v-model="corporateOtpCode"
+                  maxlength="6"
+                  placeholder="Código de 6 dígitos"
+                  class="flex-1 px-3 py-1.5 bg-white border border-blue-300 rounded-lg text-xs font-mono text-center"
+                />
+                <button
+                  type="button"
+                  :disabled="corporateOtpCode.length !== 6 || partnersStore.corporateLoading"
+                  @click="handleConfirmCorporateOtp"
+                  class="px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-semibold hover:bg-emerald-600"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
           </div>
 
           <button
@@ -281,16 +348,21 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
+import { usePartnersStore } from '@/partners/application/partners.store'
 import { RoleRequestCommand } from '../../domain/role-request.command'
 
 type ElevationTab = 'DEALER' | 'FINANCIAL_INSTITUTION'
 
 const { t } = useI18n()
 const iamStore = useIamStore()
+const partnersStore = usePartnersStore()
 
 const selectedRole = ref<ElevationTab>('DEALER')
 const ruc = ref('')
 const successMessage = ref('')
+const corporateEmail = ref('')
+const corporateOtpCode = ref('')
+const corporateOtpSent = ref(false)
 
 const isDealer = computed(() => {
   return iamStore.roles.includes('ROLE_DEALER')
@@ -305,16 +377,56 @@ const switchTab = (tab: ElevationTab) => {
   ruc.value = ''
   successMessage.value = ''
   iamStore.error = null
+  partnersStore.corporateLookup = null
+  corporateOtpSent.value = false
+}
+
+const handleRucInput = () => {
+  ruc.value = ruc.value.replace(/\D/g, '').slice(0, 11)
+  if (ruc.value.length === 11) {
+    searchCorporateRuc()
+  }
+}
+
+const searchCorporateRuc = async () => {
+  if (ruc.value.length === 11) {
+    await partnersStore.lookupCorporateRuc(ruc.value)
+  }
+}
+
+const handleSendCorporateOtp = async () => {
+  if (!corporateEmail.value || !ruc.value) return
+  const ok = await partnersStore.initiateCorporateVerification(ruc.value, corporateEmail.value)
+  if (ok) {
+    corporateOtpSent.value = true
+    successMessage.value = 'Código de verificación enviado al correo corporativo.'
+  }
+}
+
+const handleConfirmCorporateOtp = async () => {
+  if (!corporateOtpCode.value || !ruc.value) return
+  const ok = await partnersStore.confirmCorporateVerification(ruc.value, corporateOtpCode.value)
+  if (ok) {
+    successMessage.value = '¡Verificación corporativa confirmada! Rol asignado con éxito.'
+    corporateOtpSent.value = false
+    partnersStore.corporateLookup = null
+    ruc.value = ''
+    if (iamStore.currentUser?.id) {
+      await iamStore.restoreSession()
+    }
+  }
 }
 
 const fillDemoDealerRuc = () => {
   // Toyota del Perú S.A. (Automotive CIIU 451 registered in SUNAT)
   ruc.value = '20100138019'
+  searchCorporateRuc()
 }
 
 const fillDemoFinancialRuc = () => {
   // Banco de Crédito del Perú BCP (Financial Intermediation CIIU 6419 registered in SUNAT)
   ruc.value = '20100047218'
+  searchCorporateRuc()
 }
 
 const handleRequestDealerRole = async () => {
