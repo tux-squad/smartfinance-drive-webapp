@@ -261,6 +261,52 @@ export const useCatalogStore = defineStore('catalog', () => {
     }
   }
 
+  /**
+   * Updates vehicle specifications by UUID (3.5 / 3.2).
+   */
+  const updateVehicle = async (vehicleId: string, resource: import('../infrastructure/vehicle.resource').UpdateVehicleResource): Promise<Vehicle | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await catalogApi.updateVehicle(vehicleId, resource)
+      const index = vehicles.value.findIndex(v => v.id === vehicleId)
+      if (index !== -1) {
+        vehicles.value[index] = updated
+      }
+      if (selectedVehicle.value?.id === vehicleId) {
+        selectedVehicle.value = updated
+      }
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar las especificaciones del vehículo.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Deletes a vehicle listing by UUID (3.8 / 3.4).
+   */
+  const deleteVehicle = async (vehicleId: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await catalogApi.deleteVehicle(vehicleId)
+      vehicles.value = vehicles.value.filter(v => v.id !== vehicleId)
+      if (selectedVehicle.value?.id === vehicleId) {
+        selectedVehicle.value = null
+      }
+      totalElements.value = Math.max(0, totalElements.value - 1)
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al eliminar el vehículo del catálogo.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const clearSelectedVehicle = () => {
     selectedVehicle.value = null
   }
@@ -297,6 +343,8 @@ export const useCatalogStore = defineStore('catalog', () => {
     fetchVehiclesByUserId,
     fetchBrands,
     createVehicle,
+    updateVehicle,
+    deleteVehicle,
     fetchVehicleById,
     updateVehicleStatus,
     uploadVehicleImage,

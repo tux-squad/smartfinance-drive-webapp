@@ -167,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
 import { usePartnersStore } from '@/partners/application/partners.store'
@@ -197,30 +197,60 @@ const locationText = computed(() => {
   return 'Lima, Perú'
 })
 
-onMounted(async () => {
+const loadData = async (id: string) => {
   isLoading.value = true
-  await Promise.all([
-    partnersStore.fetchFinancialEntities(),
-    catalogStore.fetchVehicles()
-  ])
-  isLoading.value = false
+  try {
+    await Promise.all([
+      partnersStore.fetchFinancialEntities(),
+      partnersStore.fetchDealershipVehicles(id),
+      catalogStore.fetchVehicles()
+    ])
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  if (entityId.value) {
+    await loadData(entityId.value)
+  }
+})
+
+watch(entityId, async (newId) => {
+  if (newId) {
+    await loadData(newId)
+  }
+})
+
+// 3.18 / 4.13 Dealership Vehicles Source
+const baseVehicles = computed(() => {
+  if (partnersStore.dealershipVehicles && partnersStore.dealershipVehicles.length > 0) {
+    return partnersStore.dealershipVehicles.map((v: any) => ({
+      id: v.id,
+      brand: v.brand || 'Toyota',
+      model: v.model || 'Modelo',
+      manufactureYear: v.manufactureYear || 2024,
+      condition: v.condition || 'NEW',
+      priceAmount: Number(v.priceAmount) || 0,
+      formattedPrice: v.formattedPrice || `$${(Number(v.priceAmount) || 0).toLocaleString()} USD`,
+      imagePath: v.imagePath || '',
+      displayName: v.displayName || `${v.brand} ${v.model}`,
+      financialEntityId: v.financialEntityId || entityId.value
+    }))
+  }
+
+  // Fallback to catalogStore vehicles matching this entity
+  const matched = catalogStore.vehicles.filter(v => v.financialEntityId === entityId.value)
+  return matched.length > 0 ? matched : catalogStore.vehicles
 })
 
 const availableBrands = computed(() => {
-  const brands = new Set(catalogStore.vehicles.map(v => v.brand).filter(Boolean))
+  const brands = new Set(baseVehicles.value.map(v => v.brand).filter(Boolean))
   return Array.from(brands)
 })
 
 const filteredVehicles = computed(() => {
-  // If vehicles have financialEntityId matching current entity, filter by it, otherwise show all dealership catalog
-  const entityVehicles = catalogStore.vehicles.filter(v => {
-    if (v.financialEntityId && currentEntity.value?.id) {
-      return v.financialEntityId === currentEntity.value.id
-    }
-    return true
-  })
-
-  return entityVehicles.filter(v => {
+  return baseVehicles.value.filter(v => {
     const matchesCondition = !conditionFilter.value || v.condition === conditionFilter.value
     const matchesBrand = !brandFilter.value || v.brand.toLowerCase() === brandFilter.value.toLowerCase()
 

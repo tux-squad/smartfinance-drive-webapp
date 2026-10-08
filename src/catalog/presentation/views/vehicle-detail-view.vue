@@ -49,6 +49,20 @@
         </div>
       </div>
 
+      <!-- Feedback Banner -->
+      <div
+        v-if="bannerFeedback"
+        class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-800 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <i class="pi pi-check-circle text-emerald-600 text-sm"></i>
+          <span>{{ bannerFeedback }}</span>
+        </div>
+        <button type="button" @click="bannerFeedback = null" class="text-emerald-500 hover:text-emerald-800">
+          <i class="pi pi-times text-xs"></i>
+        </button>
+      </div>
+
       <!-- 2-Column Layout matching Mockup Image 2 -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <!-- Left Column: Media & Highlights (approx 7 cols) -->
@@ -232,22 +246,32 @@
               </div>
             </div>
 
-            <!-- Action Buttons matching Mockup Image 2 -->
+            <!-- Action Buttons matching Mockup Image 2 & CRM integration -->
             <div class="space-y-2.5 pt-2">
               <button
                 type="button"
-                @click="goToPreEvaluation"
-                class="w-full py-3 px-4 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-semibold text-xs text-center shadow-xs transition-colors"
+                @click="openProspectModal"
+                class="w-full py-3 px-4 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] text-white font-bold text-xs text-center shadow-xs transition-colors flex items-center justify-center gap-2"
               >
-                Solicitar Pre-evaluación
+                <i class="pi pi-heart text-xs"></i>
+                <span>Estoy interesado (Contactar Asesor)</span>
               </button>
 
               <button
                 type="button"
-                @click="goToScheduleVisit"
-                class="w-full py-2.5 px-4 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold text-xs text-center transition-colors"
+                @click="openTestDriveModal"
+                class="w-full py-2.5 px-4 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
               >
-                Agendar Visita
+                <i class="pi pi-calendar-plus text-xs"></i>
+                <span>Agendar Test Drive</span>
+              </button>
+
+              <button
+                type="button"
+                @click="goToPreEvaluation"
+                class="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs text-center transition-colors"
+              >
+                Solicitar Pre-evaluación Financiera
               </button>
             </div>
 
@@ -259,24 +283,207 @@
         </div>
       </div>
     </template>
+
+    <!-- Modal Estoy Interesado (2.41 createProspect) -->
+    <Dialog
+      v-model:visible="isProspectOpen"
+      modal
+      header="Estoy interesado en este vehículo"
+      :style="{ width: '500px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <form @submit.prevent="handleSubmitProspect" class="space-y-4 pt-2">
+        <p class="text-xs text-gray-500">
+          Envía tus datos de contacto para que el equipo comercial de <strong>{{ vehicle?.brand }} {{ vehicle?.model }}</strong> se comunique contigo de inmediato.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Nombre Completo</label>
+          <InputText v-model="prospectForm.fullName" class="w-full text-xs" placeholder="Ej. Juan Pérez" required />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Correo Electrónico</label>
+            <InputText v-model="prospectForm.email" type="email" class="w-full text-xs" placeholder="juan@ejemplo.com" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Teléfono / WhatsApp</label>
+            <InputText v-model="prospectForm.phone" class="w-full text-xs" placeholder="+51 987654321" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Ingreso Mensual (USD)</label>
+            <InputNumber v-model="prospectForm.monthlyIncome" class="w-full text-xs" :min="0" mode="currency" currency="USD" locale="en-US" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Cuota Inicial (USD)</label>
+            <InputNumber v-model="prospectForm.downPayment" class="w-full text-xs" :min="0" mode="currency" currency="USD" locale="en-US" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Mensaje o Consulta Opcional</label>
+          <textarea
+            v-model="prospectForm.notes"
+            rows="3"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 resize-none"
+            placeholder="Hola, deseo información sobre disponibilidad de entrega inmediata y opciones de financiamiento..."
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isProspectOpen = false" class="!text-xs" />
+          <Button
+            type="submit"
+            label="Registrar Interés"
+            icon="pi pi-send"
+            :loading="isProspectSubmitting"
+            class="!text-xs !bg-[#eb8f47] !border-[#eb8f47]"
+          />
+        </div>
+      </form>
+    </Dialog>
+
+    <!-- Modal Agendar Test Drive (scheduleTestDrive & 2.44 getTestDriveById) -->
+    <Dialog
+      v-model:visible="isTestDriveOpen"
+      modal
+      header="Agendar Prueba de Manejo (Test Drive)"
+      :style="{ width: '500px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <!-- Confirmed Detail View -->
+      <div v-if="scheduledConfirmation" class="space-y-4 pt-2">
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-sm">
+            <i class="pi pi-check-circle text-emerald-600"></i>
+            <span>¡Test Drive Confirmado!</span>
+          </div>
+          <p class="text-xs text-emerald-700">
+            Tu cita ha sido registrada y validada exitosamente en el sistema oficial del concesionario.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-gray-50 border border-gray-200 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-gray-500">ID de Cita:</span>
+            <span class="font-mono font-bold text-gray-900">{{ scheduledConfirmation.id }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Vehículo:</span>
+            <span class="font-bold text-gray-900">{{ vehicle?.brand }} {{ vehicle?.model }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Fecha y Hora:</span>
+            <span class="font-bold text-blue-700">{{ new Date(scheduledConfirmation.scheduledDateTime).toLocaleString('es-PE') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Estado:</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e6f7f4] text-[#00a887]">
+              {{ scheduledConfirmation.status }}
+            </span>
+          </div>
+          <div v-if="scheduledConfirmation.notes" class="pt-1 text-gray-600 border-t border-gray-200">
+            <span class="font-medium text-gray-700">Nota:</span> {{ scheduledConfirmation.notes }}
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <Button label="Entendido" @click="isTestDriveOpen = false" class="!text-xs !bg-[#0a1936]" />
+        </div>
+      </div>
+
+      <!-- Schedule Form View -->
+      <form v-else @submit.prevent="handleSubmitTestDrive" class="space-y-4 pt-2">
+        <p class="text-xs text-gray-500">
+          Selecciona tu disponibilidad para probar este <strong>{{ vehicle?.brand }} {{ vehicle?.model }}</strong> en la concesionaria.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Fecha y Hora Deseada</label>
+          <input
+            v-model="testDriveForm.scheduledDateTime"
+            type="datetime-local"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Instrucciones o requerimientos</label>
+          <textarea
+            v-model="testDriveForm.notes"
+            rows="3"
+            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 resize-none"
+            placeholder="Deseo probar en ruta urbana y revisar la capacidad de maletera..."
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isTestDriveOpen = false" class="!text-xs" />
+          <Button
+            type="submit"
+            label="Confirmar Cita de Test Drive"
+            icon="pi pi-calendar"
+            :loading="isTestDriveSubmitting"
+            class="!text-xs !bg-blue-600 !border-blue-600"
+          />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import { useCatalogStore } from '../../application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useCrmStore } from '@/financing/application/crm.store'
+import { useIamStore } from '@/iam/application/iam.store'
+import type { TestDrive } from '@/financing/domain/test-drive.entity'
 
 const route = useRoute()
 const router = useRouter()
 const catalogStore = useCatalogStore()
 const partnersStore = usePartnersStore()
+const crmStore = useCrmStore()
+const iamStore = useIamStore()
 
 const vehicleId = computed(() => route.params.id as string)
 const vehicle = computed(() => catalogStore.selectedVehicle)
 const activeThumbnailIndex = ref<number>(0)
+const bannerFeedback = ref<string | null>(null)
+
+// 2.41 createProspect state
+const isProspectOpen = ref(false)
+const isProspectSubmitting = ref(false)
+const prospectForm = reactive({
+  fullName: '',
+  email: '',
+  phone: '',
+  monthlyIncome: 2500,
+  downPayment: 5000,
+  notes: ''
+})
+
+// 2.44 getTestDriveById & scheduleTestDrive state
+const isTestDriveOpen = ref(false)
+const isTestDriveSubmitting = ref(false)
+const scheduledConfirmation = ref<TestDrive | null>(null)
+const defaultDate = new Date(Date.now() + 86400000).toISOString().slice(0, 16)
+const testDriveForm = reactive({
+  scheduledDateTime: defaultDate,
+  notes: ''
+})
 
 const galleryImages = computed<string[]>(() => {
   if (!vehicle.value) return []
@@ -350,15 +557,64 @@ const goToPreEvaluation = () => {
   }
 }
 
-const goToScheduleVisit = () => {
-  if (vehicle.value) {
-    router.push({
-      path: '/messages',
-      query: {
-        vehicleId: vehicle.value.id,
-        dealerId: vehicle.value.financialEntityId || undefined
-      }
+const openProspectModal = () => {
+  if (iamStore.currentUser) {
+    prospectForm.fullName = iamStore.currentUser.username || ''
+    prospectForm.email = iamStore.currentUser.username.includes('@') ? iamStore.currentUser.username : ''
+  }
+  isProspectOpen.value = true
+}
+
+const handleSubmitProspect = async () => {
+  if (!vehicle.value) return
+  isProspectSubmitting.value = true
+  try {
+    const prospect = await crmStore.createProspect({
+      fullName: prospectForm.fullName,
+      email: prospectForm.email,
+      phone: prospectForm.phone,
+      interestedVehicleId: vehicle.value.id,
+      monthlyIncome: prospectForm.monthlyIncome,
+      downPayment: prospectForm.downPayment,
+      notes: prospectForm.notes
     })
+    if (prospect) {
+      bannerFeedback.value = `¡Tu solicitud de interés para ${vehicle.value.brand} ${vehicle.value.model} ha sido registrada con éxito! Un asesor se pondrá en contacto.`
+      isProspectOpen.value = false
+    } else {
+      bannerFeedback.value = crmStore.error || 'No se pudo enviar la solicitud de interés.'
+    }
+  } finally {
+    isProspectSubmitting.value = false
+  }
+}
+
+const openTestDriveModal = () => {
+  scheduledConfirmation.value = null
+  isTestDriveOpen.value = true
+}
+
+const handleSubmitTestDrive = async () => {
+  if (!vehicle.value) return
+  isTestDriveSubmitting.value = true
+  try {
+    const scheduled = await crmStore.scheduleTestDrive({
+      vehicleId: vehicle.value.id,
+      dealershipId: vehicle.value.financialEntityId || '',
+      scheduledDateTime: new Date(testDriveForm.scheduledDateTime).toISOString(),
+      notes: testDriveForm.notes
+    })
+
+    if (scheduled) {
+      // 2.44 Exercise getTestDriveById to load fresh confirmed details from backend
+      const confirmed = await crmStore.fetchTestDriveById(scheduled.id)
+      scheduledConfirmation.value = confirmed || scheduled
+      bannerFeedback.value = `Cita de Test Drive #${scheduled.id.slice(0, 8)} confirmada exitosamente.`
+    } else {
+      bannerFeedback.value = crmStore.error || 'No se pudo agendar la cita de prueba de manejo.'
+    }
+  } finally {
+    isTestDriveSubmitting.value = false
   }
 }
 </script>

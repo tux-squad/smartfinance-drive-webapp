@@ -138,6 +138,26 @@ export const useBillingStore = defineStore('billing', () => {
     }
   }
 
+  /**
+   * Creates or activates a subscription directly (2.50 / 8.5).
+   */
+  const createSubscription = async (planId: number, autoRenew: boolean = true): Promise<Subscription | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const sub = await billingApi.createSubscription(planId, autoRenew)
+      currentSubscription.value = sub
+      // Refresh billing data to ensure all limits and features are synced
+      await fetchBillingData()
+      return sub
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al crear la suscripción directa.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const triggerStripeWebhook = async (payload: any, signature?: string): Promise<string | null> => {
     try {
       return await billingApi.postStripeWebhook(payload, signature)
@@ -162,6 +182,7 @@ export const useBillingStore = defineStore('billing', () => {
     reconcileInvoice,
     getCheckoutUrl,
     cancelCurrentSubscription,
+    createSubscription,
     createPlan,
     triggerStripeWebhook
   }

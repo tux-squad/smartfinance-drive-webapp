@@ -10,6 +10,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'open-benchmarks', entity: FinancialEntity): void
+  (e: 'edit-entity', entity: FinancialEntity): void
+  (e: 'delete-entity', entity: FinancialEntity): void
 }>()
 
 const { t } = useI18n()
@@ -53,8 +55,8 @@ const onOpen = () => {
       </div>
     </div>
 
-    <!-- Footer: Action Button -->
-    <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+    <!-- Footer: Action Buttons (View TEA 4.1, Edit 4.3, Delete 6.4) -->
+    <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
       <Button
         :label="t('partners.viewTeaRatesBtn')"
         icon="pi pi-chart-line"
@@ -63,6 +65,24 @@ const onOpen = () => {
         class="w-full rounded-xl !text-xs !py-2.5 font-semibold border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
         @click="onOpen"
       />
+      <div class="flex items-center gap-2 pt-0.5">
+        <Button
+          label="Editar"
+          icon="pi pi-pencil"
+          text
+          severity="secondary"
+          class="flex-1 !rounded-xl !text-xs !py-1.5 font-medium"
+          @click="emit('edit-entity', entity)"
+        />
+        <Button
+          label="Eliminar"
+          icon="pi pi-trash"
+          text
+          severity="danger"
+          class="flex-1 !rounded-xl !text-xs !py-1.5 font-medium"
+          @click="emit('delete-entity', entity)"
+        />
+      </div>
     </div>
   </div>
 </template>

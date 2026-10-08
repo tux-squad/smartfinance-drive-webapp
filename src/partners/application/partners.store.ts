@@ -362,6 +362,86 @@ export const usePartnersStore = defineStore('partners', () => {
     }
   }
 
+  const dealershipVehicles = ref<any[]>([])
+
+  /**
+   * Registers a new Financial Entity in the catalog (4.1 / 4.2).
+   */
+  const createFinancialEntity = async (resource: Partial<import('../infrastructure/financial-entity.resource').FinancialEntityResource>): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const entity = await partnersApi.createFinancialEntity(resource)
+      financialEntities.value.push(entity)
+      return entity
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al registrar la entidad financiera.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Updates an existing Financial Entity (4.3 / 4.4).
+   */
+  const updateFinancialEntity = async (id: string, resource: Partial<import('../infrastructure/financial-entity.resource').FinancialEntityResource>): Promise<FinancialEntity | null> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const updated = await partnersApi.updateFinancialEntity(id, resource)
+      const idx = financialEntities.value.findIndex(e => e.id === id)
+      if (idx !== -1) financialEntities.value[idx] = updated
+      if (selectedEntity.value?.id === id) selectedEntity.value = updated
+      if (myFinancialEntity.value?.id === id) myFinancialEntity.value = updated
+      return updated
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al actualizar la entidad financiera.'
+      return null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Deletes a Financial Entity by UUID (6.4 / 4.5).
+   */
+  const deleteFinancialEntity = async (id: string): Promise<boolean> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await partnersApi.deleteFinancialEntity(id)
+      financialEntities.value = financialEntities.value.filter(e => e.id !== id)
+      if (selectedEntity.value?.id === id) selectedEntity.value = null
+      if (myFinancialEntity.value?.id === id) myFinancialEntity.value = null
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al eliminar la entidad financiera.'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetches vehicles assigned to a specific dealership (3.18 / 4.13).
+   */
+  const fetchDealershipVehicles = async (dealershipId: string): Promise<any[]> => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const list = await partnersApi.getDealershipVehicles(dealershipId)
+      dealershipVehicles.value = list || []
+      return dealershipVehicles.value
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error al cargar los vehículos de la concesionaria.'
+      dealershipVehicles.value = []
+      return []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     financialEntities,
     selectedEntity,
@@ -369,6 +449,7 @@ export const usePartnersStore = defineStore('partners', () => {
     sunatResult,
     dealerships,
     currentDealership,
+    dealershipVehicles,
     isLoading,
     isSunatLoading,
     error,
@@ -394,6 +475,10 @@ export const usePartnersStore = defineStore('partners', () => {
     initiateCorporateVerification,
     confirmCorporateVerification,
     fetchMyFinancialEntity,
+    createFinancialEntity,
+    updateFinancialEntity,
+    deleteFinancialEntity,
+    fetchDealershipVehicles,
     addBenchmarkToEntity,
     uploadFinancialEntityLogo,
     uploadMyFinancialEntityLogo,

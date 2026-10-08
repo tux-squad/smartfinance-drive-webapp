@@ -52,6 +52,20 @@
       </div>
     </div>
 
+    <!-- Feedback Notification -->
+    <div
+      v-if="feedbackMessage"
+      class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-800 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <i class="pi pi-check-circle text-emerald-600"></i>
+        <span>{{ feedbackMessage }}</span>
+      </div>
+      <button type="button" @click="feedbackMessage = null" class="text-emerald-500 hover:text-emerald-800">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
     <!-- Inventory Table matching Mockup Screenshot 1 -->
     <div v-else class="bg-white rounded-3xl border border-gray-200 shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
@@ -64,6 +78,7 @@
               <th scope="col" class="py-4 px-6">{{ t('dealerInventory.colDays') }}</th>
               <th scope="col" class="py-4 px-6">{{ t('dealerInventory.colPrice') }}</th>
               <th scope="col" class="py-4 px-6">{{ t('dealerInventory.colStatus') }}</th>
+              <th scope="col" class="py-4 px-6 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 text-sm">
@@ -138,6 +153,28 @@
                   <option value="SOLD">{{ t('dealerInventory.statusSold') }}</option>
                 </select>
               </td>
+
+              <!-- Acciones (Editar 3.2 / Eliminar 3.4) -->
+              <td class="py-4 px-6 text-right whitespace-nowrap space-x-2">
+                <button
+                  type="button"
+                  @click="openEditDialog(car)"
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold transition-colors"
+                  title="Editar vehículo"
+                >
+                  <i class="pi pi-pencil text-xs"></i>
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  @click="openDeleteDialog(car)"
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold transition-colors"
+                  title="Eliminar vehículo"
+                >
+                  <i class="pi pi-trash text-xs"></i>
+                  <span>Eliminar</span>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -149,13 +186,95 @@
         <span>{{ t('dealerInventory.dbUpdated') }}</span>
       </div>
     </div>
+
+    <!-- Modal Editar Vehículo (3.2 updateVehicle) -->
+    <Dialog
+      v-model:visible="isEditOpen"
+      modal
+      header="Editar Especificaciones de Vehículo"
+      :style="{ width: '520px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <form @submit.prevent="handleSaveEdit" class="space-y-4 pt-2">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Marca</label>
+          <InputText v-model="editForm.brand" class="w-full text-xs" required />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Modelo</label>
+          <InputText v-model="editForm.model" class="w-full text-xs" required />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Año</label>
+            <InputNumber v-model="editForm.manufactureYear" class="w-full text-xs" :useGrouping="false" :min="1990" :max="2030" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Condición</label>
+            <Select
+              v-model="editForm.condition"
+              :options="[{ label: 'Nuevo (0 km)', value: 'NEW' }, { label: 'Seminuevo', value: 'USED' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Precio</label>
+            <InputNumber v-model="editForm.priceAmount" class="w-full text-xs" :min="0" mode="currency" currency="USD" locale="en-US" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Moneda</label>
+            <Select
+              v-model="editForm.currency"
+              :options="[{ label: 'USD ($)', value: 'USD' }, { label: 'PEN (S/)', value: 'PEN' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isEditOpen = false" class="!text-xs" />
+          <Button type="submit" label="Guardar Cambios" icon="pi pi-check" :loading="isSaving" class="!text-xs !bg-[#eb8f47] !border-[#eb8f47]" />
+        </div>
+      </form>
+    </Dialog>
+
+    <!-- Modal Confirmar Eliminación (3.4 deleteVehicle) -->
+    <Dialog
+      v-model:visible="isDeleteOpen"
+      modal
+      header="Confirmar Eliminación"
+      :style="{ width: '440px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <div class="space-y-4 pt-2">
+        <p class="text-xs text-gray-600 leading-relaxed">
+          ¿Estás seguro de que deseas eliminar permanentemente el vehículo
+          <strong class="text-gray-900">{{ vehicleToDelete?.brand }} {{ vehicleToDelete?.model }} ({{ vehicleToDelete?.manufactureYear }})</strong>
+          del catálogo de tu concesionaria? Esta acción eliminará el anuncio de forma definitiva.
+        </p>
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isDeleteOpen = false" class="!text-xs" />
+          <Button label="Eliminar Definitivamente" icon="pi pi-trash" severity="danger" :loading="isDeleting" @click="handleConfirmDelete" class="!text-xs" />
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
+import Dialog from 'primevue/dialog'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
 import type { Vehicle } from '@/catalog/domain/vehicle.entity'
 import { useIamStore } from '@/iam/application/iam.store'
@@ -166,6 +285,25 @@ const catalogStore = useCatalogStore()
 const iamStore = useIamStore()
 const userSpecificVehicles = ref<Vehicle[]>([])
 const isLoadingInventory = ref(true)
+const feedbackMessage = ref<string | null>(null)
+
+// Edit Dialog state
+const isEditOpen = ref(false)
+const isSaving = ref(false)
+const vehicleToEdit = ref<Vehicle | null>(null)
+const editForm = reactive({
+  brand: '',
+  model: '',
+  manufactureYear: 2024,
+  condition: 'NEW',
+  priceAmount: 0,
+  currency: 'USD'
+})
+
+// Delete Dialog state
+const isDeleteOpen = ref(false)
+const isDeleting = ref(false)
+const vehicleToDelete = ref<Vehicle | null>(null)
 
 const loadInventory = async () => {
   isLoadingInventory.value = true
@@ -198,7 +336,65 @@ const getDaysPublished = (_index: number): string => {
 const handleStatusChange = async (car: Vehicle, newStatus: string) => {
   const ok = await catalogStore.updateVehicleStatus(car.id, newStatus)
   if (ok) {
+    feedbackMessage.value = `Estado de ${car.brand} ${car.model} actualizado a ${newStatus}.`
     await loadInventory()
+  }
+}
+
+const openEditDialog = (car: Vehicle) => {
+  vehicleToEdit.value = car
+  editForm.brand = car.brand
+  editForm.model = car.model
+  editForm.manufactureYear = car.manufactureYear
+  editForm.condition = car.condition || 'NEW'
+  editForm.priceAmount = car.priceAmount
+  editForm.currency = car.currency || 'USD'
+  isEditOpen.value = true
+}
+
+const handleSaveEdit = async () => {
+  if (!vehicleToEdit.value) return
+  isSaving.value = true
+  try {
+    const updated = await catalogStore.updateVehicle(vehicleToEdit.value.id, {
+      brand: editForm.brand,
+      model: editForm.model,
+      manufactureYear: editForm.manufactureYear,
+      condition: editForm.condition,
+      priceAmount: editForm.priceAmount,
+      currency: editForm.currency
+    })
+    if (updated) {
+      feedbackMessage.value = `Vehículo ${updated.brand} ${updated.model} actualizado exitosamente.`
+      isEditOpen.value = false
+      await loadInventory()
+    } else {
+      feedbackMessage.value = catalogStore.error || 'No se pudo actualizar el vehículo.'
+    }
+  } finally {
+    isSaving.value = false
+  }
+}
+
+const openDeleteDialog = (car: Vehicle) => {
+  vehicleToDelete.value = car
+  isDeleteOpen.value = true
+}
+
+const handleConfirmDelete = async () => {
+  if (!vehicleToDelete.value) return
+  isDeleting.value = true
+  try {
+    const success = await catalogStore.deleteVehicle(vehicleToDelete.value.id)
+    if (success) {
+      feedbackMessage.value = `Vehículo ${vehicleToDelete.value.brand} ${vehicleToDelete.value.model} eliminado del catálogo.`
+      isDeleteOpen.value = false
+      await loadInventory()
+    } else {
+      feedbackMessage.value = catalogStore.error || 'No se pudo eliminar el vehículo.'
+    }
+  } finally {
+    isDeleting.value = false
   }
 }
 </script>
