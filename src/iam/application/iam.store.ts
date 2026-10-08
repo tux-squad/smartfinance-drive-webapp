@@ -170,6 +170,9 @@ export const useIamStore = defineStore('iam', () => {
   const signIn = async (command: SignInCommand): Promise<boolean> => {
     isLoading.value = true
     error.value = null
+    // Clear any previous stale tokens before initiating login
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     try {
       const resourcePayload = UserAssembler.toSignInRequestFromCommand(command)
       const response = await iamApi.signIn(resourcePayload)

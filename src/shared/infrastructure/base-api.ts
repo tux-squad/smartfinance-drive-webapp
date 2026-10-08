@@ -47,12 +47,28 @@ export class BaseApi {
       }
     })
 
-    // Automatically inject Bearer JWT from localStorage for authenticated requests
+    // Automatically inject Bearer JWT from localStorage for authenticated requests only
     this._http.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('access_token')
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`
+        const url = config.url || ''
+        const isPublicAuthEndpoint =
+          url.includes('/api/v1/auth/sessions') ||
+          url.includes('/api/v1/auth/registrations') ||
+          url.includes('/api/v1/auth/tokens') ||
+          url.includes('/api/v1/auth/password-recoveries') ||
+          url.includes('/api/v1/auth/password-resets') ||
+          url.includes('/api/v1/auth/google') ||
+          url.includes('/api/v1/auth/email-verification')
+
+        if (isPublicAuthEndpoint) {
+          if (config.headers && config.headers.Authorization) {
+            delete config.headers.Authorization
+          }
+        } else {
+          const token = localStorage.getItem('access_token')
+          if (token && config.headers) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
         }
         return config
       },
