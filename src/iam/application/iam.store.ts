@@ -20,6 +20,12 @@ const iamApi = new IamApi()
 
 const formatIamErrorMessage = (errOrMsg: any): string => {
   if (!errOrMsg) return ''
+
+  const status = errOrMsg.response?.status
+  if (status === 403 || status === 401) {
+    return 'Credenciales incorrectas. Verifique su correo electrónico y contraseña.'
+  }
+
   let rawMsg = ''
   if (typeof errOrMsg === 'string') {
     rawMsg = errOrMsg
@@ -39,8 +45,8 @@ const formatIamErrorMessage = (errOrMsg: any): string => {
   if (rawMsg.includes('alreadyExists') || rawMsg.includes('duplicate') || rawMsg.includes('exists')) {
     return 'El correo electrónico ya se encuentra registrado. Por favor, haz clic en "Inicia sesión" abajo.'
   }
-  if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
-    return 'Credenciales incorrectas. Verifique su correo y contraseña.'
+  if (rawMsg.includes('Invalid credentials') || rawMsg.includes('invalidCredentials') || rawMsg.includes('Bad credentials') || rawMsg.includes('401') || rawMsg.includes('403')) {
+    return 'Credenciales incorrectas. Verifique su correo electrónico y contraseña.'
   }
   if (rawMsg.includes('Network Error') || rawMsg.includes('ERR_NETWORK') || rawMsg.includes('timeout') || rawMsg.includes('ECONNABORTED')) {
     return 'El servidor backend está despertando (cold start de Render). Por favor, intenta de nuevo en unos segundos.'
