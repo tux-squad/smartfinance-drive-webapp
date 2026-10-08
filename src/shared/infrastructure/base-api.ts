@@ -39,6 +39,7 @@ export class BaseApi {
   constructor() {
     this._http = axios.create({
       baseURL: API_BASE_URL,
+      timeout: 60000,
       headers: {
         'Content-Type': 'application/json'
       }

@@ -84,7 +84,8 @@
         <Message
           v-if="iamStore.error"
           severity="error"
-          :closable="false"
+          :closable="true"
+          @close="iamStore.error = null"
           class="w-full shadow-xs"
         >
           <div class="flex items-center gap-2 text-xs font-medium">
@@ -272,6 +273,7 @@ onMounted(() => {
 })
 
 const handleSignIn = async () => {
+  iamStore.error = null
   if (rememberMe.value && typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_REMEMBERED_EMAIL, username.value)
   } else if (typeof window !== 'undefined') {

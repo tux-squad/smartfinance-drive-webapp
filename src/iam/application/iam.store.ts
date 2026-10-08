@@ -42,6 +42,9 @@ const formatIamErrorMessage = (errOrMsg: any): string => {
   if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
     return 'Credenciales incorrectas. Verifique su correo y contraseña.'
   }
+  if (rawMsg.includes('Network Error') || rawMsg.includes('ERR_NETWORK') || rawMsg.includes('timeout') || rawMsg.includes('ECONNABORTED')) {
+    return 'El servidor backend está despertando (cold start de Render). Por favor, intenta de nuevo en unos segundos.'
+  }
   if (rawMsg.includes('api-key-not-valid') || rawMsg.includes('auth/api-key') || rawMsg.includes('auth/invalid-api-key')) {
     return 'El servicio de SMS de Firebase requiere una API Key activa. La verificación telefónica es opcional; puedes presionar "Registrarse" directamente.'
   }
