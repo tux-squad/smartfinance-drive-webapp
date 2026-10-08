@@ -27,7 +27,9 @@ export class CreditApplication {
     public readonly updatedAt: string = new Date().toISOString(),
     // Optional enriched fields for UI display
     public readonly vehicleTitle?: string,
-    public readonly financialEntityName?: string
+    public readonly financialEntityName?: string,
+    public readonly termMonths: number = 36,
+    public readonly downPayment: number = 0
   ) {}
 
   get currencySymbol(): string {

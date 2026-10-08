@@ -126,12 +126,16 @@ export class IamApi extends BaseApi {
     return this.http.post(`/api/v1/users/${userId}/corporate-verification/initiate`, resource)
   }
 
-  /** 1.22 Confirmar Verificación Corporativa por userId (#35) */
+  /** 1.22 Confirmar Verificación Corporativa por userId (#35 / 2.15) */
   public confirmUserCorporateVerification(
     userId: string | number,
-    resource: { ruc: string, verificationCode: string }
+    resource: { ruc: string, code?: string, verificationCode?: string }
   ): Promise<AxiosResponse<any>> {
-    return this.http.post(`/api/v1/users/${userId}/corporate-verification/confirm`, resource)
+    const payload = {
+      ruc: resource.ruc,
+      code: resource.code || resource.verificationCode
+    }
+    return this.http.post(`/api/v1/users/${userId}/corporate-verification/confirm`, payload)
   }
 }
 

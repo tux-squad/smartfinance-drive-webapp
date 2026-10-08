@@ -238,9 +238,10 @@ export const usePartnersStore = defineStore('partners', () => {
     corporateLoading.value = true
     corporateError.value = null
     try {
+      const payload = { ruc, code: verificationCode, verificationCode }
       const res = userId
-        ? await partnersApi.confirmCorporateVerificationForUser(userId, { ruc, verificationCode })
-        : await partnersApi.confirmCorporateVerification({ ruc, verificationCode })
+        ? await partnersApi.confirmCorporateVerificationForUser(userId, payload)
+        : await partnersApi.confirmCorporateVerification(payload)
       corporateSuccess.value = res.message || 'Verificación corporativa confirmada con éxito.'
       return true
     } catch (err: any) {

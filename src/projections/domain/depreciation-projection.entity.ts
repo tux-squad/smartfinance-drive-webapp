@@ -15,7 +15,10 @@ export class DepreciationProjection {
     public readonly totalDepreciationAmount: number,
     public readonly yearlyProjections: YearlyDepreciation[],
     public readonly calculatedAt: string,
-    public readonly vehicleId?: string
+    public readonly vehicleId?: string,
+    public readonly recommendedAction?: string,
+    public readonly advisoryNotes?: string,
+    public readonly balloonPaymentAmount?: number
   ) {}
 
   /**

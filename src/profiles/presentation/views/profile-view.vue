@@ -580,7 +580,8 @@ const handleSaveProfile = async () => {
         dni: form.dni,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency
+        currency: form.currency,
+        employmentStatus: form.employmentStatus
       })
       const success = await profilesStore.updateProfile(command)
       if (success) {
@@ -588,13 +589,15 @@ const handleSaveProfile = async () => {
       }
     } else {
       const command = new CreateProfileCommand({
+        userId: String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'),
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         dni: form.dni,
         phoneNumber: form.phoneNumber,
         monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency
+        currency: form.currency,
+        employmentStatus: form.employmentStatus
       })
       const success = await profilesStore.createProfile(command)
       if (success) {

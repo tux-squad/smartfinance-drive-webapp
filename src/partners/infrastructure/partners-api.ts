@@ -270,13 +270,18 @@ export class PartnersApi extends BaseApi {
   }
 
   /**
-   * 4.16 Confirm Corporate Verification (Current User).
+   * 4.16 Confirm Corporate Verification (Current User) (2.13).
    * POST /api/v1/users/me/corporate-verification/confirm
+   * Body requires { ruc, code }
    */
   public async confirmCorporateVerification(resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const payload = {
+      ruc: resource.ruc,
+      code: resource.code || resource.verificationCode
+    }
     const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
       '/api/v1/users/me/corporate-verification/confirm',
-      resource
+      payload
     )
     return response.data
   }
@@ -297,16 +302,21 @@ export class PartnersApi extends BaseApi {
   }
 
   /**
-   * 4.18 Confirm Corporate Verification by User ID (Admin / Self) (#35).
+   * 4.18 Confirm Corporate Verification by User ID (Admin / Self) (#35 / 2.15).
    * POST /api/v1/users/{userId}/corporate-verification/confirm
+   * Body requires { ruc, code }
    */
   public async confirmCorporateVerificationForUser(
     userId: string | number,
     resource: import('./corporate-verification.resource').ConfirmCorporateVerificationResource
   ): Promise<import('./corporate-verification.resource').CorporateVerificationStatusResource> {
+    const payload = {
+      ruc: resource.ruc,
+      code: resource.code || resource.verificationCode
+    }
     const response = await this.http.post<import('./corporate-verification.resource').CorporateVerificationStatusResource>(
       `/api/v1/users/${userId}/corporate-verification/confirm`,
-      resource
+      payload
     )
     return response.data
   }

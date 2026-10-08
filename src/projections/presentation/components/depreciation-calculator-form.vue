@@ -50,9 +50,16 @@ const handleCalculate = async () => {
     return
   }
 
+  const vehicle = catalogStore.vehicles.find(v => v.id === vehicleIdToUse)
   const command = new CalculateDepreciationCommand(
     vehicleIdToUse,
-    projectionYears.value
+    projectionYears.value,
+    vehicle?.priceAmount || 25000,
+    vehicle?.currency || 'USD',
+    vehicle?.manufactureYear || new Date().getFullYear(),
+    'GASOLINE',
+    undefined,
+    0
   )
 
   await projectionsStore.calculateDepreciation(command)

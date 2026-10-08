@@ -101,34 +101,40 @@ export class CrmApi extends BaseApi {
   }
 
   /**
-   * 11.4 Add Note to Prospect Timeline.
+   * 11.4 Add Note to Prospect Timeline (3.21).
    * POST /api/v1/prospects/{id}/notes
    */
   public async addProspectNote(prospectId: string, content: string): Promise<ProspectNote> {
-    const response: AxiosResponse<any> = await this.http.post(`/api/v1/prospects/${prospectId}/notes`, { content })
+    const response: AxiosResponse<any> = await this.http.post(`/api/v1/prospects/${prospectId}/notes`, { noteText: content })
+    const noteText = response.data?.noteText || response.data?.content || content
     return {
       id: response.data.id || String(Date.now()),
       prospectId,
-      authorName: response.data.authorName || 'Asesor Comercial',
-      content: response.data.content || content,
+      authorName: response.data.authorName || response.data.authorUserId || 'Asesor Comercial',
+      content: noteText,
+      noteText,
       createdAt: response.data.createdAt || new Date().toISOString()
     }
   }
 
   /**
-   * 11.5 Get Prospect Timeline Notes.
+   * 11.5 Get Prospect Timeline Notes (3.22).
    * GET /api/v1/prospects/{id}/timeline
    */
   public async getProspectTimeline(prospectId: string): Promise<ProspectNote[]> {
     const response: AxiosResponse<any> = await this.http.get(`/api/v1/prospects/${prospectId}/timeline`)
     const list = Array.isArray(response.data) ? response.data : []
-    return list.map((item: any) => ({
-      id: item.id || String(Date.now()),
-      prospectId,
-      authorName: item.authorName || 'Asesor Comercial',
-      content: item.content || item.note || '',
-      createdAt: item.createdAt || new Date().toISOString()
-    }))
+    return list.map((item: any) => {
+      const noteText = item.noteText || item.content || item.note || ''
+      return {
+        id: item.id || String(Date.now()),
+        prospectId,
+        authorName: item.authorName || item.authorUserId || 'Asesor Comercial',
+        content: noteText,
+        noteText,
+        createdAt: item.createdAt || new Date().toISOString()
+      }
+    })
   }
 
   /**

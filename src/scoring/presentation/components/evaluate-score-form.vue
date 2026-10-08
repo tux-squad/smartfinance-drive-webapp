@@ -8,28 +8,45 @@ import { EvaluateScoreCommand } from '../../domain/evaluate-score.command'
 import { useScoringStore } from '../../application/scoring.store'
 import { useProfilesStore } from '@/profiles/application/profiles.store'
 import { useIamStore } from '@/iam/application/iam.store'
+import { useFinancingStore } from '@/financing/application/financing.store'
 
 const { t } = useI18n()
 const scoringStore = useScoringStore()
 const profilesStore = useProfilesStore()
 const iamStore = useIamStore()
+const financingStore = useFinancingStore()
 
 const selectedProfileId = ref<string>('')
 
 onMounted(async () => {
+  const promises: Promise<any>[] = [financingStore.fetchSimulations()]
   if (iamStore.currentUser?.id) {
-    await profilesStore.fetchProfileByUserId(iamStore.currentUser.id)
-    if (profilesStore.currentProfile?.id) {
-      selectedProfileId.value = profilesStore.currentProfile.id
-    }
+    promises.push(profilesStore.fetchProfileByUserId(iamStore.currentUser.id))
+  }
+  await Promise.all(promises)
+  if (profilesStore.currentProfile?.id) {
+    selectedProfileId.value = profilesStore.currentProfile.id
   }
 })
 
 const hasActiveProfile = computed(() => !!profilesStore.currentProfile)
 
 const handleEvaluate = async () => {
-  const profileIdToUse = profilesStore.currentProfile?.id || selectedProfileId.value
-  const command = new EvaluateScoreCommand(profileIdToUse)
+  const profile = profilesStore.currentProfile
+  const profileIdToUse = profile?.id || selectedProfileId.value
+  const activeSim = financingStore.simulations[0]
+  const simId = activeSim?.id || '00000000-0000-0000-0000-000000000000'
+  const income = profile?.monthlyIncomeAmount && profile.monthlyIncomeAmount > 0 ? profile.monthlyIncomeAmount : 3500
+  const installment = activeSim?.monthlyPaymentAmount && activeSim.monthlyPaymentAmount > 0 ? activeSim.monthlyPaymentAmount : 500
+  const currency = profile?.currency || activeSim?.currency || 'USD'
+
+  const command = new EvaluateScoreCommand(
+    profileIdToUse,
+    simId,
+    income,
+    installment,
+    currency
+  )
   await scoringStore.evaluateCreditScore(command)
 }
 </script>

@@ -17,13 +17,18 @@ export interface InitiateCorporateVerificationResource {
 
 export interface ConfirmCorporateVerificationResource {
   ruc: string
-  verificationCode: string
+  code?: string
+  verificationCode?: string
 }
 
 export interface CorporateVerificationStatusResource {
   verified: boolean
-  ruc: string
+  entityType?: string
+  assignedRole?: string
   roleGranted?: string
+  profileId?: string
+  profileName?: string
+  ruc?: string
   verifiedAt?: string
   message: string
 }

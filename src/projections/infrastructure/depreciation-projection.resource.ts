@@ -7,19 +7,37 @@ export interface ProjectedValueResource {
 }
 
 /**
- * Infrastructure DTO matching backend JSON response for full vehicle depreciation projection (API Doc 7.1).
+ * Infrastructure DTO matching backend JSON response for full vehicle depreciation projection (API Doc 2.33).
  */
 export interface DepreciationProjectionResource {
   id: string
   vehicleId: string
-  initialValue: number
-  projectedValues: ProjectedValueResource[]
+  simulationId?: string
+  currency?: string
+  initialVehiclePriceAmount?: number
+  initialValue?: number
+  manufactureYear?: number
+  motorizationType?: string
+  annualDepreciationRate?: number
+  projectedValue2YearsAmount?: number
+  projectedValue3YearsAmount?: number
+  projectedValue5YearsAmount?: number
+  balloonPaymentAmount?: number
+  recommendedAction?: string
+  advisoryNotes?: string
+  projectedValues?: ProjectedValueResource[]
 }
 
 /**
- * Infrastructure DTO for sending a depreciation calculation request (API Doc 7.1).
+ * Infrastructure DTO for sending a depreciation calculation request (API Doc 2.33).
  */
 export interface CalculateDepreciationResource {
   vehicleId: string
-  years: number
+  simulationId?: string
+  initialVehiclePriceAmount: number
+  currency: string
+  manufactureYear: number
+  motorizationType?: string
+  balloonPaymentAmount?: number
+  years?: number
 }
