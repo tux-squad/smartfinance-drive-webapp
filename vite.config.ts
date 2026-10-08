@@ -18,11 +18,15 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5173,
     proxy: {
       '/api': {
         target: 'https://smartfinance-drive-platform.onrender.com',
         changeOrigin: true,
         secure: false,
+        headers: {
+          Origin: 'http://localhost:5173',
+        },
       },
     },
   },
