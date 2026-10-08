@@ -1,293 +1,220 @@
 <template>
-  <div class="min-h-screen w-full flex bg-surface-50 dark:bg-surface-950 font-sans antialiased text-surface-900 dark:text-surface-100">
-    <!-- Left Hero Column (Desktop only, 6 cols on lg / 7 cols on xl) -->
-    <div
-      class="hidden lg:flex lg:w-1/2 xl:w-7/12 relative flex-col justify-between p-12 xl:p-16 bg-gradient-to-br from-[#06122c] via-[#091a3e] to-[#040915] text-white overflow-hidden select-none"
-    >
-      <!-- Background Video Optimized WebM (with MP4 fallback) -->
-      <video
-        autoplay
-        loop
-        muted
-        playsinline
-        class="absolute inset-0 w-full h-full object-cover object-center z-0 opacity-40 mix-blend-luminosity filter contrast-125"
+  <div class="min-h-screen w-full flex items-center justify-center p-3 sm:p-4 lg:p-6 bg-surface-100 dark:bg-surface-950 font-sans antialiased text-surface-900 dark:text-surface-100">
+    <div class="w-full max-w-7xl h-full lg:h-[calc(100vh-3rem)] max-h-[920px] flex flex-col lg:flex-row gap-4 lg:gap-6">
+      
+      <!-- Left Column: Floating Minimalist Video Capsule -->
+      <div
+        class="hidden lg:flex lg:w-1/2 xl:w-7/12 relative rounded-3xl overflow-hidden border border-surface-200/60 dark:border-surface-800/80 shadow-2xl bg-black select-none"
       >
-        <source :src="heroVideoWebm" type="video/webm" />
-        <source :src="heroVideoMp4" type="video/mp4" />
-      </video>
-
-      <!-- Gradient Dark Overlay for enhanced contrast and readability -->
-      <div class="absolute inset-0 z-0 bg-gradient-to-t from-[#06122c]/95 via-[#091a3e]/85 to-[#040915]/90 backdrop-blur-[1px]" />
-      <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none z-0" />
-      <div class="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none z-0" />
-      <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none z-0" />
-
-      <!-- Top Header / Brand -->
-      <div class="relative z-10 flex items-center justify-between">
-        <router-link to="/home" class="flex items-center space-x-3 group">
-          <div
-            class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform"
-          >
-            <i class="pi pi-car text-xl" />
-          </div>
-          <div>
-            <span class="text-lg font-black tracking-wide text-white block leading-tight">SmartFinance</span>
-            <span class="text-xs text-blue-300/80 font-medium tracking-widest uppercase">Drive Financial</span>
-          </div>
-        </router-link>
-
-        <span
-          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-white/10 border border-white/15 text-blue-200 backdrop-blur-md"
+        <!-- Pure 1080p Video (No blur filter, crisp clarity) -->
+        <video
+          autoplay
+          loop
+          muted
+          playsinline
+          class="w-full h-full object-cover object-center"
         >
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          API v1.0 • 109 Endpoints
-        </span>
-      </div>
+          <source :src="heroVideoWebm" type="video/webm" />
+          <source :src="heroVideoMp4" type="video/mp4" />
+        </video>
 
-      <!-- Center Hero FinTech Messaging & Interactive Cards -->
-      <div class="relative z-10 my-auto py-8 max-w-xl space-y-8">
-        <div class="space-y-4">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold uppercase tracking-wider">
-            <i class="pi pi-bolt text-xs text-blue-400" />
-            Fintech Automotriz B2B & B2C
-          </div>
-
-          <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-black text-white leading-tight tracking-tight">
-            Gestión inteligente de crédito vehicular y catálogo
-          </h1>
-
-          <p class="text-sm xl:text-base text-slate-300/90 leading-relaxed">
-            Calcula cuotas con TCEA exacta, evalúa riesgo crediticio en tiempo real con motor de scoring SBS y gestiona inventario con trazabilidad completa.
-          </p>
-        </div>
-
-        <!-- Glass Feature KPI Pills -->
-        <div class="grid grid-cols-2 gap-3.5 pt-2">
-          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1 hover:bg-white/10 transition-colors">
-            <div class="flex items-center space-x-2 text-emerald-400 text-sm font-bold">
-              <i class="pi pi-check-circle" />
-              <span>TCEA Exacta</span>
-            </div>
-            <p class="text-xs text-slate-300">Cronogramas de pago en sistema francés y alemán con TIR y VAN.</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1 hover:bg-white/10 transition-colors">
-            <div class="flex items-center space-x-2 text-purple-400 text-sm font-bold">
-              <i class="pi pi-shield" />
-              <span>Scoring Crediticio</span>
-            </div>
-            <p class="text-xs text-slate-300">Modelos de riesgo predictivo calibrados de 300 a 850 puntos.</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1 hover:bg-white/10 transition-colors">
-            <div class="flex items-center space-x-2 text-sky-400 text-sm font-bold">
-              <i class="pi pi-sparkles" />
-              <span>Asesor IA Gemini</span>
-            </div>
-            <p class="text-xs text-slate-300">Consultas financieras instantáneas con recomendaciones personalizadas.</p>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1 hover:bg-white/10 transition-colors">
-            <div class="flex items-center space-x-2 text-amber-400 text-sm font-bold">
-              <i class="pi pi-building" />
-              <span>Verificación B2B</span>
-            </div>
-            <p class="text-xs text-slate-300">Validación directa con SUNAT RUC y RENIEC DNI para concesionarios.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Security & Trust Footer -->
-      <div class="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
-        <div class="flex items-center space-x-2">
-          <i class="pi pi-lock text-emerald-400 text-sm" />
-          <span>Encriptación SSL 256-bit • Autenticación JWT Stateless</span>
-        </div>
-        <span class="font-mono text-[11px] text-slate-500">Render Production</span>
-      </div>
-    </div>
-
-    <!-- Right Form Column (Desktop 6 cols on lg / 5 cols on xl, Full width on mobile) -->
-    <div class="w-full lg:w-1/2 xl:w-5/12 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 overflow-y-auto">
-      <!-- Top Navigation & Language Switcher -->
-      <div class="flex items-center justify-between mb-8">
+        <!-- Minimalist Brand Overlay (Only the application name) -->
         <router-link
           to="/home"
-          class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100 transition-colors"
+          class="absolute top-6 left-6 z-10 flex items-center space-x-3 px-4 py-2.5 rounded-2xl bg-black/45 backdrop-blur-md border border-white/15 text-white shadow-xl hover:bg-black/60 transition-all group"
         >
-          <i class="pi pi-arrow-left text-xs" />
-          <span>Volver al inicio</span>
+          <div
+            class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-indigo-500 flex items-center justify-center text-white text-base shadow-md group-hover:scale-105 transition-transform"
+          >
+            <i class="pi pi-car" />
+          </div>
+          <div>
+            <span class="text-sm font-black tracking-wide block leading-none text-white">SmartFinance</span>
+            <span class="text-[10px] text-blue-300/90 font-medium tracking-widest uppercase">Drive</span>
+          </div>
         </router-link>
-
-        <LanguageSwitcher />
       </div>
 
-      <!-- Center Form Card -->
-      <div class="max-w-md w-full mx-auto my-auto space-y-6">
-        <!-- Form Header -->
-        <div class="space-y-2">
-          <!-- Mobile Brand Logo -->
-          <div class="lg:hidden flex items-center space-x-2.5 mb-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md">
-              <i class="pi pi-car" />
-            </div>
-            <div>
-              <span class="text-base font-black text-surface-900 dark:text-surface-0 block leading-tight">SmartFinance</span>
-              <span class="text-[10px] text-surface-500 dark:text-surface-400 font-semibold tracking-wider uppercase">Drive</span>
-            </div>
-          </div>
-
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-surface-900 dark:text-surface-0 tracking-tight">
-            {{ t('iam.signInTitle') }}
-          </h2>
-          <p class="text-sm text-surface-500 dark:text-surface-400 leading-relaxed">
-            {{ t('iam.signInSubtitle') }}
-          </p>
-        </div>
-
-        <!-- Error Message using PrimeVue Message Component -->
-        <Message
-          v-if="iamStore.error"
-          severity="error"
-          :closable="false"
-          class="w-full shadow-xs"
-        >
-          <div class="flex items-center gap-2 text-xs font-medium">
-            <span>{{ iamStore.error }}</span>
-          </div>
-        </Message>
-
-        <!-- Main Form -->
-        <form class="space-y-4" @submit.prevent="handleSignIn">
-          <!-- Email / Username Input -->
-          <div class="space-y-1.5">
-            <label for="username" class="block text-xs font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.email') }}
-            </label>
-            <IconField class="w-full">
-              <InputIcon class="pi pi-envelope text-surface-400" />
-              <InputText
-                id="username"
-                v-model="username"
-                type="email"
-                required
-                autocomplete="email"
-                class="w-full"
-                :placeholder="t('iam.emailPlaceholder')"
-                size="large"
-              />
-            </IconField>
-          </div>
-
-          <!-- Password Input with Toggle Mask -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between items-center">
-              <label for="password" class="block text-xs font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.password') }}
-              </label>
-              <router-link
-                to="/iam/forgot-password"
-                class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
-              >
-                {{ t('iam.forgotPasswordLink') }}
-              </router-link>
-            </div>
-            <Password
-              id="password"
-              v-model="password"
-              :feedback="false"
-              toggleMask
-              required
-              autocomplete="current-password"
-              class="w-full"
-              inputClass="w-full"
-              :placeholder="t('iam.passwordPlaceholder')"
-              size="large"
-            />
-          </div>
-
-          <!-- Remember Me Checkbox -->
-          <div class="flex items-center justify-between pt-1">
-            <div class="flex items-center gap-2">
-              <Checkbox
-                v-model="rememberMe"
-                :binary="true"
-                inputId="remember-me"
-              />
-              <label
-                for="remember-me"
-                class="text-xs text-surface-600 dark:text-surface-400 cursor-pointer select-none font-medium"
-              >
-                Recordar mi sesión
-              </label>
-            </div>
-          </div>
-
-          <!-- PrimeVue Primary Submit Button -->
-          <Button
-            type="submit"
-            :loading="iamStore.isLoading"
-            :label="iamStore.isLoading ? t('iam.signingIn') : t('iam.signInBtn')"
-            icon="pi pi-sign-in"
-            iconPos="right"
-            severity="primary"
-            class="w-full shadow-lg shadow-blue-600/20 font-bold"
-            size="large"
-          />
-        </form>
-
-        <!-- PrimeVue Divider -->
-        <Divider align="center" class="my-6">
-          <span class="text-[11px] text-surface-400 dark:text-surface-500 font-bold uppercase tracking-wider">
-            O continuar con
-          </span>
-        </Divider>
-
-        <!-- Social & Quick Action Buttons with PrimeVue -->
-        <div class="space-y-2.5">
-          <!-- Google OAuth Button -->
-          <Button
-            type="button"
-            @click="handleGoogleSignIn"
-            :disabled="iamStore.isLoading"
-            severity="secondary"
-            variant="outlined"
-            class="w-full font-semibold border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800"
-            size="large"
-          >
-            <i class="pi pi-google text-red-500 text-base mr-2" />
-            <span>{{ t('iam.googleSignIn') }}</span>
-          </Button>
-
-          <!-- Quick Demo Access Button -->
-          <Button
-            type="button"
-            @click="handleQuickDemoSignIn"
-            :disabled="iamStore.isLoading"
-            severity="info"
-            variant="outlined"
-            class="w-full font-semibold border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40"
-          >
-            <i class="pi pi-bolt text-amber-500 mr-2" />
-            <span>{{ t('iam.demoLoginBtn') }}</span>
-          </Button>
-        </div>
-
-        <!-- Sign Up Redirection Footer -->
-        <div class="text-center text-xs text-surface-600 dark:text-surface-400 pt-4 border-t border-surface-100 dark:border-surface-800">
-          <span>{{ t('iam.noAccount') }} </span>
+      <!-- Right Column: Floating Minimalist Form Capsule -->
+      <div
+        class="w-full lg:w-1/2 xl:w-5/12 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-12 bg-surface-0 dark:bg-surface-900 rounded-3xl border border-surface-200/80 dark:border-surface-800 shadow-2xl overflow-y-auto"
+      >
+        <!-- Top Navigation Bar -->
+        <div class="flex items-center justify-between mb-6">
           <router-link
-            to="/iam/sign-up"
-            class="font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
+            to="/home"
+            class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 dark:text-surface-400 dark:hover:text-surface-100 transition-colors"
           >
-            {{ t('iam.signUpLink') }}
+            <i class="pi pi-arrow-left text-xs" />
+            <span>Volver al inicio</span>
           </router-link>
-        </div>
-      </div>
 
-      <!-- Mobile Bottom Footer -->
-      <div class="text-center text-[11px] text-surface-400 dark:text-surface-500 mt-8">
-        SmartFinance Drive © {{ new Date().getFullYear() }} • Plataforma Financiera Vehicular
+          <LanguageSwitcher />
+        </div>
+
+        <!-- Center Form Area -->
+        <div class="w-full max-w-sm mx-auto my-auto space-y-5">
+          <!-- Form Header -->
+          <div class="space-y-1.5">
+            <!-- Mobile Brand Logo -->
+            <div class="lg:hidden flex items-center space-x-2.5 mb-4">
+              <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-md">
+                <i class="pi pi-car" />
+              </div>
+              <div>
+                <span class="text-base font-black text-surface-900 dark:text-surface-0 block leading-tight">SmartFinance</span>
+                <span class="text-[10px] text-surface-500 dark:text-surface-400 font-semibold tracking-wider uppercase">Drive</span>
+              </div>
+            </div>
+
+            <h2 class="text-2xl font-black text-surface-900 dark:text-surface-0 tracking-tight">
+              {{ t('iam.signInTitle') }}
+            </h2>
+            <p class="text-xs text-surface-500 dark:text-surface-400 leading-relaxed">
+              {{ t('iam.signInSubtitle') }}
+            </p>
+          </div>
+
+          <!-- PrimeVue Error Message -->
+          <Message
+            v-if="iamStore.error"
+            severity="error"
+            :closable="false"
+            class="w-full shadow-xs"
+          >
+            <div class="flex items-center gap-2 text-xs font-medium">
+              <span>{{ iamStore.error }}</span>
+            </div>
+          </Message>
+
+          <!-- Sign-In Form -->
+          <form class="space-y-4" @submit.prevent="handleSignIn">
+            <!-- Email Input -->
+            <div class="space-y-1">
+              <label for="username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.email') }}
+              </label>
+              <IconField class="w-full">
+                <InputIcon class="pi pi-envelope text-surface-400 text-xs" />
+                <InputText
+                  id="username"
+                  v-model="username"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  class="w-full"
+                  :placeholder="t('iam.emailPlaceholder')"
+                />
+              </IconField>
+            </div>
+
+            <!-- Password Input -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center">
+                <label for="password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                  {{ t('iam.password') }}
+                </label>
+                <router-link
+                  to="/iam/forgot-password"
+                  class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
+                >
+                  {{ t('iam.forgotPasswordLink') }}
+                </router-link>
+              </div>
+              <Password
+                id="password"
+                v-model="password"
+                :feedback="false"
+                toggleMask
+                required
+                autocomplete="current-password"
+                class="w-full"
+                inputClass="w-full"
+                :placeholder="t('iam.passwordPlaceholder')"
+              />
+            </div>
+
+            <!-- Remember Me -->
+            <div class="flex items-center justify-between pt-0.5">
+              <div class="flex items-center gap-2">
+                <Checkbox
+                  v-model="rememberMe"
+                  :binary="true"
+                  inputId="remember-me"
+                />
+                <label
+                  for="remember-me"
+                  class="text-xs text-surface-600 dark:text-surface-400 cursor-pointer select-none font-medium"
+                >
+                  Recordar mi sesión
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <Button
+              type="submit"
+              :loading="iamStore.isLoading"
+              :label="iamStore.isLoading ? t('iam.signingIn') : t('iam.signInBtn')"
+              icon="pi pi-sign-in"
+              iconPos="right"
+              severity="primary"
+              class="w-full font-bold shadow-md shadow-blue-600/20"
+            />
+          </form>
+
+          <!-- PrimeVue Divider -->
+          <Divider align="center" class="my-4">
+            <span class="text-[10px] text-surface-400 dark:text-surface-500 font-bold uppercase tracking-wider">
+              O continuar con
+            </span>
+          </Divider>
+
+          <!-- Alternative Auth Buttons -->
+          <div class="space-y-2">
+            <!-- Google Button -->
+            <Button
+              type="button"
+              @click="handleGoogleSignIn"
+              :disabled="iamStore.isLoading"
+              severity="secondary"
+              variant="outlined"
+              class="w-full font-medium text-xs border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800"
+            >
+              <i class="pi pi-google text-red-500 mr-2" />
+              <span>{{ t('iam.googleSignIn') }}</span>
+            </Button>
+
+            <!-- Quick Demo Button -->
+            <Button
+              type="button"
+              @click="handleQuickDemoSignIn"
+              :disabled="iamStore.isLoading"
+              severity="info"
+              variant="outlined"
+              class="w-full font-medium text-xs border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40"
+            >
+              <i class="pi pi-bolt text-amber-500 mr-2" />
+              <span>{{ t('iam.demoLoginBtn') }}</span>
+            </Button>
+          </div>
+
+          <!-- Sign Up Link -->
+          <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-3 border-t border-surface-100 dark:border-surface-800">
+            <span>{{ t('iam.noAccount') }} </span>
+            <router-link
+              to="/iam/sign-up"
+              class="font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors"
+            >
+              {{ t('iam.signUpLink') }}
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-[10px] text-surface-400 dark:text-surface-500 mt-6">
+          SmartFinance Drive © {{ new Date().getFullYear() }} • Sistema Financiero Vehicular
+        </div>
       </div>
     </div>
   </div>
