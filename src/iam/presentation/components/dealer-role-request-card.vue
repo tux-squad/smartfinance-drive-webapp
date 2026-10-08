@@ -174,6 +174,19 @@
             </p>
           </div>
 
+          <div>
+            <label for="dealer-company-name" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Razón Social / Nombre Comercial
+            </label>
+            <input
+              id="dealer-company-name"
+              v-model="companyName"
+              type="text"
+              placeholder="Ej: AUTOLAND PERU S.A.C."
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white transition-all"
+            />
+          </div>
+
           <!-- Corporate Lookup Result Card -->
           <div
             v-if="partnersStore.corporateLookup"
@@ -329,6 +342,19 @@
             </p>
           </div>
 
+          <div>
+            <label for="financial-company-name" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              Razón Social / Nombre Comercial
+            </label>
+            <input
+              id="financial-company-name"
+              v-model="companyName"
+              type="text"
+              placeholder="Ej: BANCO DE CREDITO DEL PERU"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white transition-all"
+            />
+          </div>
+
           <button
             type="submit"
             :disabled="iamStore.isLoading || !ruc || ruc.length !== 11"
@@ -359,6 +385,7 @@ const partnersStore = usePartnersStore()
 
 const selectedRole = ref<ElevationTab>('DEALER')
 const ruc = ref('')
+const companyName = ref('')
 const successMessage = ref('')
 const corporateEmail = ref('')
 const corporateOtpCode = ref('')
@@ -375,6 +402,7 @@ const isFinancialInstitution = computed(() => {
 const switchTab = (tab: ElevationTab) => {
   selectedRole.value = tab
   ruc.value = ''
+  companyName.value = ''
   successMessage.value = ''
   iamStore.error = null
   partnersStore.corporateLookup = null
@@ -391,6 +419,9 @@ const handleRucInput = () => {
 const searchCorporateRuc = async () => {
   if (ruc.value.length === 11) {
     await partnersStore.lookupCorporateRuc(ruc.value)
+    if (partnersStore.corporateLookup?.suggestedName) {
+      companyName.value = partnersStore.corporateLookup.suggestedName
+    }
   }
 }
 
@@ -411,6 +442,7 @@ const handleConfirmCorporateOtp = async () => {
     corporateOtpSent.value = false
     partnersStore.corporateLookup = null
     ruc.value = ''
+    companyName.value = ''
     if (iamStore.currentUser?.id) {
       await iamStore.restoreSession()
     }
@@ -420,12 +452,14 @@ const handleConfirmCorporateOtp = async () => {
 const fillDemoDealerRuc = () => {
   // Toyota del Perú S.A. (Automotive CIIU 451 registered in SUNAT)
   ruc.value = '20100138019'
+  companyName.value = 'Toyota del Perú S.A.'
   searchCorporateRuc()
 }
 
 const fillDemoFinancialRuc = () => {
   // Banco de Crédito del Perú BCP (Financial Intermediation CIIU 6419 registered in SUNAT)
   ruc.value = '20100047218'
+  companyName.value = 'Banco de Crédito del Perú BCP'
   searchCorporateRuc()
 }
 
@@ -433,15 +467,18 @@ const handleRequestDealerRole = async () => {
   if (!iamStore.currentUser?.id) return
 
   successMessage.value = ''
+  const resolvedCompany = companyName.value || partnersStore.corporateLookup?.suggestedName || (ruc.value === '20100138019' ? 'Toyota del Perú S.A.' : undefined)
   const command = new RoleRequestCommand({
     userId: iamStore.currentUser.id,
-    ruc: ruc.value
+    ruc: ruc.value,
+    companyName: resolvedCompany
   })
 
   const success = await iamStore.requestDealerRole(command)
   if (success) {
     successMessage.value = t('iam.dealerRequestSuccess')
     ruc.value = ''
+    companyName.value = ''
   }
 }
 
@@ -449,15 +486,18 @@ const handleRequestFinancialRole = async () => {
   if (!iamStore.currentUser?.id) return
 
   successMessage.value = ''
+  const resolvedCompany = companyName.value || partnersStore.corporateLookup?.suggestedName || (ruc.value === '20100047218' ? 'Banco de Crédito del Perú BCP' : undefined)
   const command = new RoleRequestCommand({
     userId: iamStore.currentUser.id,
-    ruc: ruc.value
+    ruc: ruc.value,
+    companyName: resolvedCompany
   })
 
   const success = await iamStore.requestFinancialInstitutionRole(command)
   if (success) {
     successMessage.value = t('iam.financialRequestSuccess')
     ruc.value = ''
+    companyName.value = ''
   }
 }
 </script>

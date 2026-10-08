@@ -16,9 +16,19 @@ export class PartnersApi extends BaseApi {
    * 4.1 List Financial Entities with rate benchmarks.
    */
   public async getFinancialEntities(): Promise<FinancialEntity[]> {
-    const response: AxiosResponse<FinancialEntityResource[]> = await this.http.get<FinancialEntityResource[]>('/api/v1/financial-entities')
-    const list = response.data || []
-    return list.map((item) => PartnersAssembler.toFinancialEntity(item))
+    if (!localStorage.getItem('access_token')) {
+      return []
+    }
+    try {
+      const response: AxiosResponse<FinancialEntityResource[]> = await this.http.get<FinancialEntityResource[]>('/api/v1/financial-entities')
+      const list = response.data || []
+      return list.map((item) => PartnersAssembler.toFinancialEntity(item))
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        return []
+      }
+      throw err
+    }
   }
 
   /**
@@ -165,10 +175,20 @@ export class PartnersApi extends BaseApi {
    * GET /api/v1/dealerships
    */
   public async getDealerships(params?: { search?: string, location?: string, page?: number, size?: number }): Promise<Dealership[]> {
-    const response: AxiosResponse<any> = await this.http.get('/api/v1/dealerships', { params })
-    const data = response.data
-    const list = Array.isArray(data) ? data : (data?.content || [])
-    return list.map((item: DealershipResource) => DealershipAssembler.toEntity(item))
+    if (!localStorage.getItem('access_token')) {
+      return []
+    }
+    try {
+      const response: AxiosResponse<any> = await this.http.get('/api/v1/dealerships', { params })
+      const data = response.data
+      const list = Array.isArray(data) ? data : (data?.content || [])
+      return list.map((item: DealershipResource) => DealershipAssembler.toEntity(item))
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        return []
+      }
+      throw err
+    }
   }
 
   /**

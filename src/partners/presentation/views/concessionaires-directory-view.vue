@@ -44,8 +44,35 @@
       </div>
     </div>
 
+    <!-- Anonymous state notice -->
+    <div
+      v-if="!iamStore.isAuthenticated"
+      class="rounded-3xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6"
+    >
+      <div class="flex items-center gap-4">
+        <div class="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md">
+          <i class="pi pi-lock text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-blue-950">
+            Acceso exclusivo a Concesionarias Oficiales
+          </h3>
+          <p class="text-xs text-blue-800 mt-1 max-w-xl leading-relaxed">
+            El directorio oficial y la consulta de inventarios B2B en tiempo real requieren una cuenta activa en la plataforma SmartFinance Drive.
+          </p>
+        </div>
+      </div>
+      <router-link
+        to="/sign-in"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-semibold text-xs shadow-md transition-colors shrink-0"
+      >
+        <i class="pi pi-sign-in"></i>
+        Iniciar Sesión
+      </router-link>
+    </div>
+
     <!-- Loading State -->
-    <div v-if="partnersStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
+    <div v-else-if="partnersStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
       <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
       <p class="text-sm text-gray-500 font-medium">Cargando concesionarias y entidades aliadas...</p>
     </div>
@@ -125,8 +152,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
 import { usePartnersStore } from '../../application/partners.store'
+import { useIamStore } from '@/iam/application/iam.store'
 
 const router = useRouter()
+const iamStore = useIamStore()
 const partnersStore = usePartnersStore()
 
 const searchQuery = ref<string>('')
@@ -140,10 +169,12 @@ interface ConcessionaireCard {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    partnersStore.fetchDealerships(),
-    partnersStore.fetchFinancialEntities()
-  ])
+  if (iamStore.isAuthenticated) {
+    await Promise.all([
+      partnersStore.fetchDealerships(),
+      partnersStore.fetchFinancialEntities()
+    ])
+  }
 })
 
 const filteredDealers = computed<ConcessionaireCard[]>(() => {

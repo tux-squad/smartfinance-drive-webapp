@@ -64,6 +64,24 @@ export const useIamStore = defineStore('iam', () => {
   const username = computed(() => currentUser.value?.username || 'Invitado')
   const roles = computed(() => currentUser.value?.roles || [])
 
+  // Sync token state across browser tab and transparent 401 refresh interceptors
+  if (typeof window !== 'undefined') {
+    window.addEventListener('session-refreshed', ((e: CustomEvent<{ token: string; refreshToken: string }>) => {
+      if (e.detail?.token) {
+        token.value = e.detail.token
+      }
+      if (e.detail?.refreshToken) {
+        refreshTokenValue.value = e.detail.refreshToken
+      }
+    }) as EventListener)
+
+    window.addEventListener('session-expired', () => {
+      currentUser.value = null
+      token.value = null
+      refreshTokenValue.value = null
+    })
+  }
+
   /**
    * Restores user session from stored localStorage tokens and fetches updated profile.
    */
@@ -331,13 +349,17 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Executes Dealer role request via SUNAT RUC validation (1.11).
+   * Executes Dealer role request via SUNAT RUC validation (1.11 / 2.8).
    */
   const requestDealerRole = async (command: RoleRequestCommand): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
-      const res = await iamApi.requestDealerRole(command.userId, { ruc: command.ruc })
+      const companyName = command.companyName || (command.ruc === '20100138019' ? 'Toyota del Perú S.A.' : undefined)
+      const res = await iamApi.requestDealerRole(command.userId, {
+        ruc: command.ruc,
+        companyName
+      })
       if (currentUser.value && res.data.roles) {
         currentUser.value.roles = res.data.roles
         currentUser.value.ruc = command.ruc
@@ -354,13 +376,17 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Executes Financial Institution role request via SUNAT RUC validation (1.12).
+   * Executes Financial Institution role request via SUNAT RUC validation (1.12 / 2.9).
    */
   const requestFinancialInstitutionRole = async (command: RoleRequestCommand): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
-      const res = await iamApi.requestFinancialInstitutionRole(command.userId, { ruc: command.ruc })
+      const companyName = command.companyName || (command.ruc === '20100047218' ? 'Banco de Crédito del Perú BCP' : undefined)
+      const res = await iamApi.requestFinancialInstitutionRole(command.userId, {
+        ruc: command.ruc,
+        companyName
+      })
       if (currentUser.value && res.data.roles) {
         currentUser.value.roles = res.data.roles
         currentUser.value.ruc = command.ruc

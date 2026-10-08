@@ -526,6 +526,11 @@ const adminSubscriptionsCount = computed(() => analyticsStore.adminAnalytics?.to
 const adminMrrUsd = computed(() => analyticsStore.adminAnalytics?.formattedMrrUsd ?? '$ 0.00')
 
 onMounted(async () => {
+  if (!iamStore.isAuthenticated) {
+    await catalogStore.fetchVehicles()
+    return
+  }
+
   if (isDealer.value) {
     await Promise.all([
       analyticsStore.fetchDealerAnalytics(),
