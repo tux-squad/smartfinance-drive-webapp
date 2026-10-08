@@ -6,9 +6,12 @@ export interface DealershipResource {
   address: string
   phone?: string
   email?: string
+  website?: string
   logoUrl?: string
   bannerUrl?: string
+  operatingHours?: string
   hours?: string
+  rating?: number
   description?: string
   active?: boolean
   createdAt?: string
@@ -21,6 +24,10 @@ export interface UpdateDealershipResource {
   address: string
   phone?: string
   email?: string
+  website?: string
+  operatingHours?: string
   hours?: string
   description?: string
+  logoUrl?: string
+  bannerUrl?: string
 }

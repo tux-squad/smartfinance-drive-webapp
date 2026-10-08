@@ -62,13 +62,30 @@ export class ProjectionsApi extends BaseApi {
   }
 
   /**
-   * 7.4 Fetches existing depreciation projection by vehicle ID.
+   * 7.4 Fetches existing depreciation projection by vehicle ID (API Doc 2.36).
+   * GET /api/v1/depreciation-projections/vehicle/{vehicleId}
+   * Note: Endpoint returns a list (Page/Array) of projections.
    */
   public async getDepreciationByVehicleId(vehicleId: string): Promise<DepreciationProjection> {
-    const response: AxiosResponse<DepreciationProjectionResource> = await this.http.get<DepreciationProjectionResource>(
+    const response: AxiosResponse<any> = await this.http.get(
       `/api/v1/depreciation-projections/vehicle/${vehicleId}`
     )
-    return DepreciationAssembler.toEntity(response.data)
+    const item = Array.isArray(response.data) ? response.data[0] : (response.data?.content ? response.data.content[0] : response.data)
+    if (!item) {
+      throw new Error('No se encontró proyección para este vehículo')
+    }
+    return DepreciationAssembler.toEntity(item)
+  }
+
+  /**
+   * 7.4b Fetches all depreciation projections for a vehicle (API Doc 2.36).
+   */
+  public async getDepreciationsByVehicleId(vehicleId: string): Promise<DepreciationProjection[]> {
+    const response: AxiosResponse<any> = await this.http.get(
+      `/api/v1/depreciation-projections/vehicle/${vehicleId}`
+    )
+    const list = Array.isArray(response.data) ? response.data : (response.data?.content || [response.data].filter(Boolean))
+    return list.map((item: any) => DepreciationAssembler.toEntity(item))
   }
 
   /**

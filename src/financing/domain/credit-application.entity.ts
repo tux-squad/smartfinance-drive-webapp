@@ -36,6 +36,10 @@ export class CreditApplication {
     return this.currency === 'PEN' ? 'S/' : '$'
   }
 
+  get applicantUserId(): string {
+    return this.userId
+  }
+
   get formattedRequestedAmount(): string {
     return `${this.currencySymbol} ${this.requestedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }

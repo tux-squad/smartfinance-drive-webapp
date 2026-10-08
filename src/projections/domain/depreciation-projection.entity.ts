@@ -44,4 +44,20 @@ export class DepreciationProjection {
     if (!this.initialValueAmount) return 0;
     return Number(((this.projectedResidualValue / this.initialValueAmount) * 100).toFixed(2));
   }
+
+  get initialValue(): number {
+    return this.initialValueAmount;
+  }
+
+  get initialVehiclePriceAmount(): number {
+    return this.initialValueAmount;
+  }
+
+  get annualDepreciationRate(): number {
+    return this.annualDepreciationRatePct / 100;
+  }
+
+  get projectedValues(): YearlyDepreciation[] {
+    return this.yearlyProjections;
+  }
 }

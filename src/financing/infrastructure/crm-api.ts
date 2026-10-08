@@ -107,10 +107,13 @@ export class CrmApi extends BaseApi {
   public async addProspectNote(prospectId: string, content: string): Promise<ProspectNote> {
     const response: AxiosResponse<any> = await this.http.post(`/api/v1/prospects/${prospectId}/notes`, { noteText: content })
     const noteText = response.data?.noteText || response.data?.content || content
+    const authorUserId = response.data?.authorUserId || ''
+    const authorName = response.data?.authorName || (authorUserId ? `Usuario #${authorUserId}` : 'Asesor Comercial')
     return {
       id: response.data.id || String(Date.now()),
       prospectId,
-      authorName: response.data.authorName || response.data.authorUserId || 'Asesor Comercial',
+      authorName,
+      authorUserId,
       content: noteText,
       noteText,
       createdAt: response.data.createdAt || new Date().toISOString()
@@ -126,10 +129,13 @@ export class CrmApi extends BaseApi {
     const list = Array.isArray(response.data) ? response.data : []
     return list.map((item: any) => {
       const noteText = item.noteText || item.content || item.note || ''
+      const authorUserId = item.authorUserId || ''
+      const authorName = item.authorName || (authorUserId ? `Usuario #${authorUserId}` : 'Asesor Comercial')
       return {
         id: item.id || String(Date.now()),
         prospectId,
-        authorName: item.authorName || item.authorUserId || 'Asesor Comercial',
+        authorName,
+        authorUserId,
         content: noteText,
         noteText,
         createdAt: item.createdAt || new Date().toISOString()

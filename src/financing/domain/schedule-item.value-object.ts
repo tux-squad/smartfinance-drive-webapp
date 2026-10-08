@@ -13,4 +13,36 @@ export class ScheduleItem {
     public readonly totalMonthlyPayment: number,
     public readonly finalBalance: number
   ) {}
+
+  get dueDate(): string {
+    return this.paymentDate
+  }
+
+  get initialBalanceAmount(): number {
+    return this.initialBalance
+  }
+
+  get interestPaymentAmount(): number {
+    return this.interestPayment
+  }
+
+  get principalAmortizationAmount(): number {
+    return this.principalAmortization
+  }
+
+  get creditLifeInsuranceAmount(): number {
+    return this.creditLifeInsurance
+  }
+
+  get vehicleInsuranceAmount(): number {
+    return this.vehicleInsurance
+  }
+
+  get totalInstallmentAmount(): number {
+    return this.totalMonthlyPayment
+  }
+
+  get finalBalanceAmount(): number {
+    return this.finalBalance
+  }
 }

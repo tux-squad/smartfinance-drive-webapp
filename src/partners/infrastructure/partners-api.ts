@@ -189,9 +189,13 @@ export class PartnersApi extends BaseApi {
    * PUT /api/v1/dealerships/me
    */
   public async updateMyDealership(resource: UpdateDealershipResource): Promise<Dealership> {
+    const payload = {
+      ...resource,
+      operatingHours: resource.operatingHours || resource.hours || undefined
+    }
     const response: AxiosResponse<DealershipResource> = await this.http.put<DealershipResource>(
       '/api/v1/dealerships/me',
-      resource
+      payload
     )
     return DealershipAssembler.toEntity(response.data)
   }

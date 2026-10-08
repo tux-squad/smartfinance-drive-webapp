@@ -78,18 +78,20 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.4 Get current user active subscription.
+   * 8.4 Get current user active subscription (API Doc 2.49).
    */
   public async getCurrentSubscription(): Promise<Subscription | null> {
     try {
       const response: AxiosResponse<any> = await this.http.get('/api/v1/billing/subscriptions/me')
       if (!response.data) return null
+      const planId = response.data.plan?.id || response.data.planId || 1
+      const endDate = response.data.endDate || response.data.currentPeriodEnd
       return new Subscription(
         response.data.id,
-        response.data.planId,
+        planId,
         response.data.status || 'ACTIVE',
         response.data.autoRenew ?? true,
-        response.data.currentPeriodEnd,
+        endDate,
         response.data.plan ? new BillingPlan(
           response.data.plan.id,
           response.data.plan.name,
@@ -104,7 +106,7 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.8 Get current user invoices.
+   * 8.8 Get current user invoices (API Doc 2.53).
    */
   public async getInvoices(): Promise<Invoice[]> {
     try {
@@ -114,7 +116,7 @@ export class BillingApi extends BaseApi {
         inv.amount,
         inv.currency || 'USD',
         inv.status || 'PAID',
-        inv.createdAt
+        inv.issuedAt || inv.createdAt
       ))
     } catch {
       return []
@@ -133,18 +135,28 @@ export class BillingApi extends BaseApi {
   }
 
   /**
-   * 8.5 Create a direct subscription.
+   * 8.5 Create a direct subscription (API Doc 2.50).
    */
   public async createSubscription(planId: number, autoRenew: boolean = true): Promise<Subscription> {
     const response: AxiosResponse<any> = await this.http.post('/api/v1/billing/subscriptions', {
       planId,
       autoRenew
     })
+    const resolvedPlanId = response.data.plan?.id || response.data.planId || planId
+    const endDate = response.data.endDate || response.data.currentPeriodEnd
     return new Subscription(
       response.data.id,
-      response.data.planId,
+      resolvedPlanId,
       response.data.status || 'ACTIVE',
-      response.data.autoRenew ?? true
+      response.data.autoRenew ?? true,
+      endDate,
+      response.data.plan ? new BillingPlan(
+        response.data.plan.id,
+        response.data.plan.name,
+        response.data.plan.description || '',
+        response.data.plan.price,
+        response.data.plan.currency || 'USD'
+      ) : undefined
     )
   }
 

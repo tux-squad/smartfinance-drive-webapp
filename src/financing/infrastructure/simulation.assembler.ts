@@ -19,22 +19,31 @@ export class SimulationAssembler {
   static toScheduleItemValueObject(resource: ScheduleItemResource): ScheduleItem {
     return new ScheduleItem(
       resource.periodNumber || 0,
-      resource.paymentDate || '',
-      resource.initialBalance || 0,
-      resource.interestPayment || 0,
-      resource.principalAmortization || 0,
-      resource.creditLifeInsurance || 0,
-      resource.vehicleInsurance || 0,
-      resource.totalMonthlyPayment || 0,
-      resource.finalBalance || 0
+      resource.dueDate || resource.paymentDate || '',
+      resource.initialBalanceAmount ?? resource.initialBalance ?? 0,
+      resource.interestPaymentAmount ?? resource.interestPayment ?? 0,
+      resource.principalAmortizationAmount ?? resource.principalAmortization ?? 0,
+      resource.creditLifeInsuranceAmount ?? resource.creditLifeInsurance ?? 0,
+      resource.vehicleInsuranceAmount ?? resource.vehicleInsurance ?? 0,
+      resource.totalInstallmentAmount ?? resource.totalMonthlyPayment ?? 0,
+      resource.finalBalanceAmount ?? resource.finalBalance ?? 0
     )
   }
 
   /**
-   * Maps a SimulationResource to a Simulation domain entity.
+   * Maps a SimulationResource to a Simulation domain entity (API Doc 2.22).
    */
   static toEntity(resource: SimulationResource): Simulation {
-    const schedule = (resource.schedule || []).map((s) => SimulationAssembler.toScheduleItemValueObject(s))
+    const rawSchedule = resource.paymentSchedule || resource.schedule || []
+    const schedule = rawSchedule.map((s) => SimulationAssembler.toScheduleItemValueObject(s))
+    const metrics = resource.metrics || {}
+    const tcea = metrics.tcea ?? resource.tcea ?? 0
+    const npv = metrics.van ?? resource.npv ?? 0
+    const irr = metrics.tir ?? resource.irr ?? 0
+    const loanAmount = metrics.financedAmount ?? resource.loanAmount ?? 0
+    const monthlyPaymentAmount = resource.monthlyPaymentAmount
+      ?? (schedule[0]?.totalMonthlyPayment || 0)
+
     return new Simulation(
       resource.id,
       resource.title || 'Simulación de Crédito',
@@ -55,11 +64,11 @@ export class SimulationAssembler {
       resource.initialFeesAmount || 0,
       resource.discountRate || 8.0,
       resource.startDate || (new Date().toISOString().split('T')[0] as string),
-      resource.loanAmount || 0,
-      resource.monthlyPaymentAmount || 0,
-      resource.tcea || 0,
-      resource.npv || 0,
-      resource.irr || 0,
+      loanAmount,
+      monthlyPaymentAmount,
+      tcea,
+      npv,
+      irr,
       schedule
     )
   }

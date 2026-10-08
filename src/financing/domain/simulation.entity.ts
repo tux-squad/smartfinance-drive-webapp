@@ -32,6 +32,18 @@ export class Simulation {
     public readonly schedule: ScheduleItem[] = []
   ) {}
 
+  get paymentSchedule(): ScheduleItem[] {
+    return this.schedule
+  }
+
+  get van(): number {
+    return this.npv
+  }
+
+  get tir(): number {
+    return this.irr
+  }
+
   /**
    * Calculated down payment amount.
    */
