@@ -4,10 +4,23 @@
     <div
       class="hidden lg:flex lg:w-1/2 xl:w-7/12 relative flex-col justify-between p-12 xl:p-16 bg-gradient-to-br from-[#06122c] via-[#091a3e] to-[#040915] text-white overflow-hidden select-none"
     >
-      <!-- Background Ambient Glow & Mesh -->
-      <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/25 rounded-full blur-3xl pointer-events-none" />
-      <div class="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+      <!-- Background Video Optimized WebM (with MP4 fallback) -->
+      <video
+        autoplay
+        loop
+        muted
+        playsinline
+        class="absolute inset-0 w-full h-full object-cover object-center z-0 opacity-40 mix-blend-luminosity filter contrast-125"
+      >
+        <source :src="heroVideoWebm" type="video/webm" />
+        <source :src="heroVideoMp4" type="video/mp4" />
+      </video>
+
+      <!-- Gradient Dark Overlay for enhanced contrast and readability -->
+      <div class="absolute inset-0 z-0 bg-gradient-to-t from-[#06122c]/95 via-[#091a3e]/85 to-[#040915]/90 backdrop-blur-[1px]" />
+      <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none z-0" />
+      <div class="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none z-0" />
+      <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none z-0" />
 
       <!-- Top Header / Brand -->
       <div class="relative z-10 flex items-center justify-between">
@@ -298,6 +311,8 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 
 import LanguageSwitcher from '@/shared/presentation/components/language-switcher.vue'
+import heroVideoWebm from '@/assets/7154229-hd_1920_1080_25fps.webm'
+import heroVideoMp4 from '@/assets/7154229-hd_1920_1080_25fps.mp4'
 
 const { t } = useI18n()
 const router = useRouter()
