@@ -274,15 +274,18 @@ onMounted(() => {
 
 const handleSignIn = async () => {
   iamStore.error = null
+  const cleanEmail = username.value.trim()
+  const cleanPassword = password.value.trim()
+
   if (rememberMe.value && typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_REMEMBERED_EMAIL, username.value)
+    localStorage.setItem(STORAGE_REMEMBERED_EMAIL, cleanEmail)
   } else if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_REMEMBERED_EMAIL)
   }
 
   const command = new SignInCommand({
-    username: username.value,
-    password: password.value
+    username: cleanEmail,
+    password: cleanPassword
   })
 
   const success = await iamStore.signIn(command)

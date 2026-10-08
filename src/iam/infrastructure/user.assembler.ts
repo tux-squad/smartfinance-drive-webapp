@@ -15,8 +15,8 @@ export class UserAssembler {
    */
   public static toSignInRequestFromCommand(command: SignInCommand): SignInRequestResource {
     return {
-      username: command.username,
-      password: command.password
+      username: command.username?.trim() || '',
+      password: command.password?.trim() || ''
     }
   }
 
@@ -25,8 +25,8 @@ export class UserAssembler {
    */
   public static toSignUpRequestFromCommand(command: SignUpCommand): SignUpRequestResource {
     return {
-      username: command.username,
-      password: command.password,
+      username: command.username?.trim() || '',
+      password: command.password?.trim() || '',
       roles: command.roles
     }
   }
