@@ -307,11 +307,11 @@ export const useIamStore = defineStore('iam', () => {
     error.value = null
     successMessage.value = null
     try {
-      const res = await iamApi.requestPasswordRecovery({ username: command.username })
-      successMessage.value = res.data.message
+      await iamApi.requestPasswordRecovery({ username: command.username })
+      successMessage.value = 'Si existe una cuenta asociada a este correo, hemos enviado las instrucciones para restablecer tu contraseña.'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al solicitar recuperación de contraseña.'
+      error.value = formatIamErrorMessage(err) || 'Error al solicitar recuperación de contraseña.'
       return false
     } finally {
       isLoading.value = false
@@ -326,14 +326,14 @@ export const useIamStore = defineStore('iam', () => {
     error.value = null
     successMessage.value = null
     try {
-      const res = await iamApi.resetPassword({
+      await iamApi.resetPassword({
         resetToken: command.resetToken,
         newPassword: command.newPassword
       })
-      successMessage.value = res.data.message
+      successMessage.value = '¡Contraseña restablecida exitosamente! Redirigiendo a inicio de sesión...'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al restablecer contraseña.'
+      error.value = formatIamErrorMessage(err) || 'Error al restablecer contraseña.'
       return false
     } finally {
       isLoading.value = false
