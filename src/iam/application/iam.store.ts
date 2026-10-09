@@ -152,6 +152,28 @@ export const useIamStore = defineStore('iam', () => {
       } catch {
         // Fallback to cached roles
       }
+
+      // Fetch fresh client profile (names, DNI, phone)
+      try {
+        const { ProfilesApi } = await import('@/profiles/infrastructure/profiles-api')
+        const { ProfileAssembler } = await import('@/profiles/infrastructure/profile.assembler')
+        const profilesApi = new ProfilesApi()
+        const profRes = await profilesApi.getProfileByUserId(savedUserId)
+        if (profRes.data) {
+          const profile = ProfileAssembler.toEntityFromResource(profRes.data)
+          if (profile.fullName) {
+            localStorage.setItem('user_name', profile.fullName)
+          }
+          if (profile.firstName) {
+            localStorage.setItem('user_first_name', profile.firstName)
+          }
+          if (profile.lastName) {
+            localStorage.setItem('user_last_name', profile.lastName)
+          }
+        }
+      } catch {
+        // Fallback
+      }
     } else {
       currentUser.value = null
       token.value = null
@@ -193,6 +215,28 @@ export const useIamStore = defineStore('iam', () => {
         const userDetailsRes = await iamApi.getUserById(data.id)
         if (userDetailsRes.data && userDetailsRes.data.roles) {
           userRoles = userDetailsRes.data.roles
+        }
+      } catch {
+        // Fallback
+      }
+
+      // Fetch client profile (names, DNI, phone) and cache in localStorage
+      try {
+        const { ProfilesApi } = await import('@/profiles/infrastructure/profiles-api')
+        const { ProfileAssembler } = await import('@/profiles/infrastructure/profile.assembler')
+        const profilesApi = new ProfilesApi()
+        const profRes = await profilesApi.getProfileByUserId(data.id)
+        if (profRes.data) {
+          const profile = ProfileAssembler.toEntityFromResource(profRes.data)
+          if (profile.fullName) {
+            localStorage.setItem('user_name', profile.fullName)
+          }
+          if (profile.firstName) {
+            localStorage.setItem('user_first_name', profile.firstName)
+          }
+          if (profile.lastName) {
+            localStorage.setItem('user_last_name', profile.lastName)
+          }
         }
       } catch {
         // Fallback

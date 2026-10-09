@@ -51,7 +51,7 @@ export class ProfileAssembler {
       email: command.email,
       nationalId: command.nationalId || command.dni || '',
       fullLegalNames: legalNames,
-      dateOfBirth: command.dateOfBirth || '',
+      dateOfBirth: command.dateOfBirth || '2000-01-01',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(command.monthlyIncomeAmount) || 0,

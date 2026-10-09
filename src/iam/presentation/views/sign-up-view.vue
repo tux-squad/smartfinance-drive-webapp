@@ -89,7 +89,7 @@
       </Message>
 
       <!-- Form Steps Container -->
-      <form class="space-y-5" @submit.prevent="handleFinalSubmit">
+      <form class="space-y-5" novalidate @submit.prevent="handleFinalSubmit">
         <!-- =================================================================== -->
         <!-- PASO 1: Acceso, Tipo de Cuenta, OTP y Doble Contraseña             -->
         <!-- =================================================================== -->
@@ -204,7 +204,6 @@
                   id="reg-username"
                   v-model="username"
                   type="email"
-                  required
                   :class="[
                     'w-full !pl-9 !py-2.5 !text-xs !rounded-xl transition-all',
                     username && !isEmailValid ? '!border-rose-400 focus:!ring-rose-400' : ''
@@ -278,7 +277,6 @@
                 id="reg-password"
                 inputId="reg-password-input"
                 v-model="password"
-                required
                 :feedback="false"
                 toggleMask
                 class="w-full !rounded-xl"
@@ -304,7 +302,6 @@
                 id="reg-confirm-password"
                 inputId="reg-confirm-password-input"
                 v-model="confirmPassword"
-                required
                 :feedback="false"
                 toggleMask
                 class="w-full !rounded-xl"
@@ -397,14 +394,28 @@
               </div>
             </div>
 
-            <div class="relative">
-              <i class="pi pi-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-              <InputText
-                id="reg-dni"
-                v-model="dni"
-                maxlength="8"
-                placeholder="Ingresa los 8 dígitos de tu DNI"
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1">
+                <i class="pi pi-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                <InputText
+                  id="reg-dni"
+                  v-model="dni"
+                  maxlength="8"
+                  placeholder="Ingresa los 8 dígitos de tu DNI"
+                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+                  @keydown.enter.prevent="queryDniManual"
+                />
+              </div>
+              <Button
+                type="button"
+                severity="secondary"
+                outlined
+                :disabled="dni.trim().length !== 8 || iamStore.isLookingUpDni"
+                :loading="iamStore.isLookingUpDni"
+                @click="queryDniManual"
+                class="!text-xs !px-3.5 !py-2.5 !rounded-xl shrink-0 font-bold"
+                label="Validar DNI"
+                icon="pi pi-search"
               />
             </div>
 
@@ -434,7 +445,6 @@
                 <InputText
                   id="reg-firstname"
                   v-model="firstName"
-                  required
                   :placeholder="t('iam.firstNamePlaceholder')"
                   class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
                 />
@@ -450,7 +460,6 @@
                 <InputText
                   id="reg-lastname"
                   v-model="lastName"
-                  required
                   :placeholder="t('iam.lastNamePlaceholder')"
                   class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
                 />
@@ -502,9 +511,10 @@
             <!-- If Buyer: Final Submit in Step 2 -->
             <Button
               v-if="accountType === 'buyer'"
-              type="submit"
+              type="button"
               :loading="iamStore.isLoading || isSubmittingFinal"
               :disabled="!canAdvanceStep2"
+              @click="handleFinalSubmit"
               label="Crear Perfil y Comenzar"
               icon="pi pi-check"
               iconPos="right"
@@ -561,15 +571,28 @@
                   </span>
                 </div>
               </div>
-              <div class="relative">
-                <i class="pi pi-building absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-corporate-ruc"
-                  v-model="corporateRuc"
-                  maxlength="11"
-                  required
-                  placeholder="Ej: 20100138019"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <i class="pi pi-building absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                  <InputText
+                    id="reg-corporate-ruc"
+                    v-model="corporateRuc"
+                    maxlength="11"
+                    placeholder="Ej: 20100138019"
+                    class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+                    @keydown.enter.prevent="queryRucManual"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  :disabled="corporateRuc.trim().length !== 11 || iamStore.isLookingUpRuc"
+                  :loading="iamStore.isLookingUpRuc"
+                  @click="queryRucManual"
+                  class="!text-xs !px-3.5 !py-2.5 !rounded-xl shrink-0 font-bold"
+                  label="Validar SUNAT"
+                  icon="pi pi-search"
                 />
               </div>
             </div>
@@ -600,7 +623,6 @@
               <InputText
                 id="reg-company-name"
                 v-model="companyName"
-                required
                 :placeholder="accountType === 'dealer' ? t('iam.companyNamePlaceholder') : t('iam.institutionNamePlaceholder')"
                 class="w-full !py-2.5 !text-xs !rounded-xl"
               />
@@ -631,9 +653,10 @@
             />
 
             <Button
-              type="submit"
+              type="button"
               :loading="iamStore.isLoading || isSubmittingFinal"
               :disabled="!canAdvanceStep3"
+              @click="handleFinalSubmit"
               :label="accountType === 'dealer' ? 'Completar Registro de Concesionaria' : 'Completar Registro de Entidad Financiera'"
               icon="pi pi-check"
               iconPos="right"
@@ -764,9 +787,10 @@ const cleanPhoneNumber = computed(() => {
 
 const isPhoneValid = computed(() => {
   const digits = cleanPhoneNumber.value
-  if (!digits) return false
+  if (!digits) return true
   if (digits.length === 9 && digits.startsWith('9')) return true
   if (digits.length === 11 && digits.startsWith('519')) return true
+  if (digits.length >= 7 && digits.length <= 15) return true
   return false
 })
 
@@ -778,7 +802,7 @@ const canAdvanceStep1 = computed(() => {
 const canAdvanceStep2 = computed(() => {
   const dniValid = dni.value.trim().length === 8
   const hasNames = firstName.value.trim().length > 0 && lastName.value.trim().length > 0
-  const phoneValid = !phoneNumber.value || isPhoneValid.value
+  const phoneValid = !phoneNumber.value.trim() || isPhoneValid.value
   return dniValid && hasNames && phoneValid
 })
 
@@ -1042,6 +1066,45 @@ const fillDemoData = () => {
   }
 }
 
+// Manual Lookups for DNI (RENIEC) and RUC (SUNAT)
+const queryDniManual = async () => {
+  const clean = dni.value.replace(/\D/g, '').slice(0, 8)
+  if (clean.length !== 8) {
+    iamStore.error = 'El DNI debe tener exactamente 8 dígitos.'
+    return
+  }
+  iamStore.error = null
+  const res = await iamStore.lookupDni(clean)
+  if (res) {
+    const resFirstNames = res.firstNames || (res as any).nombres || ''
+    const resPaternal = res.paternalSurname || (res as any).apellidoPaterno || ''
+    const resMaternal = res.maternalSurname || (res as any).apellidoMaterno || ''
+    if (resFirstNames) firstName.value = resFirstNames
+    const fullSurname = `${resPaternal} ${resMaternal}`.trim()
+    if (fullSurname) lastName.value = fullSurname
+    reniecAutocompleted.value = true
+  } else {
+    iamStore.error = 'No se encontraron datos para este DNI en RENIEC. Puedes ingresar tus nombres manualmente.'
+  }
+}
+
+const queryRucManual = async () => {
+  const clean = corporateRuc.value.replace(/\D/g, '').slice(0, 11)
+  if (clean.length !== 11) {
+    iamStore.error = 'El RUC debe tener exactamente 11 dígitos.'
+    return
+  }
+  iamStore.error = null
+  const res = await iamStore.lookupRuc(clean)
+  if (res) {
+    const resRazon = res.razonSocial || (res as any).companyName || (res as any).nombreOComercial || ''
+    if (resRazon) companyName.value = resRazon
+    sunatAutocompleted.value = true
+  } else {
+    iamStore.error = 'El RUC ingresado no existe en el padrón de SUNAT o no cuenta con la actividad económica requerida.'
+  }
+}
+
 // Final Step Submission Handler
 const handleFinalSubmit = async () => {
   iamStore.error = null
@@ -1052,6 +1115,7 @@ const handleFinalSubmit = async () => {
   const cleanRuc = corporateRuc.value.trim()
   const cleanCompName = companyName.value.trim()
   const cleanEmail = username.value.trim()
+  const cleanPassword = password.value.trim()
 
   if (!cleanDni || cleanDni.length !== 8) {
     currentStep.value = 2
@@ -1083,15 +1147,66 @@ const handleFinalSubmit = async () => {
   isSubmittingFinal.value = true
 
   try {
+    // 1. Ensure user account is registered & authenticated if session is missing
+    if (!iamStore.isAuthenticated && cleanEmail && cleanPassword) {
+      try {
+        const signUpCommand = new SignUpCommand({
+          username: cleanEmail,
+          email: cleanEmail,
+          password: cleanPassword,
+          firstName: cleanFirstName || 'Usuario',
+          lastName: cleanLastName || 'SmartFinance',
+          roles: ['ROLE_USER']
+        })
+        await iamStore.signUp(signUpCommand)
+      } catch {
+        // Continue if already registered
+      }
+
+      try {
+        await iamStore.signIn(new SignInCommand({
+          username: cleanEmail,
+          password: cleanPassword
+        }))
+      } catch {
+        // Continue
+      }
+    }
+
     const userId = iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'
 
-    // Cache user names in localStorage for session profile fallback
+    // Cache user names in localStorage for immediate visual sync
     if (cleanFirstName) localStorage.setItem('user_first_name', cleanFirstName)
     if (cleanLastName) localStorage.setItem('user_last_name', cleanLastName)
     const fullDisplayName = `${cleanFirstName} ${cleanLastName}`.trim()
     if (fullDisplayName) localStorage.setItem('user_name', fullDisplayName)
 
-    // Option B: Dealer Role Elevation
+    // 2. ALWAYS create and persist the client Profile in backend database (POST /api/v1/profiles)
+    // for all account types (Personal Buyer, Dealer Representative, Bank Representative)
+    try {
+      const { useProfilesStore } = await import('@/profiles/application/profiles.store')
+      const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
+      const profilesStore = useProfilesStore()
+      const resolvedLegalName = iamStore.reniecData?.fullLegalName || fullDisplayName || cleanEmail
+      const sanitizedMobile = cleanPhoneNumber.value.length >= 9 ? cleanPhoneNumber.value.slice(-9) : (cleanPhoneNumber.value || '999999999')
+
+      await profilesStore.createProfile(new CreateProfileCommand({
+        userId: String(userId),
+        fullLegalNames: resolvedLegalName,
+        email: cleanEmail,
+        nationalId: cleanDni,
+        dateOfBirth: '2000-01-01',
+        phoneCountryCode: '+51',
+        mobilePhone: sanitizedMobile,
+        monthlyIncomeAmount: 3500,
+        monthlyIncomeCurrency: 'PEN',
+        employmentStatus: 'EMPLOYED'
+      }))
+    } catch (profileErr) {
+      console.warn('Profile creation non-blocking warning:', profileErr)
+    }
+
+    // 3. Option B: Dealer Role Elevation
     if (accountType.value === 'dealer') {
       const dealerRoleOk = await iamStore.requestDealerRole(new RoleRequestCommand({
         userId,
@@ -1105,13 +1220,14 @@ const handleFinalSubmit = async () => {
 
       await iamStore.refreshSession()
       successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu panel...'
+      iamStore.successMessage = successMessage.value
       setTimeout(() => {
         router.push('/dealer/dashboard')
-      }, 1200)
+      }, 1000)
       return
     }
 
-    // Option C: Bank Role Elevation
+    // 4. Option C: Bank Role Elevation
     if (accountType.value === 'bank') {
       const bankRoleOk = await iamStore.requestFinancialInstitutionRole(new RoleRequestCommand({
         userId,
@@ -1125,36 +1241,22 @@ const handleFinalSubmit = async () => {
 
       await iamStore.refreshSession()
       successMessage.value = '¡Entidad Financiera registrada con éxito! Redirigiendo a tu panel...'
+      iamStore.successMessage = successMessage.value
       setTimeout(() => {
         router.push('/bank/dashboard')
-      }, 1200)
+      }, 1000)
       return
     }
 
-    // Option A: Personal / Buyer Account - Create Profile
-    try {
-      const { useProfilesStore } = await import('@/profiles/application/profiles.store')
-      const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
-      const profilesStore = useProfilesStore()
-      const resolvedLegalName = iamStore.reniecData?.fullLegalName || fullDisplayName || cleanEmail
-      const sanitizedMobile = cleanPhoneNumber.value.length >= 9 ? cleanPhoneNumber.value.slice(-9) : ''
-      await profilesStore.createProfile(new CreateProfileCommand({
-        fullLegalNames: resolvedLegalName,
-        email: cleanEmail,
-        nationalId: cleanDni,
-        phoneCountryCode: '+51',
-        mobilePhone: sanitizedMobile,
-        monthlyIncomeAmount: 3500,
-        monthlyIncomeCurrency: 'PEN'
-      }))
-    } catch {
-      // Continue if profile creation can be finished later in profile view
-    }
+    // 5. Option A: Personal / Buyer Account
+    successMessage.value = t('iam.signUpSuccess') || '¡Cuenta creada exitosamente! Redirigiendo...'
+    iamStore.successMessage = successMessage.value
 
-    successMessage.value = t('iam.signUpSuccess')
     setTimeout(() => {
-      router.push('/catalog')
-    }, 1200)
+      router.push('/vehicles')
+    }, 1000)
+  } catch (err: any) {
+    iamStore.error = err.message || 'Error al completar el registro.'
   } finally {
     isSubmittingFinal.value = false
   }
