@@ -320,6 +320,10 @@
             <p class="text-[10px] text-surface-500">
               * El DNI se vinculará a tu perfil de comprador para evaluaciones crediticias en el portal.
             </p>
+            <p v-if="dni && dni.length !== 8" class="text-[10px] text-rose-500 font-semibold flex items-center gap-1">
+              <i class="pi pi-exclamation-circle"></i>
+              El DNI debe tener exactamente 8 dígitos (o déjalo vacío).
+            </p>
           </div>
 
           <!-- Phone Verification (Firebase SMS) -->
@@ -710,6 +714,11 @@ const handleSignUp = async () => {
 
   if (!cleanEmail || !cleanPassword || !cleanFirstName || !cleanLastName) {
     iamStore.error = 'Por favor complete todos los campos obligatorios.'
+    return
+  }
+
+  if (cleanDni && cleanDni.length !== 8) {
+    iamStore.error = 'El DNI debe tener exactamente 8 dígitos. Corrígelo o déjalo vacío.'
     return
   }
 

@@ -25,6 +25,9 @@
         <p class="text-xs text-surface-500 max-w-sm mx-auto">
           {{ t('iam.resetPasswordSubtitle') }}
         </p>
+        <p v-if="accountEmail" class="text-[11px] text-surface-600 dark:text-surface-400 font-medium">
+          Token solicitado para: <span class="font-bold font-mono text-surface-800 dark:text-surface-200">{{ accountEmail }}</span>
+        </p>
       </div>
 
       <!-- Success Alert -->
@@ -166,6 +169,7 @@ const iamStore = useIamStore()
 const resetToken = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+const accountEmail = ref('')
 
 const passwordCriteria = computed(() => {
   const val = newPassword.value || ''
@@ -188,6 +192,10 @@ onMounted(() => {
 
   if (route.query.token && typeof route.query.token === 'string') {
     resetToken.value = route.query.token
+  }
+
+  if (route.query.email && typeof route.query.email === 'string') {
+    accountEmail.value = route.query.email
   }
 })
 

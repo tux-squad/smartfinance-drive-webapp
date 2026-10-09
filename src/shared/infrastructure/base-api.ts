@@ -28,6 +28,8 @@ function clearLocalSession(): void {
   localStorage.removeItem('user_name')
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_roles')
+  localStorage.removeItem('user_first_name')
+  localStorage.removeItem('user_last_name')
 }
 
 /**
