@@ -895,7 +895,7 @@ const sendOtp = async () => {
   if (!username.value || !isEmailValid.value) return
   otpCode.value = ''
   const ok = await iamStore.sendEmailOtp(username.value)
-  if (ok) {
+  if (ok && !iamStore.emailVerified) {
     otpSent.value = true
     otpCooldown.value = 60
     const interval = setInterval(() => {

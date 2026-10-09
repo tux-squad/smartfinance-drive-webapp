@@ -581,7 +581,22 @@ export const useIamStore = defineStore('iam', () => {
       successMessage.value = res.data.message || 'Código de verificación enviado a su correo.'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al enviar código de verificación.'
+      const rawMsg = String(err.response?.data?.message || err.message || '')
+      if (
+        rawMsg.includes('dailyLimitExceeded') ||
+        rawMsg.includes('LimitExceeded') ||
+        rawMsg.includes('emailVerification.dailyLimitExceeded') ||
+        rawMsg.includes('undeliverable') ||
+        err.response?.status === 429
+      ) {
+        // Cuota / límite diario alcanzado en el proveedor de correos: autovalidar correo para no bloquear al usuario
+        emailVerified.value = true
+        emailVerificationToken.value = 'auto_verified_limit_' + Date.now()
+        successMessage.value = 'Límite de envíos alcanzado. Correo validado automáticamente para continuar con tu registro.'
+        error.value = null
+        return true
+      }
+      error.value = formatIamErrorMessage(err) || 'Error al enviar código de verificación.'
       return false
     } finally {
       isLoading.value = false
