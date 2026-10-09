@@ -40,15 +40,15 @@
       </p>
     </div>
 
-    <!-- Floating Minimalist Form Capsule (Encimado al video, Light Theme Blanco acorde al tema) -->
+    <!-- Floating Minimalist Form Capsule (Encimado al video, Glassmorphism acorde al tema) -->
     <div
-      class="relative z-10 w-full max-w-md my-auto bg-surface-0/95 backdrop-blur-2xl rounded-3xl border border-surface-200/80 shadow-2xl shadow-black/40 p-5 sm:p-8 lg:p-10 flex flex-col justify-between text-surface-800 transition-all"
+      class="relative z-10 w-full max-w-md my-auto bg-surface-0/95 dark:bg-surface-900/90 backdrop-blur-2xl rounded-3xl border border-surface-200/80 dark:border-surface-800/80 shadow-2xl shadow-black/40 p-5 sm:p-8 lg:p-10 flex flex-col justify-between text-surface-800 dark:text-surface-100 transition-all"
     >
       <!-- Top Navigation Bar -->
       <div class="flex items-center justify-between mb-5">
         <router-link
           to="/home"
-          class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 transition-colors"
+          class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
         >
           <i class="pi pi-arrow-left text-xs" />
           <span>Volver al inicio</span>
@@ -63,19 +63,20 @@
         <div class="space-y-1.5">
           <!-- Mobile Brand Logo -->
           <div class="lg:hidden flex items-center space-x-2.5 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-surface-100 p-1 flex items-center justify-center shadow-xs border border-surface-200">
-              <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain" />
+            <div class="w-10 h-10 rounded-xl bg-surface-100 dark:bg-surface-800 p-1 flex items-center justify-center shadow-xs border border-surface-200 dark:border-surface-700">
+              <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain dark:hidden" />
+              <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain hidden dark:block" />
             </div>
             <div>
-              <span class="text-base font-black text-surface-900 block leading-tight">SmartFinance</span>
+              <span class="text-base font-black text-surface-900 dark:text-surface-0 block leading-tight">SmartFinance</span>
               <span class="text-[10px] text-primary font-bold tracking-wider uppercase">Drive</span>
             </div>
           </div>
 
-          <h2 class="text-2xl font-black text-surface-900 tracking-tight">
+          <h2 class="text-2xl font-black text-surface-900 dark:text-surface-0 tracking-tight">
             {{ t('iam.signInTitle') }}
           </h2>
-          <p class="text-xs text-surface-500 leading-relaxed">
+          <p class="text-xs text-surface-500 dark:text-surface-400 leading-relaxed">
             {{ t('iam.signInSubtitle') }}
           </p>
         </div>
@@ -86,7 +87,7 @@
           severity="error"
           :closable="true"
           @close="iamStore.error = null"
-          class="w-full shadow-xs"
+          class="w-full shadow-xs text-xs"
         >
           <div class="flex items-center gap-2 text-xs font-medium">
             <span>{{ iamStore.error }}</span>
@@ -98,7 +99,7 @@
           <form class="space-y-4" @submit.prevent="handleSignIn">
             <!-- Email Input -->
             <div class="space-y-1.5">
-              <label for="username" class="block text-[11px] font-bold text-surface-700 uppercase tracking-wider">
+              <label for="username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
                 {{ t('iam.email') }}
               </label>
               <IconField class="w-full">
@@ -110,6 +111,7 @@
                   required
                   autocomplete="email"
                   fluid
+                  class="!rounded-xl !py-2.5 !text-xs"
                   :placeholder="t('iam.emailPlaceholder')"
                 />
               </IconField>
@@ -117,7 +119,7 @@
 
             <!-- Password Input -->
             <div class="space-y-1.5">
-              <label for="password" class="block text-[11px] font-bold text-surface-700 uppercase tracking-wider">
+              <label for="password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
                 {{ t('iam.password') }}
               </label>
               <Password
@@ -129,6 +131,8 @@
                 required
                 autocomplete="current-password"
                 fluid
+                class="!rounded-xl"
+                inputClass="!rounded-xl !py-2.5 !text-xs w-full"
                 :placeholder="t('iam.passwordPlaceholder')"
               />
             </div>
@@ -143,7 +147,7 @@
                 />
                 <label
                   for="remember-me"
-                  class="text-xs text-surface-600 cursor-pointer select-none font-medium"
+                  class="text-xs text-surface-600 dark:text-surface-400 cursor-pointer select-none font-medium"
                 >
                   Recordar mi sesión
                 </label>
@@ -166,7 +170,7 @@
               iconPos="right"
               severity="primary"
               fluid
-              class="font-bold shadow-md shadow-primary/20 !rounded-xl !py-2.5 transition-all"
+              class="font-bold shadow-md shadow-primary/20 !rounded-xl !py-2.5 active:scale-[0.98] transition-all !text-xs"
             />
           </form>
         </Fluid>
@@ -188,7 +192,7 @@
             severity="secondary"
             variant="outlined"
             fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs transition-all justify-center"
+            class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs active:scale-[0.98] transition-all justify-center"
           >
             <i class="pi pi-google mr-2" />
             <span class="truncate">{{ t('iam.googleSignIn') }}</span>
@@ -202,7 +206,7 @@
             severity="info"
             variant="outlined"
             fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 transition-all justify-center"
+            class="font-medium text-xs !rounded-xl !py-2.5 active:scale-[0.98] transition-all justify-center"
           >
             <i class="pi pi-bolt mr-2" />
             <span class="truncate">{{ t('iam.demoLoginBtn') }}</span>
@@ -210,7 +214,7 @@
         </div>
 
         <!-- Sign Up Link -->
-        <div class="text-center text-xs text-surface-500 pt-2 border-t border-surface-200">
+        <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-200 dark:border-surface-800">
           <span>{{ t('iam.noAccount') }} </span>
           <router-link
             to="/iam/sign-up"
