@@ -173,6 +173,12 @@
             <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
               <i class="pi pi-check" /> Verificado
             </span>
+            <span v-else-if="username && isEmailValid" class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+              <i class="pi pi-check text-[10px]" /> Formato válido
+            </span>
+            <span v-else-if="username && !isEmailValid" class="text-[10px] text-rose-500 font-medium">
+              Correo inválido
+            </span>
           </div>
 
           <div class="flex items-center gap-2">
@@ -183,7 +189,10 @@
                 v-model="username"
                 type="email"
                 required
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+                :class="[
+                  'w-full !pl-9 !py-2.5 !text-xs !rounded-xl transition-all',
+                  username && !isEmailValid ? '!border-rose-400 focus:!ring-rose-400' : ''
+                ]"
                 :placeholder="t('iam.emailPlaceholder')"
               />
             </div>
@@ -191,19 +200,20 @@
               type="button"
               severity="secondary"
               outlined
-              :disabled="!username || otpCooldown > 0 || iamStore.emailVerified"
+              :disabled="!isEmailValid || otpCooldown > 0 || iamStore.emailVerified"
               :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
               @click="sendOtp"
               class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-              :label="otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : 'Enviar OTP')"
+              :label="otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : (otpSent ? 'Reenviar OTP' : 'Enviar OTP'))"
             />
           </div>
 
           <!-- OTP Code Verification Box -->
           <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
-            <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-              Ingrese el código de 6 dígitos enviado a su correo:
-            </span>
+            <div class="flex items-center justify-between text-[11px] text-surface-600 dark:text-surface-300">
+              <span class="font-medium">Ingrese el código de 6 dígitos enviado a su correo:</span>
+              <span class="text-[10px] text-surface-400">Vence en 15 min</span>
+            </div>
             <div class="flex items-center gap-2">
               <InputText
                 v-model="otpCode"
@@ -221,6 +231,9 @@
                 label="Validar"
               />
             </div>
+            <p class="text-[10px] text-surface-500 dark:text-surface-400">
+              * Nota: Si solicitó un reenvío, ingrese el código más reciente recibido en su bandeja.
+            </p>
           </div>
 
           <!-- Verified Email Confirmation Card -->
@@ -238,7 +251,7 @@
           </div>
         </div>
 
-        <!-- Password Input -->
+        <!-- Password Input with Live Security Meter -->
         <div class="space-y-1.5">
           <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
             {{ t('iam.password') }} <span class="text-rose-500">*</span>
@@ -248,12 +261,36 @@
             inputId="reg-password-input"
             v-model="password"
             required
+            :feedback="false"
             toggleMask
             class="w-full !rounded-xl"
             inputClass="w-full !text-xs !py-2.5 !rounded-xl"
             :placeholder="t('iam.passwordPlaceholder')"
           />
-          <span class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
+
+          <!-- Live Password Complexity Checklist -->
+          <div v-if="password" class="p-2.5 rounded-xl bg-surface-50 dark:bg-surface-800/60 border border-surface-200 dark:border-surface-700 text-[10px] space-y-1">
+            <span class="font-bold text-surface-600 dark:text-surface-300 block mb-1">Requisitos de contraseña segura:</span>
+            <div class="grid grid-cols-2 gap-1 font-medium">
+              <span class="flex items-center gap-1" :class="passwordCriteria.minLength ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.minLength ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                Mínimo 8 caracteres
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasUpper ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasUpper ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Mayúscula (A-Z)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasNumber ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasNumber ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Número (0-9)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasSpecial ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasSpecial ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Carácter especial (*!@#$)
+              </span>
+            </div>
+          </div>
+          <span v-else class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
             <i class="pi pi-info-circle text-[10px]" />
             <span>{{ t('iam.passwordHelp') }}</span>
           </span>
@@ -261,53 +298,28 @@
 
         <!-- Option A: Buyer Specific Verification (DNI & Phone) -->
         <template v-if="accountType === 'buyer'">
-          <!-- DNI RENIEC Lookup -->
-          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
+          <!-- DNI Input -->
+          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2">
             <div class="flex items-center justify-between">
               <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
                 Documento de Identidad (DNI) <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
               </label>
-              <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
+              <span class="text-[10px] text-surface-400">8 dígitos</span>
             </div>
 
-            <div class="flex items-center gap-2">
-              <div class="relative flex-1">
-                <i class="pi pi-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-dni"
-                  v-model="dni"
-                  maxlength="8"
-                  placeholder="Ingrese 8 dígitos de su DNI"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                />
-              </div>
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                :loading="iamStore.isLookingUpDni"
-                :disabled="dni.length !== 8"
-                @click="searchDni"
-                class="!px-3.5 !py-2.5 !rounded-xl shrink-0"
-                v-tooltip.top="'Consultar nombres en RENIEC'"
-              >
-                <i class="pi pi-search text-xs" />
-              </Button>
+            <div class="relative">
+              <i class="pi pi-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <InputText
+                id="reg-dni"
+                v-model="dni"
+                maxlength="8"
+                placeholder="Ingrese 8 dígitos de su DNI"
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+              />
             </div>
-
-            <!-- RENIEC Verified Result Card -->
-            <div
-              v-if="iamStore.reniecData"
-              class="p-2.5 rounded-xl bg-primary-50/70 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-xs space-y-1"
-            >
-              <div class="flex items-center gap-1.5 font-bold text-primary">
-                <i class="pi pi-check-circle text-xs" />
-                <span>{{ iamStore.reniecData.fullLegalName }}</span>
-              </div>
-              <p v-if="iamStore.reniecData.district" class="text-[10px] text-surface-500">
-                {{ iamStore.reniecData.district }}, {{ iamStore.reniecData.province }} - {{ iamStore.reniecData.department }}
-              </p>
-            </div>
+            <p class="text-[10px] text-surface-500">
+              * El DNI se vinculará a tu perfil de comprador para evaluaciones crediticias en el portal.
+            </p>
           </div>
 
           <!-- Phone Verification (Firebase SMS) -->
@@ -321,7 +333,7 @@
               </span>
             </div>
 
-            <div id="recaptcha-phone-container" class="hidden"></div>
+            <div id="recaptcha-phone-container" style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;"></div>
 
             <div class="flex items-center gap-2">
               <div class="relative flex-1">
@@ -504,7 +516,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
@@ -534,6 +546,27 @@ const lastName = ref('')
 const username = ref('')
 const password = ref('')
 
+// Computed Validations
+const isEmailValid = computed(() => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  return emailRegex.test(username.value.trim())
+})
+
+const passwordCriteria = computed(() => {
+  const val = password.value || ''
+  return {
+    minLength: val.length >= 8,
+    hasUpper: /[A-Z]/.test(val),
+    hasNumber: /[0-9]/.test(val),
+    hasSpecial: /[@$!%*?&#^+=._-]/.test(val)
+  }
+})
+
+const isPasswordValid = computed(() => {
+  const c = passwordCriteria.value
+  return c.minLength && c.hasUpper && c.hasNumber && c.hasSpecial
+})
+
 // Buyer specific fields
 const dni = ref('')
 const otpCode = ref('')
@@ -557,9 +590,6 @@ watch(dni, (val) => {
   if (clean !== val) {
     dni.value = clean
   }
-  if (clean.length === 8) {
-    searchDni()
-  }
 })
 
 watch(corporateRuc, (val) => {
@@ -582,22 +612,9 @@ watch(phoneNumber, () => {
   smsSent.value = false
 })
 
-const searchDni = async () => {
-  if (dni.value.length === 8) {
-    const res = await iamStore.lookupDni(dni.value)
-    if (res) {
-      if (res.firstNames && !firstName.value) {
-        firstName.value = res.firstNames
-      }
-      if ((res.paternalSurname || res.maternalSurname) && !lastName.value) {
-        lastName.value = `${res.paternalSurname || ''} ${res.maternalSurname || ''}`.trim()
-      }
-    }
-  }
-}
-
 const sendOtp = async () => {
-  if (!username.value) return
+  if (!username.value || !isEmailValid.value) return
+  otpCode.value = ''
   const ok = await iamStore.sendEmailOtp(username.value)
   if (ok) {
     otpSent.value = true
@@ -693,6 +710,11 @@ const handleSignUp = async () => {
 
   if (!cleanEmail || !cleanPassword || !cleanFirstName || !cleanLastName) {
     iamStore.error = 'Por favor complete todos los campos obligatorios.'
+    return
+  }
+
+  if (!isPasswordValid.value) {
+    iamStore.error = 'La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula, un número y un carácter especial.'
     return
   }
 
