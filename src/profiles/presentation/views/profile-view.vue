@@ -98,7 +98,18 @@
 
             <!-- DNI -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-700">DNI / Documento de Identidad (8 dígitos) <span class="text-rose-500">*</span></label>
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-semibold text-gray-700">DNI / Documento de Identidad (8 dígitos) <span class="text-rose-500">*</span></label>
+                <button
+                  type="button"
+                  :disabled="form.dni.length !== 8 || isQueryingReniec"
+                  @click="handleLookupReniec"
+                  class="text-[11px] font-medium text-blue-600 hover:text-blue-700 disabled:text-gray-400 flex items-center gap-1 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <i :class="['pi', isQueryingReniec ? 'pi-spin pi-spinner' : 'pi-search', 'text-[10px]']" />
+                  <span>{{ isQueryingReniec ? 'Consultando...' : 'Consultar RENIEC' }}</span>
+                </button>
+              </div>
               <input
                 v-model="form.dni"
                 type="text"
@@ -108,6 +119,16 @@
                 placeholder="72345678"
                 class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-mono text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
               />
+              <p
+                v-if="reniecMessage"
+                :class="[
+                  'text-[11px] flex items-center gap-1.5 font-medium mt-1',
+                  reniecSuccess ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                ]"
+              >
+                <i :class="['pi text-[10px]', reniecSuccess ? 'pi-check-circle' : 'pi-exclamation-circle']" />
+                <span>{{ reniecMessage }}</span>
+              </p>
             </div>
 
             <!-- Fecha de Nacimiento (Mayor de 18 años) -->
@@ -535,6 +556,44 @@ const bankBenchmarks = computed(() => {
   return []
 })
 
+// RENIEC Lookup State
+const isQueryingReniec = ref(false)
+const reniecMessage = ref<string | null>(null)
+const reniecSuccess = ref<boolean | null>(null)
+
+const handleLookupReniec = async () => {
+  if (!form.dni || form.dni.length !== 8) {
+    reniecMessage.value = 'El DNI debe tener 8 dígitos numéricos.'
+    reniecSuccess.value = false
+    return
+  }
+  isQueryingReniec.value = true
+  reniecMessage.value = null
+  try {
+    const res = await iamStore.lookupDni(form.dni)
+    if (res && res.dni) {
+      reniecSuccess.value = true
+      if (res.firstNames) form.firstName = res.firstNames
+      if (res.paternalSurname || res.maternalSurname) {
+        form.lastName = `${res.paternalSurname || ''} ${res.maternalSurname || ''}`.trim()
+      } else if (res.fullLegalName) {
+        const parts = res.fullLegalName.split(' ')
+        if (!form.firstName) form.firstName = parts[0] || ''
+        if (!form.lastName) form.lastName = parts.slice(1).join(' ') || ''
+      }
+      reniecMessage.value = `Validado con RENIEC: ${res.fullLegalName || form.firstName}`
+    } else {
+      reniecSuccess.value = false
+      reniecMessage.value = 'No se encontró información para el DNI ingresado.'
+    }
+  } catch {
+    reniecSuccess.value = false
+    reniecMessage.value = 'Error al consultar el servicio de RENIEC.'
+  } finally {
+    isQueryingReniec.value = false
+  }
+}
+
 const populateFormData = () => {
   const p = profilesStore.currentProfile
   if (p) {
@@ -553,8 +612,16 @@ const populateFormData = () => {
       if (u.username?.includes('@')) {
         form.email = u.username
       }
+      const savedFirstName = localStorage.getItem('user_first_name') || ''
+      const savedLastName = localStorage.getItem('user_last_name') || ''
       const savedName = localStorage.getItem('user_name') || ''
-      if (savedName && !savedName.includes('@')) {
+      if (savedFirstName) {
+        form.firstName = savedFirstName
+      }
+      if (savedLastName) {
+        form.lastName = savedLastName
+      }
+      if (!form.firstName && savedName && !savedName.includes('@')) {
         const parts = savedName.split(' ')
         form.firstName = parts[0] || ''
         form.lastName = parts.slice(1).join(' ') || ''

@@ -754,6 +754,12 @@ const handleSignUp = async () => {
 
   const userId = iamStore.currentUser?.id || createdUser.id
 
+  // Cache user names in localStorage for session profile fallback
+  if (cleanFirstName) localStorage.setItem('user_first_name', cleanFirstName)
+  if (cleanLastName) localStorage.setItem('user_last_name', cleanLastName)
+  const fullDisplayName = `${cleanFirstName} ${cleanLastName}`.trim()
+  if (fullDisplayName) localStorage.setItem('user_name', fullDisplayName)
+
   // Step 3 & 4: Elevation flow based on selected account type
   if (accountType.value === 'dealer') {
     if (!corporateRuc.value || corporateRuc.value.length !== 11 || !companyName.value) {
@@ -803,23 +809,22 @@ const handleSignUp = async () => {
     return
   }
 
-  // Personal / Buyer Account
-  if (cleanDni && cleanDni.length === 8) {
-    try {
-      const { useProfilesStore } = await import('@/profiles/application/profiles.store')
-      const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
-      const profilesStore = useProfilesStore()
-      await profilesStore.createProfile(new CreateProfileCommand({
-        fullLegalNames: iamStore.reniecData?.fullLegalName || `${cleanFirstName} ${cleanLastName}`,
-        email: cleanEmail,
-        nationalId: cleanDni,
-        mobilePhone: phoneNumber.value || '',
-        monthlyIncomeAmount: 3500,
-        monthlyIncomeCurrency: 'PEN'
-      }))
-    } catch {
-      // Continue if profile creation can be finished later
-    }
+  // Personal / Buyer Account: Auto-create initial profile
+  try {
+    const { useProfilesStore } = await import('@/profiles/application/profiles.store')
+    const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
+    const profilesStore = useProfilesStore()
+    const resolvedLegalName = iamStore.reniecData?.fullLegalName || fullDisplayName || cleanEmail
+    await profilesStore.createProfile(new CreateProfileCommand({
+      fullLegalNames: resolvedLegalName,
+      email: cleanEmail,
+      nationalId: cleanDni || '00000000',
+      mobilePhone: phoneNumber.value || '',
+      monthlyIncomeAmount: 3500,
+      monthlyIncomeCurrency: 'PEN'
+    }))
+  } catch {
+    // Continue if profile creation can be finished later in profile view
   }
 
   successMessage.value = t('iam.signUpSuccess')
