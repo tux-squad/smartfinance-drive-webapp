@@ -211,9 +211,13 @@ export const useIamStore = defineStore('iam', () => {
       localStorage.setItem('user_id', String(data.id))
 
       let userRoles = ['ROLE_USER']
+      if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+        userRoles = data.roles
+      }
+
       try {
         const userDetailsRes = await iamApi.getUserById(data.id)
-        if (userDetailsRes.data && userDetailsRes.data.roles) {
+        if (userDetailsRes.data && userDetailsRes.data.roles && userDetailsRes.data.roles.length > 0) {
           userRoles = userDetailsRes.data.roles
         }
       } catch {
@@ -256,9 +260,9 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Fast demo sign-in simulation (allows instant guest/demo login).
+   * Fast demo sign-in simulation for multiple roles (Buyer, Dealer, Bank, Admin).
    */
-  const signInDemo = async (demoUsername = 'demo_user_1@smartfinance.com', demoRole = 'ROLE_USER'): Promise<boolean> => {
+  const signInDemo = async (demoRole: 'ROLE_USER' | 'ROLE_DEALER' | 'ROLE_FINANCIAL_INSTITUTION' | 'ROLE_ADMIN' = 'ROLE_USER'): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
@@ -267,16 +271,41 @@ export const useIamStore = defineStore('iam', () => {
       token.value = demoToken
       refreshTokenValue.value = demoRefreshToken
 
+      let demoUsername = 'comprador.demo@smartfinance.com'
+      let demoDisplayName = 'Juan Carlos Pérez'
+      let demoRoles = [demoRole]
+
+      if (demoRole === 'ROLE_DEALER') {
+        demoUsername = 'concesionaria.toyota@smartfinance.com'
+        demoDisplayName = 'Carlos Alberto Gómez (Toyota del Perú)'
+        demoRoles = ['ROLE_USER', 'ROLE_DEALER']
+        localStorage.setItem('user_first_name', 'Carlos Alberto')
+        localStorage.setItem('user_last_name', 'Gómez Salazar')
+      } else if (demoRole === 'ROLE_FINANCIAL_INSTITUTION') {
+        demoUsername = 'banco.bcp@smartfinance.com'
+        demoDisplayName = 'Ana María Torres (BCP Créditos)'
+        demoRoles = ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+        localStorage.setItem('user_first_name', 'Ana María')
+        localStorage.setItem('user_last_name', 'Torres Mendoza')
+      } else if (demoRole === 'ROLE_ADMIN') {
+        demoUsername = 'admin.sistema@smartfinance.com'
+        demoDisplayName = 'Administrador Global'
+        demoRoles = ['ROLE_ADMIN']
+      } else {
+        localStorage.setItem('user_first_name', 'Juan Carlos')
+        localStorage.setItem('user_last_name', 'Pérez García')
+      }
+
       localStorage.setItem('access_token', demoToken)
       localStorage.setItem('refresh_token', demoRefreshToken)
-      localStorage.setItem('user_name', demoUsername)
+      localStorage.setItem('user_name', demoDisplayName)
       localStorage.setItem('user_id', '1')
-      localStorage.setItem('user_roles', JSON.stringify([demoRole]))
+      localStorage.setItem('user_roles', JSON.stringify(demoRoles))
 
       currentUser.value = new User({
         id: '1',
         username: demoUsername,
-        roles: [demoRole],
+        roles: demoRoles,
         token: demoToken,
         refreshToken: demoRefreshToken
       })
@@ -436,11 +465,12 @@ export const useIamStore = defineStore('iam', () => {
         ruc: command.ruc,
         companyName
       })
-      if (currentUser.value && res.data.roles) {
-        currentUser.value.roles = res.data.roles
+      const newRoles = res.data?.roles || ['ROLE_USER', 'ROLE_DEALER']
+      if (currentUser.value) {
+        currentUser.value.roles = newRoles
         currentUser.value.ruc = command.ruc
-        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
       }
+      localStorage.setItem('user_roles', JSON.stringify(newRoles))
       return true
     } catch (err: any) {
       const rawMsg = err.response?.data?.message
@@ -464,11 +494,12 @@ export const useIamStore = defineStore('iam', () => {
         companyName,
         institutionName: companyName
       })
-      if (currentUser.value && res.data.roles) {
-        currentUser.value.roles = res.data.roles
+      const newRoles = res.data?.roles || ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+      if (currentUser.value) {
+        currentUser.value.roles = newRoles
         currentUser.value.ruc = command.ruc
-        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
       }
+      localStorage.setItem('user_roles', JSON.stringify(newRoles))
       return true
     } catch (err: any) {
       const rawMsg = err.response?.data?.message
@@ -491,6 +522,25 @@ export const useIamStore = defineStore('iam', () => {
 
       localStorage.setItem('access_token', res.data.token)
       localStorage.setItem('refresh_token', res.data.refreshToken)
+
+      if (res.data.roles && Array.isArray(res.data.roles) && res.data.roles.length > 0) {
+        if (currentUser.value) {
+          currentUser.value.roles = res.data.roles
+          currentUser.value.token = res.data.token
+          currentUser.value.refreshToken = res.data.refreshToken
+        }
+        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
+      } else if (currentUser.value?.id) {
+        try {
+          const userDetailsRes = await iamApi.getUserById(currentUser.value.id)
+          if (userDetailsRes.data?.roles && userDetailsRes.data.roles.length > 0) {
+            currentUser.value.roles = userDetailsRes.data.roles
+            localStorage.setItem('user_roles', JSON.stringify(userDetailsRes.data.roles))
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       return true
     } catch {

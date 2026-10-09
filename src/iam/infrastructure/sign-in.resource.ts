@@ -12,6 +12,7 @@ export interface SignInResponseResource {
   username: string
   token: string
   refreshToken: string
+  roles?: string[]
 }
 
 export interface RefreshTokenRequestResource {

@@ -971,13 +971,19 @@ const advanceFromStep1 = async () => {
     const defaultFirst = firstName.value.trim() || emailPrefix
     const defaultLast = lastName.value.trim() || 'SmartFinance'
 
+    const initialRoles = accountType.value === 'dealer'
+      ? ['ROLE_USER', 'ROLE_DEALER']
+      : accountType.value === 'bank'
+        ? ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+        : ['ROLE_USER']
+
     const signUpCommand = new SignUpCommand({
       username: cleanEmail,
       email: cleanEmail,
       password: cleanPassword,
       firstName: defaultFirst,
       lastName: defaultLast,
-      roles: ['ROLE_USER']
+      roles: initialRoles
     })
 
     let createdUser = await iamStore.signUp(signUpCommand)
@@ -1218,11 +1224,16 @@ const handleFinalSubmit = async () => {
         return
       }
 
+      if (iamStore.currentUser) {
+        iamStore.currentUser.roles = ['ROLE_USER', 'ROLE_DEALER']
+      }
+      localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER', 'ROLE_DEALER']))
+
       await iamStore.refreshSession()
-      successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu panel...'
+      successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu inventario...'
       iamStore.successMessage = successMessage.value
       setTimeout(() => {
-        router.push('/dealer/dashboard')
+        router.push('/dealer/inventory')
       }, 1000)
       return
     }
@@ -1239,16 +1250,25 @@ const handleFinalSubmit = async () => {
         return
       }
 
+      if (iamStore.currentUser) {
+        iamStore.currentUser.roles = ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+      }
+      localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']))
+
       await iamStore.refreshSession()
-      successMessage.value = '¡Entidad Financiera registrada con éxito! Redirigiendo a tu panel...'
+      successMessage.value = '¡Entidad Financiera registrada con éxito! Redirigiendo a tu panel de tasas...'
       iamStore.successMessage = successMessage.value
       setTimeout(() => {
-        router.push('/bank/dashboard')
+        router.push('/concessionaries/entities')
       }, 1000)
       return
     }
 
     // 5. Option A: Personal / Buyer Account
+    if (iamStore.currentUser) {
+      iamStore.currentUser.roles = ['ROLE_USER']
+    }
+    localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER']))
     successMessage.value = t('iam.signUpSuccess') || '¡Cuenta creada exitosamente! Redirigiendo...'
     iamStore.successMessage = successMessage.value
 

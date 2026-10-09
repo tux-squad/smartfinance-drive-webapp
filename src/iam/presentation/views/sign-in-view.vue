@@ -182,36 +182,89 @@
           </span>
         </Divider>
 
-        <!-- Alternative Auth Buttons (Responsive Grid) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <!-- Google Button -->
-          <Button
-            type="button"
-            @click="handleGoogleSignIn"
-            :disabled="iamStore.isLoading"
-            severity="secondary"
-            variant="outlined"
-            fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs active:scale-[0.98] transition-all justify-center"
-          >
-            <i class="pi pi-google mr-2" />
-            <span class="truncate">{{ t('iam.googleSignIn') }}</span>
-          </Button>
+        <!-- Quick Demo Role Profiles Header -->
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider">
+              Acceso Rápido Demo por Rol
+            </span>
+            <span class="text-[10px] text-primary font-semibold">1-Click</span>
+          </div>
 
-          <!-- Quick Demo Button -->
-          <Button
-            type="button"
-            @click="handleQuickDemoSignIn"
-            :disabled="iamStore.isLoading"
-            severity="info"
-            variant="outlined"
-            fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 active:scale-[0.98] transition-all justify-center"
-          >
-            <i class="pi pi-bolt mr-2" />
-            <span class="truncate">{{ t('iam.demoLoginBtn') }}</span>
-          </Button>
+          <!-- 3 Distinct Role Quick Buttons Grid -->
+          <div class="grid grid-cols-3 gap-2">
+            <!-- 1. Concesionaria Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_DEALER')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-car text-xs text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                  Dealer
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Concesionaria</span>
+                <span class="text-[9px] text-surface-400 block truncate">Inventario</span>
+              </div>
+            </button>
+
+            <!-- 2. Banco Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_FINANCIAL_INSTITUTION')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-building text-xs text-blue-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+                  Banco
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Financiera</span>
+                <span class="text-[9px] text-surface-400 block truncate">Tasas B2B</span>
+              </div>
+            </button>
+
+            <!-- 3. Comprador Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_USER')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-user text-xs text-indigo-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300">
+                  Buyer
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Comprador</span>
+                <span class="text-[9px] text-surface-400 block truncate">Catálogo</span>
+              </div>
+            </button>
+          </div>
         </div>
+
+        <!-- Google OAuth Button -->
+        <Button
+          type="button"
+          @click="handleGoogleSignIn"
+          :disabled="iamStore.isLoading"
+          severity="secondary"
+          variant="outlined"
+          fluid
+          class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs active:scale-[0.98] transition-all justify-center"
+        >
+          <i class="pi pi-google mr-2" />
+          <span class="truncate">{{ t('iam.googleSignIn') }}</span>
+        </Button>
 
         <!-- Sign Up Link -->
         <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-200 dark:border-surface-800">
@@ -278,11 +331,11 @@ onMounted(() => {
 })
 
 const getRoleRedirect = (userRoles: string[] = []): string => {
-  if (userRoles.includes('ROLE_ADMIN')) return '/admin/dashboard'
-  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION')) return '/bank/dashboard'
-  if (userRoles.includes('ROLE_DEALER')) return '/dealer/dashboard'
-  if (userRoles.includes('ROLE_SALES_AGENT')) return '/agent/dashboard'
-  return '/catalog'
+  if (userRoles.includes('ROLE_ADMIN')) return '/home'
+  if (userRoles.includes('ROLE_DEALER')) return '/dealer/inventory'
+  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION') || userRoles.includes('ROLE_FINANCIAL_ANALYST')) return '/concessionaries/entities'
+  if (userRoles.includes('ROLE_SALES_AGENT')) return '/dealer/prospects'
+  return '/vehicles'
 }
 
 const handleSignIn = async () => {
@@ -318,8 +371,8 @@ const handleSignIn = async () => {
   }
 }
 
-const handleQuickDemoSignIn = async () => {
-  const success = await iamStore.signInDemo()
+const handleRoleDemoSignIn = async (role: 'ROLE_USER' | 'ROLE_DEALER' | 'ROLE_FINANCIAL_INSTITUTION' = 'ROLE_USER') => {
+  const success = await iamStore.signInDemo(role)
   if (success) {
     const queryRedirect = route.query.redirect as string
     const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')

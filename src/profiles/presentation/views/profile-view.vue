@@ -416,6 +416,92 @@
       </div>
     </form>
 
+    <!-- If Buyer: Optional Accreditation Card to elevate to Dealer or Bank -->
+    <div v-if="isBuyer" class="bg-white dark:bg-surface-900 rounded-2xl border border-dashed border-gray-300 dark:border-surface-700 p-6 shadow-xs space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-bold text-lg shrink-0">
+            <i class="pi pi-building"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-surface-100">¿Deseas acreditar esta cuenta como Concesionaria o Banco?</h3>
+            <p class="text-xs text-gray-500 dark:text-surface-400">
+              Si tu cuenta está como Comprador pero deseas acceder al panel y catálogo de Concesionaria o Financiera, valida tu RUC SUNAT para elevar tu rol al instante.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          @click="showElevation = !showElevation"
+          class="px-4 py-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shrink-0 cursor-pointer"
+        >
+          <i class="pi pi-verified mr-1.5"></i>
+          <span>{{ showElevation ? 'Ocultar' : 'Acreditar Empresa' }}</span>
+        </button>
+      </div>
+
+      <!-- Expandable Elevation Form -->
+      <div v-if="showElevation" class="pt-4 border-t border-gray-100 dark:border-surface-800 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="space-y-1 sm:col-span-1">
+            <label class="block text-xs font-semibold text-gray-700 dark:text-surface-300">Tipo de Empresa</label>
+            <select
+              v-model="elevationType"
+              class="w-full px-3 py-2 bg-gray-50 dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl text-xs font-medium text-gray-800 dark:text-surface-200"
+            >
+              <option value="dealer">Concesionaria (CIIU 451)</option>
+              <option value="bank">Entidad Financiera (CIIU 64/66)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1 sm:col-span-1">
+            <label class="block text-xs font-semibold text-gray-700 dark:text-surface-300">Número de RUC (11 dígitos)</label>
+            <div class="flex items-center gap-1.5">
+              <input
+                v-model="elevationRuc"
+                type="text"
+                maxlength="11"
+                placeholder="20100138019"
+                class="w-full px-3 py-2 bg-gray-50 dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl text-xs font-mono text-gray-900 dark:text-surface-100"
+              />
+              <button
+                type="button"
+                :disabled="elevationRuc.length !== 11 || isElevatingRuc"
+                @click="handleLookupElevationRuc"
+                class="px-2.5 py-2 rounded-xl bg-gray-100 dark:bg-surface-800 hover:bg-gray-200 text-gray-700 dark:text-surface-300 text-xs font-bold shrink-0 disabled:opacity-50"
+              >
+                <i :class="['pi', isElevatingRuc ? 'pi-spin pi-spinner' : 'pi-search', 'text-xs']" />
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-1 sm:col-span-1">
+            <label class="block text-xs font-semibold text-gray-700 dark:text-surface-300">Razón Social</label>
+            <input
+              v-model="elevationCompanyName"
+              type="text"
+              placeholder="Toyota del Perú S.A."
+              class="w-full px-3 py-2 bg-gray-50 dark:bg-surface-800 border border-gray-200 dark:border-surface-700 rounded-xl text-xs text-gray-900 dark:text-surface-100"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button
+            type="button"
+            :disabled="isSubmittingElevation || elevationRuc.length !== 11 || !elevationCompanyName"
+            @click="handleExecuteElevation"
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <i v-if="isSubmittingElevation" class="pi pi-spin pi-spinner text-xs"></i>
+            <i v-else class="pi pi-check text-xs"></i>
+            <span>Confirmar y Acreditar Rol</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- If Dealer: Show official accredited badge card -->
     <div v-if="isDealer" class="bg-white rounded-2xl border border-emerald-200 p-6 shadow-xs flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -463,6 +549,7 @@ import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
+import { RoleRequestCommand } from '@/iam/domain/role-request.command'
 
 const route = useRoute()
 const iamStore = useIamStore()
@@ -472,6 +559,66 @@ const partnersStore = usePartnersStore()
 
 const isSaving = ref(false)
 const saveSuccessMessage = ref<string | null>(null)
+
+// Elevation State
+const showElevation = ref(false)
+const elevationType = ref<'dealer' | 'bank'>('dealer')
+const elevationRuc = ref('20100138019')
+const elevationCompanyName = ref('Toyota del Perú S.A.')
+const isElevatingRuc = ref(false)
+const isSubmittingElevation = ref(false)
+
+const handleLookupElevationRuc = async () => {
+  if (elevationRuc.value.length !== 11) return
+  isElevatingRuc.value = true
+  try {
+    const res = await iamStore.lookupRuc(elevationRuc.value)
+    if (res) {
+      elevationCompanyName.value = res.razonSocial || (res as any).companyName || elevationCompanyName.value
+    }
+  } finally {
+    isElevatingRuc.value = false
+  }
+}
+
+const handleExecuteElevation = async () => {
+  const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
+  if (!userId || elevationRuc.value.length !== 11) return
+
+  isSubmittingElevation.value = true
+  profilesStore.error = null
+  try {
+    const cmd = new RoleRequestCommand({
+      userId: String(userId),
+      ruc: elevationRuc.value.trim(),
+      companyName: elevationCompanyName.value.trim()
+    })
+
+    let ok = false
+    if (elevationType.value === 'dealer') {
+      ok = await iamStore.requestDealerRole(cmd)
+    } else {
+      ok = await iamStore.requestFinancialInstitutionRole(cmd)
+    }
+
+    if (ok) {
+      saveSuccessMessage.value = elevationType.value === 'dealer'
+        ? '¡Cuenta acreditada con éxito como Concesionaria Oficial!'
+        : '¡Cuenta acreditada con éxito como Entidad Financiera!'
+      showElevation.value = false
+      if (elevationType.value === 'dealer') {
+        dealerBusinessName.value = elevationCompanyName.value
+        dealerRuc.value = elevationRuc.value
+        await catalogStore.fetchVehicles()
+      } else {
+        bankEntityName.value = elevationCompanyName.value
+        bankRuc.value = elevationRuc.value
+      }
+    }
+  } finally {
+    isSubmittingElevation.value = false
+  }
+}
 
 // Maximum date for $\ge$ 18 years old
 const maxDateOfBirth = computed(() => {
