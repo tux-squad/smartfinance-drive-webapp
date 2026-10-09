@@ -416,12 +416,8 @@
       </div>
     </form>
 
-    <!-- Bottom Role Elevation / Accreditation Section -->
-    <!-- If Buyer: allow elevation via SUNAT -->
-    <DealerRoleRequestCard v-if="isBuyer" />
-
     <!-- If Dealer: Show official accredited badge card -->
-    <div v-else-if="isDealer" class="bg-white rounded-2xl border border-emerald-200 p-6 shadow-xs flex items-center justify-between">
+    <div v-if="isDealer" class="bg-white rounded-2xl border border-emerald-200 p-6 shadow-xs flex items-center justify-between">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
           <i class="pi pi-verified"></i>
@@ -467,7 +463,6 @@ import { useCatalogStore } from '@/catalog/application/catalog.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { CreateProfileCommand } from '../../domain/create-profile.command'
 import { UpdateProfileCommand } from '../../domain/update-profile.command'
-import DealerRoleRequestCard from '@/iam/presentation/components/dealer-role-request-card.vue'
 
 const route = useRoute()
 const iamStore = useIamStore()
@@ -631,6 +626,7 @@ const populateFormData = () => {
 }
 
 onMounted(async () => {
+  profilesStore.error = null
   const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
   const profileIdParam = (route.query.profileId as string) || ''
   const promises: Promise<any>[] = []
@@ -666,41 +662,57 @@ onMounted(async () => {
 const handleSaveProfile = async () => {
   isSaving.value = true
   saveSuccessMessage.value = null
+  profilesStore.error = null
 
   try {
-    if (profilesStore.hasProfile && profilesStore.currentProfile) {
+    const cleanFirst = form.firstName.trim()
+    const cleanLast = form.lastName.trim()
+    const cleanEmail = form.email.trim() || iamStore.username || 'usuario@smartfinance.com'
+    const cleanDni = form.dni.trim()
+    const cleanDob = form.dateOfBirth || '2000-01-01'
+    const cleanPhone = form.phoneNumber ? form.phoneNumber.replace(/\D/g, '').slice(-9) : '999999999'
+
+    if (profilesStore.hasProfile && profilesStore.currentProfile?.id) {
       const command = new UpdateProfileCommand({
         profileId: profilesStore.currentProfile.id,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        dni: form.dni,
-        dateOfBirth: form.dateOfBirth,
-        phoneNumber: form.phoneNumber,
-        monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency,
-        employmentStatus: form.employmentStatus
+        firstName: cleanFirst,
+        lastName: cleanLast,
+        email: cleanEmail,
+        dni: cleanDni,
+        dateOfBirth: cleanDob,
+        phoneNumber: cleanPhone,
+        monthlyIncomeAmount: Number(form.monthlyIncomeAmount) || 0,
+        currency: form.currency || 'PEN',
+        employmentStatus: form.employmentStatus || 'EMPLOYED'
       })
       const success = await profilesStore.updateProfile(command)
       if (success) {
         saveSuccessMessage.value = 'Información de perfil actualizada con éxito.'
+        if (cleanFirst) localStorage.setItem('user_first_name', cleanFirst)
+        if (cleanLast) localStorage.setItem('user_last_name', cleanLast)
+        const full = `${cleanFirst} ${cleanLast}`.trim()
+        if (full) localStorage.setItem('user_name', full)
       }
     } else {
       const command = new CreateProfileCommand({
         userId: String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'),
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        dni: form.dni,
-        dateOfBirth: form.dateOfBirth,
-        phoneNumber: form.phoneNumber,
-        monthlyIncomeAmount: Number(form.monthlyIncomeAmount),
-        currency: form.currency,
-        employmentStatus: form.employmentStatus
+        firstName: cleanFirst,
+        lastName: cleanLast,
+        email: cleanEmail,
+        dni: cleanDni,
+        dateOfBirth: cleanDob,
+        phoneNumber: cleanPhone,
+        monthlyIncomeAmount: Number(form.monthlyIncomeAmount) || 0,
+        currency: form.currency || 'PEN',
+        employmentStatus: form.employmentStatus || 'EMPLOYED'
       })
       const success = await profilesStore.createProfile(command)
       if (success) {
         saveSuccessMessage.value = 'Perfil guardado con éxito.'
+        if (cleanFirst) localStorage.setItem('user_first_name', cleanFirst)
+        if (cleanLast) localStorage.setItem('user_last_name', cleanLast)
+        const full = `${cleanFirst} ${cleanLast}`.trim()
+        if (full) localStorage.setItem('user_name', full)
       }
     }
   } catch {
