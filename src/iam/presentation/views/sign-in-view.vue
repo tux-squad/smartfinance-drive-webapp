@@ -84,7 +84,8 @@
         <Message
           v-if="iamStore.error"
           severity="error"
-          :closable="false"
+          :closable="true"
+          @close="iamStore.error = null"
           class="w-full shadow-xs"
         >
           <div class="flex items-center gap-2 text-xs font-medium">
@@ -121,6 +122,7 @@
               </label>
               <Password
                 id="password"
+                inputId="password-input"
                 v-model="password"
                 :feedback="false"
                 toggleMask
@@ -271,21 +273,43 @@ onMounted(() => {
   }
 })
 
+const getRoleRedirect = (userRoles: string[] = []): string => {
+  if (userRoles.includes('ROLE_ADMIN')) return '/admin/dashboard'
+  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION')) return '/bank/dashboard'
+  if (userRoles.includes('ROLE_DEALER')) return '/dealer/dashboard'
+  if (userRoles.includes('ROLE_SALES_AGENT')) return '/agent/dashboard'
+  return '/catalog'
+}
+
 const handleSignIn = async () => {
+  iamStore.error = null
+
+  // Capture DOM values directly from input elements (resolving actual input inside PrimeVue wrapper)
+  const emailInput = document.getElementById('username') as HTMLInputElement | null
+  const passwordInput =
+    (document.getElementById('password-input') as HTMLInputElement | null) ||
+    (document.querySelector('#password input, input[type="password"]') as HTMLInputElement | null)
+
+  const cleanEmail = (emailInput?.value || username.value || '').trim()
+  const cleanPassword = (passwordInput?.value || password.value || '').trim()
+
   if (rememberMe.value && typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_REMEMBERED_EMAIL, username.value)
+    localStorage.setItem(STORAGE_REMEMBERED_EMAIL, cleanEmail)
   } else if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_REMEMBERED_EMAIL)
   }
 
   const command = new SignInCommand({
-    username: username.value,
-    password: password.value
+    username: cleanEmail,
+    password: cleanPassword
   })
 
   const success = await iamStore.signIn(command)
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }
@@ -293,7 +317,10 @@ const handleSignIn = async () => {
 const handleQuickDemoSignIn = async () => {
   const success = await iamStore.signInDemo()
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }
@@ -302,7 +329,10 @@ const handleGoogleSignIn = async () => {
   const demoIdToken = 'google_oauth_demo_token_' + Date.now()
   const success = await iamStore.signInWithGoogle(demoIdToken)
   if (success) {
-    const redirectPath = (route.query.redirect as string) || '/home'
+    const queryRedirect = route.query.redirect as string
+    const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')
+      ? queryRedirect
+      : getRoleRedirect(iamStore.roles)
     router.push(redirectPath)
   }
 }

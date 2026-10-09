@@ -15,8 +15,8 @@ export class UserAssembler {
    */
   public static toSignInRequestFromCommand(command: SignInCommand): SignInRequestResource {
     return {
-      username: command.username,
-      password: command.password
+      username: command.username?.trim() || '',
+      password: command.password?.trim() || ''
     }
   }
 
@@ -24,10 +24,14 @@ export class UserAssembler {
    * Transforms a SignUpCommand to a SignUpRequestResource DTO.
    */
   public static toSignUpRequestFromCommand(command: SignUpCommand): SignUpRequestResource {
+    const cleanEmail = (command.email || command.username || '').trim()
     return {
-      username: command.username,
-      password: command.password,
-      roles: command.roles
+      username: cleanEmail,
+      email: cleanEmail,
+      password: command.password?.trim() || '',
+      firstName: command.firstName?.trim() || '',
+      lastName: command.lastName?.trim() || '',
+      roles: command.roles && command.roles.length > 0 ? command.roles : ['ROLE_USER']
     }
   }
 
@@ -54,7 +58,7 @@ export class UserAssembler {
   public static toUserEntityFromSignUpResponse(resource: SignUpResponseResource): User {
     return new User({
       id: resource.id,
-      username: resource.username,
+      username: resource.username || resource.email || '',
       roles: resource.roles && resource.roles.length > 0 ? resource.roles : ['ROLE_USER']
     })
   }

@@ -18,16 +18,44 @@ import { firebasePhoneAuthService } from '../infrastructure/firebase-phone-auth.
 
 const iamApi = new IamApi()
 
-const formatIamErrorMessage = (rawMsg?: string): string => {
-  if (!rawMsg) return ''
+const formatIamErrorMessage = (errOrMsg: any): string => {
+  if (!errOrMsg) return ''
+
+  const status = errOrMsg.response?.status
+  if (status === 403 || status === 401) {
+    return 'Credenciales incorrectas. Verifique su correo electrónico y contraseña.'
+  }
+
+  let rawMsg = ''
+  if (typeof errOrMsg === 'string') {
+    rawMsg = errOrMsg
+  } else if (errOrMsg.response?.data?.message) {
+    rawMsg = String(errOrMsg.response.data.message)
+  } else if (errOrMsg.response?.data?.error) {
+    rawMsg = String(errOrMsg.response.data.error)
+  } else if (errOrMsg.message) {
+    rawMsg = String(errOrMsg.message)
+  } else {
+    rawMsg = JSON.stringify(errOrMsg)
+  }
+
   if (rawMsg.includes('missingUppercase')) {
-    return 'La contraseña debe incluir al menos una letra mayúscula (ej: Password123!).'
+    return 'La contraseña debe incluir al menos una letra mayúscula (ejemplo: Password123!).'
   }
   if (rawMsg.includes('alreadyExists') || rawMsg.includes('duplicate') || rawMsg.includes('exists')) {
-    return 'El correo electrónico ya se encuentra registrado.'
+    return 'El correo electrónico ya se encuentra registrado. Por favor, haz clic en "Inicia sesión" abajo.'
   }
-  if (rawMsg.includes('Invalid credentials') || rawMsg.includes('Bad credentials')) {
-    return 'Credenciales incorrectas. Verifique su correo y contraseña.'
+  if (rawMsg.includes('Invalid credentials') || rawMsg.includes('invalidCredentials') || rawMsg.includes('Bad credentials') || rawMsg.includes('401') || rawMsg.includes('403')) {
+    return 'Credenciales incorrectas. Verifique su correo electrónico y contraseña.'
+  }
+  if (rawMsg.includes('Network Error') || rawMsg.includes('ERR_NETWORK') || rawMsg.includes('timeout') || rawMsg.includes('ECONNABORTED')) {
+    return 'El servidor backend está despertando (cold start de Render). Por favor, intenta de nuevo en unos segundos.'
+  }
+  if (rawMsg.includes('api-key-not-valid') || rawMsg.includes('auth/api-key') || rawMsg.includes('auth/invalid-api-key')) {
+    return 'El servicio de SMS de Firebase requiere una API Key activa. La verificación telefónica es opcional; puedes presionar "Registrarse" directamente.'
+  }
+  if (rawMsg.includes('undeliverable') || rawMsg.includes('email.undeliverable')) {
+    return 'No se pudo enviar el correo de verificación. Puedes continuar con el registro directamente.'
   }
   if (rawMsg.includes('rucNotFound')) {
     return 'El RUC ingresado no existe en el padrón oficial de SUNAT.'
@@ -142,6 +170,9 @@ export const useIamStore = defineStore('iam', () => {
   const signIn = async (command: SignInCommand): Promise<boolean> => {
     isLoading.value = true
     error.value = null
+    // Clear any previous stale tokens before initiating login
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     try {
       const resourcePayload = UserAssembler.toSignInRequestFromCommand(command)
       const response = await iamApi.signIn(resourcePayload)
@@ -171,8 +202,7 @@ export const useIamStore = defineStore('iam', () => {
 
       return true
     } catch (err: any) {
-      const rawMsg = err.response?.data?.message
-      error.value = formatIamErrorMessage(rawMsg) || 'Error al iniciar sesión. Verifique sus credenciales.'
+      error.value = formatIamErrorMessage(err) || 'Error al iniciar sesión. Verifique sus credenciales.'
       return false
     } finally {
       isLoading.value = false
@@ -222,8 +252,7 @@ export const useIamStore = defineStore('iam', () => {
       const response = await iamApi.signUp(resourcePayload)
       return response.data
     } catch (err: any) {
-      const rawMsg = err.response?.data?.message
-      error.value = formatIamErrorMessage(rawMsg) || 'Error al registrar usuario.'
+      error.value = formatIamErrorMessage(err) || 'Error al registrar usuario.'
       return null
     } finally {
       isLoading.value = false
@@ -386,7 +415,8 @@ export const useIamStore = defineStore('iam', () => {
       const companyName = command.companyName || (command.ruc === '20100047218' ? 'Banco de Crédito del Perú BCP' : undefined)
       const res = await iamApi.requestFinancialInstitutionRole(command.userId, {
         ruc: command.ruc,
-        companyName
+        companyName,
+        institutionName: companyName
       })
       if (currentUser.value && res.data.roles) {
         currentUser.value.roles = res.data.roles
@@ -605,7 +635,7 @@ export const useIamStore = defineStore('iam', () => {
       successMessage.value = 'Código de verificación SMS enviado exitosamente.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al enviar código SMS de verificación.'
+      error.value = formatIamErrorMessage(err.message) || 'Error al enviar código SMS de verificación.'
       return false
     } finally {
       isLoading.value = false
@@ -622,7 +652,7 @@ export const useIamStore = defineStore('iam', () => {
       const idToken = await firebasePhoneAuthService.confirmSmsCode(code)
       return await verifyPhoneToken(idToken)
     } catch (err: any) {
-      error.value = err.message || 'Código SMS inválido o expirado.'
+      error.value = formatIamErrorMessage(err.message) || 'Código SMS inválido o expirado.'
       return false
     } finally {
       isVerifyingOtp.value = false
@@ -636,13 +666,13 @@ export const useIamStore = defineStore('iam', () => {
   const lookupDni = async (dni: string): Promise<import('../infrastructure/verification.resource').ReniecDniResponse | null> => {
     if (!dni || dni.length !== 8) return null
     isLookingUpDni.value = true
-    error.value = null
     try {
       const res = await iamApi.lookupDniReniec(dni)
       reniecData.value = res.data
       return res.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'No se pudo consultar el DNI en RENIEC.'
+    } catch {
+      // In unauthenticated context or backend error, do not set global error to avoid blocking registration UX
+      reniecData.value = null
       return null
     } finally {
       isLookingUpDni.value = false

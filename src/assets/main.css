@@ -29,11 +29,15 @@
   }
 }
 
-/* Hide PrimeUI license badge overlay */
+/* Hide PrimeUI license badge overlay cleanly without JS overhead */
 div[class*="Invalid PrimeUI License"],
 div[class*="PrimeUI License"],
+div:has(> a[href*="primefaces"]),
+div:has(> a[href*="primevue"]),
 .p-license-banner,
 .p-license-error {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
