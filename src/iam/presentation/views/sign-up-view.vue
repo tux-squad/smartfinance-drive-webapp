@@ -326,65 +326,33 @@
             </p>
           </div>
 
-          <!-- Phone Verification (Firebase SMS) -->
-          <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
+          <!-- Phone Number (Optional) with Direct Instant Format Validation -->
+          <div class="space-y-2 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
             <div class="flex items-center justify-between">
               <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Verificación Telefónica <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
+                Teléfono Celular <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
               </label>
-              <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                <i class="pi pi-check" /> Verificado
+              <span v-if="phoneNumber && isPhoneValid" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                <i class="pi pi-check" /> Formato válido (+51)
+              </span>
+              <span v-else-if="phoneNumber && !isPhoneValid" class="text-[10px] text-rose-500 font-medium">
+                Debe tener 9 dígitos (inicia con 9)
               </span>
             </div>
 
-            <div id="recaptcha-phone-container" style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;"></div>
-
-            <div class="flex items-center gap-2">
-              <div class="relative flex-1">
-                <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-phone"
-                  v-model="phoneNumber"
-                  placeholder="+51 987 654 321"
-                  :disabled="iamStore.phoneVerified"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                />
-              </div>
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                :disabled="!phoneNumber || smsCooldown > 0 || iamStore.phoneVerified"
-                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
-                @click="handleSendSms"
-                class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-                :label="smsCooldown > 0 ? `${smsCooldown}s` : (iamStore.phoneVerified ? 'Verificado' : 'Enviar SMS')"
+            <div class="relative">
+              <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <InputText
+                id="reg-phone"
+                v-model="phoneNumber"
+                @input="phoneNumber = phoneNumber.replace(/[^\d+ ]/g, '')"
+                placeholder="+51 987 654 321"
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
               />
             </div>
-
-            <!-- SMS Code Verification Input -->
-            <div v-if="smsSent && !iamStore.phoneVerified" class="p-3 rounded-2xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 space-y-2">
-              <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-                Ingrese el código de 6 dígitos recibido por SMS:
-              </span>
-              <div class="flex items-center gap-2">
-                <InputText
-                  v-model="phoneSmsCode"
-                  maxlength="6"
-                  placeholder="Ej: 123456"
-                  class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
-                />
-                <Button
-                  type="button"
-                  severity="primary"
-                  :disabled="phoneSmsCode.length !== 6"
-                  :loading="iamStore.isVerifyingOtp"
-                  @click="handleVerifySms"
-                  class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-                  label="Validar SMS"
-                />
-              </div>
-            </div>
+            <p class="text-[10px] text-surface-500">
+              * Se asociará a tu perfil para contacto con asesores y recepción de ofertas crediticias.
+            </p>
           </div>
         </template>
 
@@ -520,14 +488,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
 import { SignInCommand } from '../../domain/sign-in.command'
 import { RoleRequestCommand } from '../../domain/role-request.command'
-import { firebasePhoneAuthService } from '@/iam/infrastructure/firebase-phone-auth.service'
 
 // PrimeVue Components
 import InputText from 'primevue/inputtext'
@@ -578,11 +545,20 @@ const otpSent = ref(false)
 const otpCooldown = ref(0)
 const successMessage = ref('')
 
-// Phone Verification with Firebase
+// Phone Field State & Computed Validation
 const phoneNumber = ref('')
-const phoneSmsCode = ref('')
-const smsSent = ref(false)
-const smsCooldown = ref(0)
+
+const cleanPhoneNumber = computed(() => {
+  return phoneNumber.value.replace(/\D/g, '')
+})
+
+const isPhoneValid = computed(() => {
+  const digits = cleanPhoneNumber.value
+  if (!digits) return false
+  if (digits.length === 9 && digits.startsWith('9')) return true
+  if (digits.length === 11 && digits.startsWith('519')) return true
+  return false
+})
 
 // Dealer & Bank Corporate Fields
 const corporateRuc = ref('')
@@ -610,12 +586,6 @@ watch(username, () => {
   otpSent.value = false
 })
 
-watch(phoneNumber, () => {
-  iamStore.phoneVerified = false
-  iamStore.phoneVerificationToken = null
-  smsSent.value = false
-})
-
 const sendOtp = async () => {
   if (!username.value || !isEmailValid.value) return
   otpCode.value = ''
@@ -636,35 +606,6 @@ const confirmOtp = async () => {
   if (otpCode.value.length !== 6) return
   await iamStore.verifyEmailOtp(username.value, otpCode.value)
 }
-
-const handleSendSms = async () => {
-  if (!phoneNumber.value) return
-  try {
-    firebasePhoneAuthService.setupRecaptcha('recaptcha-phone-container')
-    const ok = await iamStore.sendPhoneSms(phoneNumber.value)
-    if (ok) {
-      smsSent.value = true
-      smsCooldown.value = 60
-      const timer = setInterval(() => {
-        smsCooldown.value--
-        if (smsCooldown.value <= 0) {
-          clearInterval(timer)
-        }
-      }, 1000)
-    }
-  } catch (err: any) {
-    console.error('Error al inicializar o enviar SMS:', err)
-  }
-}
-
-const handleVerifySms = async () => {
-  if (phoneSmsCode.value.length !== 6) return
-  await iamStore.verifyPhoneSmsCode(phoneSmsCode.value)
-}
-
-onUnmounted(() => {
-  firebasePhoneAuthService.clearRecaptcha()
-})
 
 const fillDemoData = () => {
   iamStore.error = null
@@ -824,11 +765,13 @@ const handleSignUp = async () => {
     const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
     const profilesStore = useProfilesStore()
     const resolvedLegalName = iamStore.reniecData?.fullLegalName || fullDisplayName || cleanEmail
+    const sanitizedMobile = cleanPhoneNumber.value.length >= 9 ? cleanPhoneNumber.value.slice(-9) : ''
     await profilesStore.createProfile(new CreateProfileCommand({
       fullLegalNames: resolvedLegalName,
       email: cleanEmail,
       nationalId: cleanDni || '00000000',
-      mobilePhone: phoneNumber.value || '',
+      phoneCountryCode: '+51',
+      mobilePhone: sanitizedMobile,
       monthlyIncomeAmount: 3500,
       monthlyIncomeCurrency: 'PEN'
     }))
