@@ -275,9 +275,9 @@
         </div>
       </div>
     </template>
-    </template>
 
     <!-- ======================================================== -->
+
     <!-- 2. BUYER DASHBOARD (ROL COMPRADOR / DEFAULT)             -->
     <!-- ======================================================== -->
     <template v-else-if="!isBank && !isAdmin">
