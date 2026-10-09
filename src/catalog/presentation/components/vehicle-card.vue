@@ -19,6 +19,16 @@ const imageUrl = computed(() => props.vehicle.imagePath || defaultImage)
 
 const isNew = computed(() => props.vehicle.condition === 'NEW')
 
+const estimatedMonthly = computed(() => {
+  const price = props.vehicle.priceAmount || 0
+  const financed = price * 0.8 // 20% down
+  const rate = 0.095 / 12 // 9.5% TEA monthly
+  const n = 48
+  const pmt = (financed * (rate * Math.pow(1 + rate, n))) / (Math.pow(1 + rate, n) - 1)
+  const symbol = props.vehicle.currency === 'PEN' ? 'S/' : '$'
+  return `${symbol} ${Math.round(pmt).toLocaleString('en-US')}`
+})
+
 const goToDetail = () => {
   router.push({ name: 'vehicle-detail', params: { id: props.vehicle.id } })
 }
@@ -30,10 +40,10 @@ const goToSimulation = () => {
 
 <template>
   <div
-    class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+    class="group flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
   >
     <!-- Card Header / Image Section -->
-    <div class="relative h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+    <div class="relative h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
       <img
         :src="imageUrl"
         :alt="vehicle.displayName"
@@ -41,62 +51,67 @@ const goToSimulation = () => {
         @error="(e: Event) => ((e.target as HTMLImageElement).src = defaultImage)"
       />
       <!-- Gradient overlay -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
 
       <!-- Badges overlay -->
-      <div class="absolute top-3 left-3 flex gap-2">
-        <Tag
-          :value="isNew ? t('catalog.conditionNew') : t('catalog.conditionUsed')"
-          :severity="isNew ? 'success' : 'warn'"
-          class="!text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm"
-        />
-        <span class="rounded-full bg-black/60 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-white shadow-sm">
-          {{ vehicle.manufactureYear }}
+      <div class="absolute top-3 left-3 right-3 flex items-center justify-between">
+        <div class="flex gap-1.5">
+          <Tag
+            :value="isNew ? t('catalog.conditionNew') : t('catalog.conditionUsed')"
+            :severity="isNew ? 'success' : 'warn'"
+            class="!text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-md backdrop-blur-md"
+          />
+          <span class="rounded-full bg-black/60 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-mono font-medium text-white shadow-md border border-white/10">
+            {{ vehicle.manufactureYear }}
+          </span>
+        </div>
+
+        <span class="rounded-full bg-emerald-950/80 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-mono font-bold text-emerald-300 border border-emerald-500/30">
+          Cuota ~{{ estimatedMonthly }}/m
         </span>
       </div>
 
       <!-- Price Overlay at Bottom of Image -->
-      <div class="absolute bottom-3 left-3 right-3 flex items-baseline justify-between text-white">
-        <span class="text-xs text-gray-200 uppercase tracking-wider font-medium">{{ t('catalog.priceLabel') }}</span>
-        <span class="text-xl font-extrabold text-emerald-400 drop-shadow-md">
+      <div class="absolute bottom-3 left-4 right-4 flex items-baseline justify-between text-white">
+        <span class="text-[11px] text-slate-300 uppercase tracking-wider font-semibold">Precio Contado</span>
+        <span class="text-2xl font-black font-mono text-emerald-400 drop-shadow-md">
           {{ vehicle.formattedPrice }}
         </span>
       </div>
     </div>
 
     <!-- Card Content Section -->
-    <div class="flex flex-1 flex-col justify-between p-5">
+    <div class="flex flex-1 flex-col justify-between p-5 space-y-4">
       <div>
         <!-- Brand & Model -->
-        <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-600 dark:text-white transition-colors">
+        <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
           {{ vehicle.brand }} {{ vehicle.model }}
         </h3>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-          <i class="pi pi-car text-xs"></i>
-          {{ t('catalog.vehicleCode') }}: <span class="font-mono text-gray-700 dark:text-gray-300">{{ vehicle.id.slice(0, 8) }}</span>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <i class="pi pi-check-circle text-emerald-500 text-xs"></i>
+          <span>Garantía y peritaje oficial verificado</span>
         </p>
       </div>
 
       <!-- Card Action Buttons -->
-      <div class="mt-6 flex flex-col sm:flex-row items-center gap-2">
+      <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
         <Button
           :label="t('catalog.viewDetailBtn')"
           icon="pi pi-eye"
           outlined
-          severity="secondary"
           size="small"
-          class="w-full sm:flex-1 rounded-xl !text-xs !py-2"
+          class="flex-1 !rounded-xl !text-xs !py-2.5 font-bold !border-slate-300 dark:!border-slate-700 !text-slate-700 dark:!text-slate-300 hover:!bg-slate-100 dark:hover:!bg-slate-800 active:scale-[0.98] transition-all"
           @click="goToDetail"
         />
         <Button
           :label="t('catalog.simulateLoanBtn')"
           icon="pi pi-calculator"
-          severity="success"
           size="small"
-          class="w-full sm:flex-1 rounded-xl !text-xs !py-2 bg-gradient-to-r from-emerald-600 to-teal-600 border-none hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-600/20"
+          class="flex-1 !rounded-xl !text-xs !py-2.5 font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-none shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all"
           @click="goToSimulation"
         />
       </div>
     </div>
   </div>
 </template>
+
