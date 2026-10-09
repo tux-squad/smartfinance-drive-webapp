@@ -677,24 +677,6 @@ export const useIamStore = defineStore('iam', () => {
       sunatData.value = res.data
       return res.data
     } catch {
-      // Demo fallback if backend is unauthenticated or external SUNAT service is slow
-      const demoSunat: Record<string, { razon: string; ciiu: string; act: string }> = {
-        '20100138019': { razon: 'TOYOTA DEL PERU S.A.', ciiu: '4510', act: 'VENTA DE VEHICULOS AUTOMOTORES' },
-        '20100047218': { razon: 'BANCO DE CREDITO DEL PERU BCP', ciiu: '6419', act: 'OTROS TIPOS DE INTERMEDIACION MONETARIA' }
-      }
-      if (demoSunat[ruc]) {
-        const s = demoSunat[ruc]
-        const fallbackSunat: import('../infrastructure/verification.resource').SunatRucResponse = {
-          ruc,
-          razonSocial: s.razon,
-          estado: 'ACTIVO',
-          condicion: 'HABIDO',
-          ciiu: s.ciiu,
-          actividadEconomica: s.act
-        }
-        sunatData.value = fallbackSunat
-        return fallbackSunat
-      }
       sunatData.value = null
       return null
     } finally {
@@ -714,25 +696,6 @@ export const useIamStore = defineStore('iam', () => {
       reniecData.value = res.data
       return res.data
     } catch {
-      // Demo fallback if backend is unauthenticated or external RENIEC service is slow
-      const demoNames: Record<string, { first: string; paternal: string; maternal: string }> = {
-        '70514079': { first: 'Aldo', paternal: 'Ramos', maternal: 'Castillo' },
-        '72849102': { first: 'Juan Carlos', paternal: 'Pérez', maternal: 'García' },
-        '45892014': { first: 'Carlos Alberto', paternal: 'Gómez', maternal: 'Salazar' },
-        '09283746': { first: 'Ana María', paternal: 'Torres', maternal: 'Mendoza' }
-      }
-      if (demoNames[dni]) {
-        const d = demoNames[dni]
-        const fallbackRes: import('../infrastructure/verification.resource').ReniecDniResponse = {
-          dni,
-          firstNames: d.first,
-          paternalSurname: d.paternal,
-          maternalSurname: d.maternal,
-          fullLegalName: `${d.first} ${d.paternal} ${d.maternal}`
-        }
-        reniecData.value = fallbackRes
-        return fallbackRes
-      }
       reniecData.value = null
       return null
     } finally {

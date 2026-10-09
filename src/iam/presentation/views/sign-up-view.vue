@@ -803,8 +803,11 @@ watch(dni, async (val) => {
   if (clean.length === 8) {
     const res = await iamStore.lookupDni(clean)
     if (res) {
-      if (res.firstNames) firstName.value = res.firstNames
-      const fullSurname = `${res.paternalSurname || ''} ${res.maternalSurname || ''}`.trim()
+      const resFirstNames = res.firstNames || (res as any).nombres || ''
+      const resPaternal = res.paternalSurname || (res as any).apellidoPaterno || ''
+      const resMaternal = res.maternalSurname || (res as any).apellidoMaterno || ''
+      if (resFirstNames) firstName.value = resFirstNames
+      const fullSurname = `${resPaternal} ${resMaternal}`.trim()
       if (fullSurname) lastName.value = fullSurname
       reniecAutocompleted.value = true
     }
@@ -827,8 +830,9 @@ watch(corporateRuc, async (val) => {
   // Auto-complete from SUNAT when 11 digits are entered
   if (clean.length === 11) {
     const res = await iamStore.lookupRuc(clean)
-    if (res && res.razonSocial) {
-      companyName.value = res.razonSocial
+    if (res) {
+      const resRazon = res.razonSocial || (res as any).companyName || (res as any).nombreOComercial || ''
+      if (resRazon) companyName.value = resRazon
       sunatAutocompleted.value = true
     }
   } else if (clean.length < 11) {
