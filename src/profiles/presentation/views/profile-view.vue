@@ -73,7 +73,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Nombres -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-gray-700">Nombres</label>
+                <label class="block text-xs font-semibold text-gray-700">Nombres <span class="text-rose-500">*</span></label>
                 <input
                   v-model="form.firstName"
                   type="text"
@@ -85,7 +85,7 @@
 
               <!-- Apellidos -->
               <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-gray-700">Apellidos</label>
+                <label class="block text-xs font-semibold text-gray-700">Apellidos <span class="text-rose-500">*</span></label>
                 <input
                   v-model="form.lastName"
                   type="text"
@@ -98,31 +98,37 @@
 
             <!-- DNI -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-700">DNI / Documento de Identidad</label>
+              <label class="block text-xs font-semibold text-gray-700">DNI / Documento de Identidad (8 dígitos) <span class="text-rose-500">*</span></label>
               <input
                 v-model="form.dni"
                 type="text"
                 maxlength="8"
                 required
+                @input="form.dni = form.dni.replace(/\D/g, '').slice(0, 8)"
                 placeholder="72345678"
                 class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-mono text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
               />
             </div>
 
-            <!-- Fecha de Nacimiento -->
+            <!-- Fecha de Nacimiento (Mayor de 18 años) -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-700">Fecha de Nacimiento</label>
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-semibold text-gray-700">Fecha de Nacimiento <span class="text-rose-500">*</span></label>
+                <span class="text-[10px] text-gray-400">Mayor de 18 años</span>
+              </div>
               <input
                 v-model="form.dateOfBirth"
                 type="date"
                 required
+                min="1920-01-01"
+                :max="maxDateOfBirth"
                 class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
               />
             </div>
 
             <!-- Correo Electrónico -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-700">Correo Electrónico</label>
+              <label class="block text-xs font-semibold text-gray-700">Correo Electrónico <span class="text-rose-500">*</span></label>
               <input
                 v-model="form.email"
                 type="email"
@@ -375,8 +381,8 @@
         </div>
       </div>
 
-      <!-- Action Button: Guardar cambios y Eliminar perfil -->
-      <div class="flex justify-between items-center pt-2">
+      <!-- Action Button: Guardar cambios -->
+      <div class="flex justify-end items-center pt-2">
         <button
           type="submit"
           :disabled="isSaving"
@@ -385,16 +391,6 @@
           <i v-if="isSaving" class="pi pi-spin pi-spinner text-xs"></i>
           <i v-else class="pi pi-save text-xs"></i>
           <span>Guardar cambios</span>
-        </button>
-
-        <button
-          v-if="profilesStore.hasProfile"
-          type="button"
-          @click="handleDeleteProfile"
-          class="px-4 py-2 rounded-xl text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors flex items-center gap-1.5"
-        >
-          <i class="pi pi-trash text-xs"></i>
-          <span>Eliminar perfil</span>
         </button>
       </div>
     </form>
@@ -460,6 +456,13 @@ const partnersStore = usePartnersStore()
 
 const isSaving = ref(false)
 const saveSuccessMessage = ref<string | null>(null)
+
+// Maximum date for $\ge$ 18 years old
+const maxDateOfBirth = computed(() => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 18)
+  return d.toISOString().split('T')[0]
+})
 
 // Role computed checks
 const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
@@ -541,12 +544,21 @@ const populateFormData = () => {
     form.dni = p.dni || ''
     form.dateOfBirth = p.dateOfBirth || ''
     form.phoneNumber = p.phoneNumber || ''
-    form.monthlyIncomeAmount = p.monthlyIncomeAmount || 0
+    form.monthlyIncomeAmount = p.monthlyIncomeAmount || 3500
     form.currency = p.currency || 'PEN'
+    form.employmentStatus = p.employmentStatus || 'dependent'
   } else {
-    const username = iamStore.username || ''
-    if (username.includes('@')) {
-      form.email = username
+    const u = iamStore.currentUser
+    if (u) {
+      if (u.username?.includes('@')) {
+        form.email = u.username
+      }
+      const savedName = localStorage.getItem('user_name') || ''
+      if (savedName && !savedName.includes('@')) {
+        const parts = savedName.split(' ')
+        form.firstName = parts[0] || ''
+        form.lastName = parts.slice(1).join(' ') || ''
+      }
     }
   }
 }
@@ -631,25 +643,6 @@ const handleSaveProfile = async () => {
     setTimeout(() => {
       saveSuccessMessage.value = null
     }, 4000)
-  }
-}
-
-const handleDeleteProfile = async () => {
-  if (!profilesStore.currentProfile?.id) return
-  if (!window.confirm('¿Está seguro de que desea eliminar su perfil de cliente? Esta acción no se puede deshacer.')) return
-  isSaving.value = true
-  try {
-    const success = await profilesStore.deleteProfile(profilesStore.currentProfile.id)
-    if (success) {
-      saveSuccessMessage.value = 'Perfil eliminado con éxito.'
-      form.firstName = ''
-      form.lastName = ''
-      form.email = ''
-      form.dni = ''
-      form.phoneNumber = ''
-    }
-  } finally {
-    isSaving.value = false
   }
 }
 </script>

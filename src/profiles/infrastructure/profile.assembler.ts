@@ -88,11 +88,26 @@ export class ProfileAssembler {
    */
   public static toEntityFromResource(resource: ProfileResponseResource): Profile {
     const nationalId = resource.nationalId || resource.dni || ''
-    const fullLegalNames = resource.fullLegalNames || `${resource.firstName || ''} ${resource.lastName || ''}`.trim()
+    const fullLegalNames = (resource.fullLegalNames || `${resource.firstName || ''} ${resource.lastName || ''}`).trim()
     const currency = resource.monthlyIncomeCurrency || resource.currency || 'PEN'
     const phone = resource.phoneNumber ? extractPhoneParts(resource.phoneNumber) : { code: '+51', mobile: '' }
     const phoneCountryCode = resource.phoneCountryCode || phone.code
     const mobilePhone = resource.mobilePhone || phone.mobile
+
+    let firstName = resource.firstName || ''
+    let lastName = resource.lastName || ''
+    if (!firstName && fullLegalNames) {
+      const parts = fullLegalNames.split(/\s+/)
+      if (parts.length === 1) {
+        firstName = parts[0]
+      } else if (parts.length === 2) {
+        firstName = parts[0]
+        lastName = parts[1]
+      } else {
+        firstName = parts.slice(0, parts.length - 2).join(' ') || parts[0]
+        lastName = parts.slice(-2).join(' ')
+      }
+    }
 
     return new Profile({
       id: String(resource.id),
@@ -100,14 +115,14 @@ export class ProfileAssembler {
       email: resource.email,
       nationalId,
       fullLegalNames,
-      dateOfBirth: resource.dateOfBirth || '1995-01-01',
+      dateOfBirth: resource.dateOfBirth || '',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(resource.monthlyIncomeAmount) || 0,
       monthlyIncomeCurrency: currency,
       employmentStatus: resource.employmentStatus || 'EMPLOYED',
-      firstName: resource.firstName,
-      lastName: resource.lastName,
+      firstName,
+      lastName,
       dni: nationalId,
       phoneNumber: resource.phoneNumber || `${phoneCountryCode} ${mobilePhone}`.trim(),
       currency

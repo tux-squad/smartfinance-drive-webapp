@@ -145,36 +145,59 @@
           />
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-gray-700">Nueva contraseña</label>
-            <input
-              v-model="passwordForm.newPassword"
-              type="password"
-              required
-              minlength="6"
-              placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-            />
+        <div class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Nueva contraseña</label>
+              <input
+                v-model="passwordForm.newPassword"
+                type="password"
+                required
+                placeholder="••••••••"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-700">Confirmar nueva contraseña</label>
+              <input
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                required
+                placeholder="••••••••"
+                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
+              />
+            </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-gray-700">Confirmar nueva contraseña</label>
-            <input
-              v-model="passwordForm.confirmPassword"
-              type="password"
-              required
-              minlength="6"
-              placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-            />
+          <!-- Live Password criteria -->
+          <div v-if="passwordForm.newPassword" class="p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[10px] space-y-1">
+            <span class="font-bold text-gray-600 block mb-1">Requisitos de contraseña:</span>
+            <div class="grid grid-cols-2 gap-1 font-medium">
+              <span class="flex items-center gap-1" :class="passwordCriteria.minLength ? 'text-emerald-600' : 'text-gray-400'">
+                <i :class="passwordCriteria.minLength ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                Mínimo 8 caracteres
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasUpper ? 'text-emerald-600' : 'text-gray-400'">
+                <i :class="passwordCriteria.hasUpper ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Mayúscula (A-Z)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasNumber ? 'text-emerald-600' : 'text-gray-400'">
+                <i :class="passwordCriteria.hasNumber ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Número (0-9)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasSpecial ? 'text-emerald-600' : 'text-gray-400'">
+                <i :class="passwordCriteria.hasSpecial ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Carácter especial (*!@#$)
+              </span>
+            </div>
           </div>
         </div>
 
         <div class="pt-2">
           <button
             type="submit"
-            :disabled="isUpdatingPassword"
+            :disabled="isUpdatingPassword || !isPasswordValid || passwordForm.newPassword !== passwordForm.confirmPassword"
             class="px-5 py-2.5 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-semibold text-xs text-center shadow-xs transition-colors flex items-center gap-2"
           >
             <i v-if="isUpdatingPassword" class="pi pi-spin pi-spinner text-xs"></i>
@@ -193,7 +216,7 @@
         </div>
         <div>
           <h2 class="text-base font-bold text-red-950">Zona de peligro</h2>
-          <p class="text-xs text-red-500">Acciones irreversibles sobre tu cuenta de comprador</p>
+          <p class="text-xs text-red-500">Acciones irreversibles sobre tu cuenta</p>
         </div>
       </div>
 
@@ -201,7 +224,7 @@
         <div class="space-y-1">
           <h3 class="text-xs font-bold text-gray-900">Eliminar cuenta permanentemente</h3>
           <p class="text-xs text-gray-500">
-            Una vez eliminada la cuenta, se borrarán de forma irrevocable tus solicitudes, perfil y datos asociados.
+            Una vez eliminada la cuenta, se revocarán tus sesiones y se borrarán de forma irrevocable tu perfil y datos asociados.
           </p>
         </div>
 
@@ -227,7 +250,7 @@
         <div class="text-center space-y-2">
           <h3 class="text-lg font-bold text-gray-900">¿Estás seguro de eliminar tu cuenta?</h3>
           <p class="text-xs text-gray-500">
-            Esta acción no se puede deshacer. Se cancelarán todas tus pre-evaluaciones pendientes y se eliminará tu historial.
+            Esta acción no se puede deshacer. Se cancelarán todas tus pre-evaluaciones pendientes y se cerrará tu sesión definitivamente.
           </p>
         </div>
         <div class="flex gap-3 pt-2">
@@ -248,8 +271,9 @@
         </div>
       </div>
     </div>
-    <!-- Section: Panel de Administración de Usuarios y Roles (1.8 / 1.10) -->
-    <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
+
+    <!-- Section: Panel de Administración de Usuarios y Roles (Solo Admin - Error 17) -->
+    <div v-if="iamStore.roles.includes('ROLE_ADMIN')" class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
       <div class="flex items-center justify-between pb-4 border-b border-gray-100 flex-wrap gap-2">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -346,7 +370,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useIamStore } from '@/iam/application/iam.store'
 
@@ -365,6 +389,21 @@ const passwordForm = reactive({
   confirmPassword: ''
 })
 
+const passwordCriteria = computed(() => {
+  const val = passwordForm.newPassword || ''
+  return {
+    minLength: val.length >= 8,
+    hasUpper: /[A-Z]/.test(val),
+    hasNumber: /[0-9]/.test(val),
+    hasSpecial: /[@$!%*?&#^+=._-]/.test(val)
+  }
+})
+
+const isPasswordValid = computed(() => {
+  const c = passwordCriteria.value
+  return c.minLength && c.hasUpper && c.hasNumber && c.hasSpecial
+})
+
 const isUpdatingPassword = ref(false)
 const securitySuccessMsg = ref<string | null>(null)
 const securityErrorMsg = ref<string | null>(null)
@@ -373,6 +412,11 @@ const showDeleteConfirm = ref(false)
 const handleUpdatePassword = async () => {
   securitySuccessMsg.value = null
   securityErrorMsg.value = null
+
+  if (!isPasswordValid.value) {
+    securityErrorMsg.value = 'La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula, un número y un carácter especial.'
+    return
+  }
 
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
     securityErrorMsg.value = 'Las contraseñas nuevas no coinciden.'
@@ -392,10 +436,24 @@ const handleUpdatePassword = async () => {
   }, 800)
 }
 
-const handleConfirmDelete = () => {
+const handleConfirmDelete = async () => {
   showDeleteConfirm.value = false
-  iamStore.signOut()
-  router.push('/sign-in')
+  try {
+    const { useProfilesStore } = await import('@/profiles/application/profiles.store')
+    const profilesStore = useProfilesStore()
+    const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
+    if (userId) {
+      await profilesStore.fetchProfileByUserId(userId)
+      if (profilesStore.currentProfile?.id) {
+        await profilesStore.deleteProfile(profilesStore.currentProfile.id)
+      }
+    }
+  } catch (err) {
+    console.error('Error al remover perfil de usuario:', err)
+  } finally {
+    await iamStore.signOut()
+    router.push('/iam/sign-in')
+  }
 }
 
 // Admin User Management State & Actions (1.8 / 1.10)
