@@ -6,6 +6,18 @@ const iamRoutes: Array<RouteRecordRaw> = [
     redirect: '/iam/sign-in'
   },
   {
+    path: '/login',
+    redirect: '/iam/sign-in'
+  },
+  {
+    path: '/register',
+    redirect: '/iam/sign-up'
+  },
+  {
+    path: '/set-password',
+    redirect: '/iam/reset-password'
+  },
+  {
     path: '/iam/sign-in',
     name: 'sign-in',
     component: () => import('@/iam/presentation/views/sign-in-view.vue'),

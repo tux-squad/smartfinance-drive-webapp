@@ -2,7 +2,8 @@
  * DTO Payload interfaces for authentication sessions API (/api/v1/auth/sessions).
  */
 export interface SignInRequestResource {
-  username: string
+  username?: string
+  email?: string
   password: string
 }
 
