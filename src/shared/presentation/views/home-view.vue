@@ -284,17 +284,22 @@
       <!-- Welcome Header -->
       <div class="bg-gradient-to-r from-blue-900 via-sky-900 to-indigo-950 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div class="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
-        <div class="max-w-3xl space-y-3 relative z-10">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-500/20 text-sky-300 text-xs font-semibold tracking-wider rounded-full border border-sky-400/30 backdrop-blur-md">
-            <i class="pi pi-sparkles text-[10px]"></i>
-            {{ t('home.tag') }}
-          </span>
-          <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white">
-            {{ t('home.welcomeTitle') }}
-          </h1>
-          <p class="text-blue-100/80 text-xs md:text-sm leading-relaxed max-w-2xl">
-            {{ t('home.welcomeDescription') }}
-          </p>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="max-w-3xl space-y-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-500/20 text-sky-300 text-xs font-semibold tracking-wider rounded-full border border-sky-400/30 backdrop-blur-md">
+              <i class="pi pi-sparkles text-[10px]"></i>
+              {{ t('home.tag') }}
+            </span>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white">
+              {{ t('home.welcomeTitle') }}
+            </h1>
+            <p class="text-blue-100/80 text-xs md:text-sm leading-relaxed max-w-2xl">
+              {{ t('home.welcomeDescription') }}
+            </p>
+          </div>
+          <div class="hidden md:flex items-center justify-center w-24 h-24 rounded-3xl bg-white/10 p-4 border border-white/20 backdrop-blur-md shadow-2xl shrink-0">
+            <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain drop-shadow" />
+          </div>
         </div>
       </div>
 

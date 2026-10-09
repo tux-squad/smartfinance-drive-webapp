@@ -15,10 +15,18 @@
       </div>
 
       <!-- Form Header -->
-      <div class="text-center space-y-2">
-        <div class="w-14 h-14 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-xs border border-emerald-500/20">
-          <i class="pi pi-shield text-xl"></i>
-        </div>
+      <div class="text-center space-y-3">
+        <router-link to="/home" class="inline-flex items-center gap-2.5 mx-auto group">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600/10 dark:bg-white/10 p-1.5 flex items-center justify-center border border-emerald-600/20 dark:border-white/10 group-hover:scale-105 transition-transform">
+            <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain dark:hidden" />
+            <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain hidden dark:block" />
+          </div>
+          <div class="text-left">
+            <span class="text-base font-black tracking-wide block leading-none text-surface-900 dark:text-surface-0">SmartFinance</span>
+            <span class="text-[10px] text-primary-600 dark:text-primary-400 font-bold tracking-widest uppercase">Drive</span>
+          </div>
+        </router-link>
+
         <h2 class="text-2xl font-black text-surface-900 dark:text-surface-0 tracking-tight">
           {{ t('iam.resetPasswordTitle') }}
         </h2>
