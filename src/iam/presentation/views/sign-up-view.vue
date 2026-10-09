@@ -799,8 +799,8 @@ watch(dni, async (val) => {
     return
   }
 
-  // Auto-complete from RENIEC when 8 digits are entered and user is authenticated
-  if (clean.length === 8 && iamStore.isAuthenticated) {
+  // Auto-complete from RENIEC when 8 digits are entered
+  if (clean.length === 8) {
     const res = await iamStore.lookupDni(clean)
     if (res) {
       if (res.firstNames) firstName.value = res.firstNames
@@ -824,8 +824,8 @@ watch(corporateRuc, async (val) => {
     return
   }
 
-  // Auto-complete from SUNAT when 11 digits are entered and user is authenticated
-  if (clean.length === 11 && iamStore.isAuthenticated) {
+  // Auto-complete from SUNAT when 11 digits are entered
+  if (clean.length === 11) {
     const res = await iamStore.lookupRuc(clean)
     if (res && res.razonSocial) {
       companyName.value = res.razonSocial
@@ -939,10 +939,16 @@ const advanceFromStep1 = async () => {
 
   try {
     // 1. Registrar cuenta base en backend (POST /api/v1/auth/registrations)
+    const emailPrefix = cleanEmail.split('@')[0] || 'Usuario'
+    const defaultFirst = firstName.value.trim() || emailPrefix
+    const defaultLast = lastName.value.trim() || 'SmartFinance'
+
     const signUpCommand = new SignUpCommand({
       username: cleanEmail,
       email: cleanEmail,
       password: cleanPassword,
+      firstName: defaultFirst,
+      lastName: defaultLast,
       roles: ['ROLE_USER']
     })
 
