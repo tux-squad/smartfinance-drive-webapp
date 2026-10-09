@@ -99,12 +99,12 @@ export class ProfileAssembler {
     if (!firstName && fullLegalNames) {
       const parts = fullLegalNames.split(/\s+/)
       if (parts.length === 1) {
-        firstName = parts[0]
+        firstName = parts[0] || ''
       } else if (parts.length === 2) {
-        firstName = parts[0]
-        lastName = parts[1]
+        firstName = parts[0] || ''
+        lastName = parts[1] || ''
       } else {
-        firstName = parts.slice(0, parts.length - 2).join(' ') || parts[0]
+        firstName = parts.slice(0, parts.length - 2).join(' ') || parts[0] || ''
         lastName = parts.slice(-2).join(' ')
       }
     }
