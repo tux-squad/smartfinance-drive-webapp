@@ -26,17 +26,20 @@ const onDelete = () => {
 
 <template>
   <div
-    class="group flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+    class="group flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90"
   >
     <!-- Header -->
-    <div class="flex items-start justify-between">
+    <div class="flex items-start justify-between gap-3">
       <div>
-        <Tag
-          :value="`${simulation.loanTermMonths} ${t('financing.monthsLabel')}`"
-          severity="info"
-          class="!text-xs font-bold px-2.5 py-0.5 rounded-full mb-1.5"
-        />
-        <h3 class="text-base font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors">
+        <div class="flex items-center gap-2 mb-2">
+          <Tag
+            :value="`${simulation.loanTermMonths} ${t('financing.monthsLabel')}`"
+            severity="info"
+            class="!text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40"
+          />
+          <span class="text-[11px] text-slate-400 font-mono">TEA {{ simulation.annualEffectiveRate }}%</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
           {{ simulation.title }}
         </h3>
       </div>
@@ -47,39 +50,40 @@ const onDelete = () => {
         rounded
         severity="danger"
         size="small"
-        class="!p-1 text-gray-400 hover:text-red-600"
+        class="!p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
         @click="onDelete"
       />
     </div>
 
-    <!-- Body Metrics -->
-    <div class="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3 text-xs">
+    <!-- Body Metrics Bento -->
+    <div class="mt-5 grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-3.5 border border-slate-100 dark:border-slate-800">
       <div>
-        <span class="text-gray-500 dark:text-gray-400 block">{{ t('financing.monthlyPaymentLabel') }}</span>
-        <span class="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
+        <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">{{ t('financing.monthlyPaymentLabel') }}</span>
+        <span class="font-extrabold font-mono text-emerald-600 dark:text-emerald-400 text-base">
           {{ simulation.formattedMonthlyPayment }}
         </span>
       </div>
 
       <div>
-        <span class="text-gray-500 dark:text-gray-400 block">{{ t('financing.tceaLabel') }}</span>
-        <span class="font-bold text-gray-900 dark:text-white text-sm">
+        <span class="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">{{ t('financing.tceaLabel') }}</span>
+        <span class="font-bold font-mono text-slate-900 dark:text-white text-base">
           {{ simulation.formattedTcea }}
         </span>
       </div>
     </div>
 
     <!-- Footer Action -->
-    <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+    <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
       <Button
         :label="t('financing.viewScheduleBtn')"
         icon="pi pi-table"
         severity="success"
         outlined
         size="small"
-        class="w-full rounded-xl !text-xs !py-2"
+        class="w-full !rounded-xl !text-xs !py-2.5 font-bold hover:!bg-emerald-50 dark:hover:!bg-emerald-950/40 !border-emerald-600/30 active:scale-[0.98] transition-all"
         @click="onView"
       />
     </div>
   </div>
 </template>
+
