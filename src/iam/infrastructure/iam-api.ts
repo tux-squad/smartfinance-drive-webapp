@@ -117,5 +117,10 @@ export class IamApi extends BaseApi {
   public lookupDniReniec(dni: string): Promise<AxiosResponse<import('./verification.resource').ReniecDniResponse>> {
     return this.http.get<import('./verification.resource').ReniecDniResponse>(`/api/v1/profiles/reniec/dni/${dni}`)
   }
+
+  /** 1.21 Consulta SUNAT por RUC */
+  public lookupRucSunat(ruc: string): Promise<AxiosResponse<import('./verification.resource').SunatRucResponse>> {
+    return this.http.get<import('./verification.resource').SunatRucResponse>(`/api/v1/partners/sunat/ruc/${ruc}`)
+  }
 }
 

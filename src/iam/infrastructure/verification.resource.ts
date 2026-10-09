@@ -50,3 +50,18 @@ export interface ReniecDniResponse {
   address?: string
   fullAddress?: string
 }
+
+export interface SunatRucResponse {
+  ruc: string
+  razonSocial: string
+  estado: string
+  condicion: string
+  ciiu?: string
+  actividadEconomica?: string
+  direccion?: string
+  departamento?: string
+  provincia?: string
+  distrito?: string
+  esAgenteRetencion?: boolean
+}
+

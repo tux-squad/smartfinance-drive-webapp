@@ -108,7 +108,7 @@
           >
             <option value="">Selecciona el nuevo asesor destino...</option>
             <option
-              v-for="other in iamStore.salesAgents.filter(a => a.id !== reassigningAgentId)"
+              v-for="other in iamStore.salesAgents.filter((a: any) => a.id !== reassigningAgentId)"
               :key="other.id"
               :value="other.id"
             >

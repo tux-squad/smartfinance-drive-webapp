@@ -558,14 +558,16 @@ export const useIamStore = defineStore('iam', () => {
     }
   }
 
-  // --- Phase 1: OTP Email/Phone Verification & RENIEC DNI Lookup ---
+  // --- Phase 1: OTP Email/Phone Verification & RENIEC DNI / SUNAT RUC Lookup ---
   const isVerifyingOtp = ref<boolean>(false)
   const isLookingUpDni = ref<boolean>(false)
+  const isLookingUpRuc = ref<boolean>(false)
   const emailVerified = ref<boolean>(false)
   const emailVerificationToken = ref<string | null>(null)
   const phoneVerified = ref<boolean>(false)
   const phoneVerificationToken = ref<string | null>(null)
   const reniecData = ref<import('../infrastructure/verification.resource').ReniecDniResponse | null>(null)
+  const sunatData = ref<import('../infrastructure/verification.resource').SunatRucResponse | null>(null)
 
   /**
    * Enviar código OTP de 6 dígitos al correo electrónico
@@ -664,6 +666,25 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
+   * Consultar datos oficiales en SUNAT por número de RUC
+   * GET /api/v1/partners/sunat/ruc/{ruc}
+   */
+  const lookupRuc = async (ruc: string): Promise<import('../infrastructure/verification.resource').SunatRucResponse | null> => {
+    if (!ruc || ruc.length !== 11) return null
+    isLookingUpRuc.value = true
+    try {
+      const res = await iamApi.lookupRucSunat(ruc)
+      sunatData.value = res.data
+      return res.data
+    } catch {
+      sunatData.value = null
+      return null
+    } finally {
+      isLookingUpRuc.value = false
+    }
+  }
+
+  /**
    * Consultar datos oficiales en RENIEC por número de DNI
    * GET /api/v1/profiles/reniec/dni/{dni}
    */
@@ -699,11 +720,13 @@ export const useIamStore = defineStore('iam', () => {
     roles,
     isVerifyingOtp,
     isLookingUpDni,
+    isLookingUpRuc,
     emailVerified,
     emailVerificationToken,
     phoneVerified,
     phoneVerificationToken,
     reniecData,
+    sunatData,
     restoreSession,
     signIn,
     signInDemo,
@@ -725,6 +748,7 @@ export const useIamStore = defineStore('iam', () => {
     sendPhoneSms,
     verifyPhoneSmsCode,
     lookupDni,
+    lookupRuc,
     refreshSession,
     signOut
   }

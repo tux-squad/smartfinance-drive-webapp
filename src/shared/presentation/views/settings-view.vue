@@ -424,7 +424,7 @@ const loadAdminUsers = async () => {
   isLoadingUsers.value = true
   try {
     await iamStore.fetchUsers(0, 20)
-    iamStore.userList.forEach(u => {
+    iamStore.userList.forEach((u: any) => {
       selectedUserRoles[u.id] = u.roles[0] || 'ROLE_USER'
     })
   } finally {
