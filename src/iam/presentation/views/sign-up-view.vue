@@ -222,6 +222,20 @@
               />
             </div>
           </div>
+
+          <!-- Verified Email Confirmation Card -->
+          <div
+            v-if="iamStore.emailVerified"
+            class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300"
+          >
+            <div class="flex items-center gap-1.5 font-bold">
+              <i class="pi pi-check-circle text-xs" />
+              <span>Correo verificado exitosamente</span>
+            </div>
+            <span v-if="iamStore.emailVerificationToken" class="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+              {{ iamStore.emailVerificationToken.slice(0, 16) }}...
+            </span>
+          </div>
         </div>
 
         <!-- Password Input -->
@@ -556,6 +570,18 @@ watch(corporateRuc, (val) => {
   }
 })
 
+watch(username, () => {
+  iamStore.emailVerified = false
+  iamStore.emailVerificationToken = null
+  otpSent.value = false
+})
+
+watch(phoneNumber, () => {
+  iamStore.phoneVerified = false
+  iamStore.phoneVerificationToken = null
+  smsSent.value = false
+})
+
 const searchDni = async () => {
   if (dni.value.length === 8) {
     const res = await iamStore.lookupDni(dni.value)
@@ -623,6 +649,8 @@ const fillDemoData = () => {
   iamStore.error = null
   const randomSuffix = Math.floor(Math.random() * 100000)
   password.value = 'Password123!'
+  iamStore.emailVerified = true
+  iamStore.phoneVerified = true
 
   if (accountType.value === 'buyer') {
     firstName.value = 'Juan'
@@ -665,6 +693,15 @@ const handleSignUp = async () => {
 
   if (!cleanEmail || !cleanPassword || !cleanFirstName || !cleanLastName) {
     iamStore.error = 'Por favor complete todos los campos obligatorios.'
+    return
+  }
+
+  // Pre-requisite validation: Email OTP verification (Paso 1.1)
+  if (!iamStore.emailVerified) {
+    if (!otpSent.value) {
+      await sendOtp()
+    }
+    iamStore.error = 'Por favor valida el código OTP de 6 dígitos enviado a tu correo antes de continuar.'
     return
   }
 
