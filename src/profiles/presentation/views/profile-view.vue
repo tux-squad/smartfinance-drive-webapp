@@ -343,6 +343,84 @@
           </div>
 
           <div class="space-y-4">
+            <!-- Institutional Multimedia (Logo & Banner) -->
+            <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800">Recursos Multimedia del Banco</span>
+              </div>
+
+              <!-- Logo Upload Row -->
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden shadow-2xs shrink-0">
+                  <img
+                    v-if="bankLogoUrl"
+                    :src="bankLogoUrl"
+                    alt="Logo del Banco"
+                    class="w-full h-full object-contain p-1.5"
+                  />
+                  <i v-else class="pi pi-building-columns text-2xl text-blue-400"></i>
+                </div>
+                <div class="space-y-1 flex-1">
+                  <input
+                    ref="logoInputRef"
+                    type="file"
+                    accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
+                    class="hidden"
+                    @change="handleBankLogoSelected"
+                  />
+                  <button
+                    type="button"
+                    :disabled="isUploadingLogo"
+                    @click="triggerBankLogoUpload"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+                  >
+                    <i v-if="isUploadingLogo" class="pi pi-spin pi-spinner text-xs text-blue-600"></i>
+                    <i v-else class="pi pi-upload text-xs text-blue-600"></i>
+                    <span>{{ isUploadingLogo ? 'Subiendo...' : 'Subir Logotipo' }}</span>
+                  </button>
+                  <p class="text-[10px] text-slate-400">
+                    PNG, JPG, WebP o SVG con fondo transparente.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Banner Upload Row -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-200/60">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold text-slate-700">Banner Promocional</span>
+                  <span class="text-[10px] font-mono text-slate-400">Recomendado 1200x400 px</span>
+                </div>
+                <input
+                  ref="bannerInputRef"
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  class="hidden"
+                  @change="handleBankBannerSelected"
+                />
+                <div
+                  @click="triggerBankBannerUpload"
+                  class="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-500 bg-white/70 hover:bg-blue-50/20 cursor-pointer transition-all relative overflow-hidden flex flex-col items-center justify-center p-3 text-center group shadow-2xs"
+                >
+                  <template v-if="bankBannerUrl">
+                    <img :src="bankBannerUrl" alt="Banner del Banco" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5 backdrop-blur-2xs">
+                      <i v-if="isUploadingBanner" class="pi pi-spin pi-spinner text-xs"></i>
+                      <i v-else class="pi pi-image text-xs"></i>
+                      <span>{{ isUploadingBanner ? 'Subiendo banner...' : 'Cambiar Banner' }}</span>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <i v-if="isUploadingBanner" class="pi pi-spin pi-spinner text-blue-600 text-lg mb-0.5"></i>
+                    <i v-else class="pi pi-images text-slate-400 text-lg mb-0.5 group-hover:text-blue-500 transition-colors"></i>
+                    <span class="text-xs font-bold text-slate-700">
+                      {{ isUploadingBanner ? 'Subiendo banner...' : 'Subir Banner Promocional' }}
+                    </span>
+                    <span class="text-[10px] text-slate-400">Clic para seleccionar imagen</span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
             <!-- Razón Social del Banco -->
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-700">Razón Social del Banco</label>
@@ -692,12 +770,72 @@ const dealerVehiclesCount = computed(() => dealerVehiclesList.value.length)
 // Bank Data
 const bankEntityName = ref('')
 const bankRuc = ref('')
+const isUploadingLogo = ref(false)
+const isUploadingBanner = ref(false)
+const logoInputRef = ref<HTMLInputElement | null>(null)
+const bannerInputRef = ref<HTMLInputElement | null>(null)
+
+const bankLogoUrl = computed(() => {
+  return partnersStore.myFinancialEntity?.logoUrl || (partnersStore.financialEntities.length > 0 ? partnersStore.financialEntities[0]?.logoUrl : null)
+})
+
+const bankBannerUrl = computed(() => {
+  return partnersStore.myFinancialEntity?.bannerUrl || (partnersStore.financialEntities.length > 0 ? partnersStore.financialEntities[0]?.bannerUrl : null)
+})
+
 const bankBenchmarks = computed(() => {
+  if (partnersStore.myFinancialEntity?.rateBenchmarks && partnersStore.myFinancialEntity.rateBenchmarks.length > 0) {
+    return partnersStore.myFinancialEntity.rateBenchmarks
+  }
   if (partnersStore.financialEntities.length > 0 && partnersStore.financialEntities[0]?.rateBenchmarks) {
     return partnersStore.financialEntities[0].rateBenchmarks
   }
   return []
 })
+
+const triggerBankLogoUpload = () => {
+  logoInputRef.value?.click()
+}
+
+const triggerBankBannerUpload = () => {
+  bannerInputRef.value?.click()
+}
+
+const handleBankLogoSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  isUploadingLogo.value = true
+  try {
+    const updated = await partnersStore.uploadMyFinancialEntityLogo(file)
+    if (updated) {
+      saveSuccessMessage.value = 'Logo corporativo subido exitosamente.'
+    }
+  } catch (err: any) {
+    profilesStore.error = err?.message || 'Error al subir el logo corporativo.'
+  } finally {
+    isUploadingLogo.value = false
+    if (target) target.value = ''
+  }
+}
+
+const handleBankBannerSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  isUploadingBanner.value = true
+  try {
+    const updated = await partnersStore.uploadMyFinancialEntityBanner(file)
+    if (updated) {
+      saveSuccessMessage.value = 'Banner publicitario subido exitosamente.'
+    }
+  } catch (err: any) {
+    profilesStore.error = err?.message || 'Error al subir el banner publicitario.'
+  } finally {
+    isUploadingBanner.value = false
+    if (target) target.value = ''
+  }
+}
 
 // RENIEC Lookup State
 const isQueryingReniec = ref(false)
@@ -799,12 +937,28 @@ onMounted(async () => {
     }))
   }
   if (isFinancialInstitution.value) {
-    promises.push(partnersStore.fetchFinancialEntities().then(() => {
-      if (partnersStore.financialEntities.length > 0) {
-        bankEntityName.value = partnersStore.financialEntities[0]?.name || ''
-        bankRuc.value = partnersStore.financialEntities[0]?.ruc || ''
-      }
-    }))
+    promises.push(
+      partnersStore.fetchMyFinancialEntity().then(entity => {
+        if (entity) {
+          bankEntityName.value = entity.name || ''
+          bankRuc.value = entity.ruc || ''
+        } else {
+          return partnersStore.fetchFinancialEntities().then(() => {
+            if (partnersStore.financialEntities.length > 0) {
+              bankEntityName.value = partnersStore.financialEntities[0]?.name || ''
+              bankRuc.value = partnersStore.financialEntities[0]?.ruc || ''
+            }
+          })
+        }
+      }).catch(() => {
+        return partnersStore.fetchFinancialEntities().then(() => {
+          if (partnersStore.financialEntities.length > 0) {
+            bankEntityName.value = partnersStore.financialEntities[0]?.name || ''
+            bankRuc.value = partnersStore.financialEntities[0]?.ruc || ''
+          }
+        })
+      })
+    )
   }
 
   await Promise.all(promises)

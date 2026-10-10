@@ -6,16 +6,13 @@
       <div class="relative z-10 max-w-3xl">
         <div class="inline-flex items-center gap-2 rounded-full bg-blue-500/20 px-3.5 py-1 text-xs font-semibold text-blue-300 backdrop-blur-md mb-3 border border-blue-500/30">
           <i :class="isBankOnly ? 'pi pi-building-columns' : 'pi pi-file-check'"></i>
-          {{ isBankOnly ? 'Bandeja de Dictamen y Evaluación Bancaria' : 'Mis Trámites y Evaluaciones' }}
+          {{ isBankOnly ? t('applications.headerBadgeBank') : t('applications.headerBadgeBuyer') }}
         </div>
         <h1 class="text-3xl font-black tracking-tight sm:text-4xl text-white">
-          {{ isBankOnly ? 'Evaluación de Créditos Vehiculares' : 'Reporte de Solicitudes y Citas' }}
+          {{ isBankOnly ? t('applications.headerTitleBank') : t('applications.headerTitleBuyer') }}
         </h1>
         <p class="mt-2 text-sm text-blue-100/80 leading-relaxed">
-          {{ isBankOnly
-            ? 'Bandeja de entrada oficial para evaluar, dictaminar y gestionar solicitudes de crédito automotriz asignadas a tu entidad.'
-            : 'Revisa el estado de tus solicitudes de crédito vehicular y gestiona tus pruebas de manejo programadas.'
-          }}
+          {{ isBankOnly ? t('applications.headerSubtitleBank') : t('applications.headerSubtitleBuyer') }}
         </p>
       </div>
     </div>
@@ -27,33 +24,33 @@
       <!-- Bank Analytics Cards (4.10) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-1">
-          <span class="text-xs text-slate-500 font-medium block">Total Solicitudes Recibidas</span>
+          <span class="text-xs text-slate-500 font-medium block">{{ t('applications.kpiReceived') }}</span>
           <span class="text-2xl font-black text-slate-900 dark:text-white">{{ bankAnalytics?.totalApplicationsReceived ?? bankApplications.length }}</span>
-          <span class="text-[11px] text-blue-600 dark:text-blue-400 font-bold block">En tiempo real</span>
+          <span class="text-[11px] text-blue-600 dark:text-blue-400 font-bold block">{{ t('applications.kpiRealTime') }}</span>
         </div>
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-1">
-          <span class="text-xs text-slate-500 font-medium block">En Evaluación / Pendientes</span>
+          <span class="text-xs text-slate-500 font-medium block">{{ t('applications.kpiUnderReview') }}</span>
           <span class="text-2xl font-black text-amber-600 dark:text-amber-400">
             {{ bankUnderReviewCount }}
           </span>
-          <span class="text-[11px] text-slate-400 font-medium block">Requieren dictamen</span>
+          <span class="text-[11px] text-slate-400 font-medium block">{{ t('applications.kpiRequireReview') }}</span>
         </div>
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-1">
-          <span class="text-xs text-slate-500 font-medium block">Pre-Aprobadas / Desembolsadas</span>
+          <span class="text-xs text-slate-500 font-medium block">{{ t('applications.kpiApproved') }}</span>
           <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400">
             {{ bankApprovedCount }}
           </span>
           <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold block">
-            {{ bankAnalytics?.formattedApprovalRate ?? 'Aprobación activa' }}
+            {{ bankAnalytics?.formattedApprovalRate ?? t('applications.kpiActiveApproval') }}
           </span>
         </div>
 
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-1">
-          <span class="text-xs text-slate-500 font-medium block">Volumen Colocado</span>
+          <span class="text-xs text-slate-500 font-medium block">{{ t('applications.kpiVolume') }}</span>
           <span class="text-2xl font-black text-slate-900 dark:text-white">{{ bankAnalytics?.formattedDisbursedVolumePen ?? 'S/ 0.00' }}</span>
-          <span class="text-[11px] text-slate-400 font-medium block">Tasa Promedio: {{ bankAnalytics?.formattedAverageTea ?? '14.50%' }}</span>
+          <span class="text-[11px] text-slate-400 font-medium block">{{ bankAnalytics?.formattedAverageTea ? `TEA: ${bankAnalytics.formattedAverageTea}` : t('applications.kpiAvgTea') }}</span>
         </div>
       </div>
 
@@ -63,10 +60,10 @@
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <i class="pi pi-inbox text-blue-600"></i>
-              Bandeja de Solicitudes Recibidas
+              {{ t('applications.inboxTitle') }}
             </h2>
             <p class="text-xs text-slate-500 mt-1">
-              Lista de expedientes crediticios enviados por compradores para evaluación y resolución.
+              {{ t('applications.inboxSubtitle') }}
             </p>
           </div>
 
@@ -96,13 +93,13 @@
             <input
               v-model="bankSearchFilter"
               type="text"
-              placeholder="Buscar por cliente, vehículo o expediente..."
+              :placeholder="t('applications.searchPlaceholderBank')"
               class="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div class="text-xs text-slate-400 font-medium">
-            Mostrando <span class="font-bold text-slate-700 dark:text-slate-300">{{ filteredBankApplications.length }}</span> expediente(s)
+            {{ t('applications.showingFiles', { count: filteredBankApplications.length }) }}
           </div>
         </div>
 
@@ -123,10 +120,10 @@
             <i class="pi pi-inbox text-2xl"></i>
           </div>
           <h3 class="text-base font-bold text-slate-900 dark:text-white">
-            No hay solicitudes en esta categoría
+            {{ t('applications.emptyBankTitle') }}
           </h3>
           <p class="mt-1 text-xs text-slate-500 max-w-md">
-            Las nuevas solicitudes de financiamiento automotriz que los compradores elijan con tu entidad aparecerán aquí automáticamente.
+            {{ t('applications.emptyBankSubtitle') }}
           </p>
         </div>
 
@@ -136,13 +133,13 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                  <th scope="col" class="py-3.5 px-5">Expediente</th>
-                  <th scope="col" class="py-3.5 px-5">Solicitante</th>
-                  <th scope="col" class="py-3.5 px-5">Vehículo</th>
-                  <th scope="col" class="py-3.5 px-5">Monto Solicitado</th>
-                  <th scope="col" class="py-3.5 px-5">Fecha</th>
-                  <th scope="col" class="py-3.5 px-5 text-center">Estado</th>
-                  <th scope="col" class="py-3.5 px-5 text-right">Acción</th>
+                  <th scope="col" class="py-3.5 px-5">{{ t('applications.colFile') }}</th>
+                  <th scope="col" class="py-3.5 px-5">{{ t('applications.colApplicant') }}</th>
+                  <th scope="col" class="py-3.5 px-5">{{ t('applications.colVehicle') }}</th>
+                  <th scope="col" class="py-3.5 px-5">{{ t('applications.colAmount') }}</th>
+                  <th scope="col" class="py-3.5 px-5">{{ t('applications.colDate') }}</th>
+                  <th scope="col" class="py-3.5 px-5 text-center">{{ t('applications.colStatus') }}</th>
+                  <th scope="col" class="py-3.5 px-5 text-right">{{ t('applications.colAction') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -165,7 +162,7 @@
                         {{ app.applicantName }}
                       </span>
                       <span class="text-[11px] text-slate-500 block">
-                        Ingreso: {{ app.formattedMonthlyIncome }} ({{ app.employmentStatus || 'Dependiente' }})
+                        {{ app.formattedMonthlyIncome }} ({{ app.employmentStatus || 'Dependiente' }})
                       </span>
                     </div>
                   </td>
@@ -203,7 +200,7 @@
                     <div class="flex items-center justify-end gap-2">
                       <Button
                         icon="pi pi-check-square"
-                        label="Dictaminar"
+                        :label="t('applications.btnDictaminar')"
                         size="small"
                         class="!rounded-xl !text-xs font-bold !bg-blue-600 !border-blue-600 text-white px-3 py-1.5 shadow-sm"
                         @click="openDictamenModal(app)"
@@ -241,7 +238,7 @@
             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
         >
           <i class="pi pi-file-check"></i>
-          <span>Solicitudes de Crédito ({{ filteredApplications.length }})</span>
+          <span>{{ t('applications.tabCreditApplications', { count: filteredApplications.length }) }}</span>
         </button>
 
         <button
@@ -253,7 +250,7 @@
             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'"
         >
           <i class="pi pi-car"></i>
-          <span>Mis Pruebas de Manejo ({{ crmStore.testDrives.length }})</span>
+          <span>{{ t('applications.tabTestDrives', { count: crmStore.testDrives.length }) }}</span>
         </button>
       </div>
 
@@ -268,7 +265,7 @@
             <input
               v-model="searchFilter"
               type="text"
-              placeholder="Buscar por vehículo, entidad o ID..."
+              :placeholder="t('applications.searchPlaceholderBuyer')"
               class="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
             />
           </div>
@@ -278,13 +275,13 @@
               v-model="statusFilter"
               class="px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm cursor-pointer"
             >
-              <option value="">Todos los estados</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="En Evaluación">En Evaluación</option>
-              <option value="Pre-Aprobado">Pre-Aprobado</option>
-              <option value="Aprobado">Aprobado</option>
-              <option value="Rechazado">Rechazado</option>
-              <option value="Desembolsado">Desembolsado</option>
+              <option value="">{{ t('applications.allStatuses') }}</option>
+              <option value="Pendiente">{{ t('applications.tabPending') }}</option>
+              <option value="En Evaluación">{{ t('applications.tabInReview') }}</option>
+              <option value="Pre-Aprobado">{{ t('applications.tabPreApproved') }}</option>
+              <option value="Aprobado">{{ t('applications.kpiApproved') }}</option>
+              <option value="Rechazado">{{ t('applications.tabRejected') }}</option>
+              <option value="Desembolsado">{{ t('applications.tabDisbursed') }}</option>
             </select>
           </div>
         </div>
@@ -292,7 +289,7 @@
         <!-- Loading State -->
         <div v-if="financingStore.isLoading && !selectedApp" class="flex flex-col items-center justify-center py-16 gap-3">
           <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-          <p class="text-sm text-slate-500 font-medium">Cargando solicitudes de financiamiento...</p>
+          <p class="text-sm text-slate-500 font-medium">{{ t('applications.loadingApplications') }}</p>
         </div>
 
         <!-- Empty State -->
@@ -304,10 +301,10 @@
             <i class="pi pi-file text-2xl"></i>
           </div>
           <h3 class="text-base font-bold text-slate-900 dark:text-white">
-            No tienes solicitudes registradas
+            {{ t('applications.emptyBuyerTitle') }}
           </h3>
           <p class="mt-1 text-xs text-slate-500 max-w-md">
-            Aún no has enviado ninguna solicitud o simulación de crédito vehicular. Puedes comenzar seleccionando un vehículo en el catálogo.
+            {{ t('applications.emptyBuyerSubtitle') }}
           </p>
           <div class="mt-5">
             <router-link
@@ -315,7 +312,7 @@
               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-600 text-white font-semibold text-xs shadow-md transition-all hover:opacity-90"
             >
               <i class="pi pi-car text-xs"></i>
-              <span>Explorar Vehículos</span>
+              <span>{{ t('applications.exploreVehiclesBtn') }}</span>
             </router-link>
           </div>
         </div>
@@ -326,12 +323,12 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                  <th scope="col" class="py-4 px-6">Vehículo</th>
-                  <th scope="col" class="py-4 px-6">Entidad Financiera</th>
-                  <th scope="col" class="py-4 px-6">Monto Solicitado</th>
-                  <th scope="col" class="py-4 px-6">Fecha</th>
-                  <th scope="col" class="py-4 px-6 text-center">Estado de Crédito</th>
-                  <th scope="col" class="py-4 px-6 text-right">Acciones</th>
+                  <th scope="col" class="py-4 px-6">{{ t('applications.colVehicle') }}</th>
+                  <th scope="col" class="py-4 px-6">{{ t('applications.colFinancialEntity') }}</th>
+                  <th scope="col" class="py-4 px-6">{{ t('applications.colAmount') }}</th>
+                  <th scope="col" class="py-4 px-6">{{ t('applications.colDate') }}</th>
+                  <th scope="col" class="py-4 px-6 text-center">{{ t('applications.colStatus') }}</th>
+                  <th scope="col" class="py-4 px-6 text-right">{{ t('applications.colAction') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -386,7 +383,7 @@
                   <td class="py-4 px-6 text-right">
                     <Button
                       icon="pi pi-eye"
-                      label="Detalle"
+                      :label="t('applications.btnDetail')"
                       size="small"
                       outlined
                       severity="secondary"
@@ -406,7 +403,7 @@
         <!-- Loading -->
         <div v-if="crmStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
           <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-          <p class="text-sm text-slate-500 font-medium">Cargando pruebas de manejo...</p>
+          <p class="text-sm text-slate-500 font-medium">{{ t('applications.loadingTestDrives') }}</p>
         </div>
 
         <!-- Empty State -->
@@ -418,10 +415,10 @@
             <i class="pi pi-calendar text-2xl"></i>
           </div>
           <h3 class="text-base font-bold text-slate-900 dark:text-white">
-            No tienes citas de Test Drive agendadas
+            {{ t('applications.emptyTestDrivesTitle') }}
           </h3>
           <p class="mt-1 text-xs text-slate-500 max-w-md">
-            Puedes agendar una prueba de manejo directamente desde la ficha de cualquier vehículo en el catálogo.
+            {{ t('applications.emptyTestDrivesSubtitle') }}
           </p>
           <div class="mt-5">
             <router-link
@@ -429,7 +426,7 @@
               class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-md transition-all"
             >
               <i class="pi pi-car text-xs"></i>
-              <span>Ver Catálogo de Vehículos</span>
+              <span>{{ t('applications.viewCatalogBtn') }}</span>
             </router-link>
           </div>
         </div>
@@ -447,7 +444,7 @@
                   <i class="pi pi-car text-xl"></i>
                 </div>
                 <div>
-                  <h4 class="text-sm font-black text-slate-900 dark:text-white">Prueba de Manejo Programada</h4>
+                  <h4 class="text-sm font-black text-slate-900 dark:text-white">{{ t('applications.scheduledTestDrive') }}</h4>
                   <p class="text-xs text-slate-500 font-mono">Ref: #{{ td.id.substring(0, 8) }}</p>
                 </div>
               </div>
@@ -462,23 +459,23 @@
 
             <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl">
               <div>
-                <span class="text-slate-400 block text-[11px]">Fecha y Hora:</span>
+                <span class="text-slate-400 block text-[11px]">{{ t('applications.dateTimeLabel') }}</span>
                 <span class="font-bold text-slate-800 dark:text-slate-200">{{ td.formattedDateTime }}</span>
               </div>
               <div>
-                <span class="text-slate-400 block text-[11px]">Vehículo ID:</span>
+                <span class="text-slate-400 block text-[11px]">{{ t('applications.vehicleIdLabel') }}</span>
                 <span class="font-mono text-slate-700 dark:text-slate-300 truncate block">{{ td.vehicleId?.substring(0, 8) }}...</span>
               </div>
             </div>
 
             <p v-if="td.notes" class="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30 p-2.5 rounded-xl">
-              <span class="font-bold text-slate-700 dark:text-slate-300">Notas: </span>{{ td.notes }}
+              <span class="font-bold text-slate-700 dark:text-slate-300">{{ t('applications.notesLabel') }} </span>{{ td.notes }}
             </p>
 
             <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
               <Button
                 v-if="td.status !== 'CANCELLED' && td.status !== 'COMPLETED'"
-                label="Cancelar Cita"
+                :label="t('applications.cancelAppointmentBtn')"
                 icon="pi pi-times"
                 size="small"
                 severity="danger"
@@ -496,7 +493,7 @@
     <Dialog
       v-model:visible="showDictamenDialog"
       modal
-      header="Dictamen y Evaluación de Crédito Vehicular"
+      :header="t('applications.dictamenDialogHeader')"
       :style="{ width: '90vw', maxWidth: '600px' }"
       class="!rounded-3xl"
     >
@@ -504,7 +501,7 @@
         <!-- Application Summary Card -->
         <div class="rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-4 space-y-3 text-xs">
           <div class="flex items-center justify-between border-b border-blue-100/80 dark:border-blue-900/40 pb-2">
-            <span class="font-bold text-slate-700 dark:text-slate-300">Expediente #{{ dictamenApp.id.substring(0, 8) }}</span>
+            <span class="font-bold text-slate-700 dark:text-slate-300">{{ t('applications.fileRef', { id: dictamenApp.id.substring(0, 8) }) }}</span>
             <span class="inline-flex items-center px-2 py-0.5 rounded-full font-bold border" :class="getStatusBadgeClass(dictamenApp.status)">
               {{ dictamenApp.statusLabel }}
             </span>
@@ -512,19 +509,19 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <span class="text-slate-400 block text-[11px]">Solicitante:</span>
+              <span class="text-slate-400 block text-[11px]">{{ t('applications.applicantLabel') }}</span>
               <span class="font-bold text-slate-800 dark:text-slate-200">{{ dictamenApp.applicantName }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">Monto Solicitado:</span>
+              <span class="text-slate-400 block text-[11px]">{{ t('applications.colAmount') }}:</span>
               <span class="font-black text-emerald-600 dark:text-emerald-400">{{ dictamenApp.formattedRequestedAmount }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">Vehículo:</span>
+              <span class="text-slate-400 block text-[11px]">{{ t('applications.colVehicle') }}:</span>
               <span class="font-semibold text-slate-800 dark:text-slate-200">{{ dictamenApp.vehicleName }}</span>
             </div>
             <div>
-              <span class="text-slate-400 block text-[11px]">Ingreso Declarado:</span>
+              <span class="text-slate-400 block text-[11px]">{{ t('applications.declaredIncomeLabel') }}</span>
               <span class="font-semibold text-slate-800 dark:text-slate-200">{{ dictamenApp.formattedMonthlyIncome }}</span>
             </div>
           </div>
@@ -533,7 +530,7 @@
         <!-- Evaluation Form -->
         <form @submit.prevent="submitDictamen" class="space-y-4">
           <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Resolución / Estado Crediticio</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">{{ t('applications.resolutionLabel') }}</label>
             <select
               v-model="evalStatus"
               class="w-full px-3.5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -547,18 +544,18 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Observaciones del Analista Bancario</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">{{ t('applications.analystNotesLabel') }}</label>
             <textarea
               v-model="evalNotes"
               rows="3"
-              placeholder="Ejemplo: Cumple con el ratio cuota-ingreso. Aprobado para desembolso inmediato."
+              :placeholder="t('applications.analystNotesPlaceholder')"
               class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
             ></textarea>
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
             <Button
-              label="Cancelar"
+              :label="t('applications.cancelBtn')"
               severity="secondary"
               text
               class="!rounded-xl !text-xs font-bold"
@@ -566,7 +563,7 @@
             />
             <Button
               type="submit"
-              label="Guardar Dictamen Bancario"
+              :label="t('applications.saveDictamenBtn')"
               icon="pi pi-check"
               :loading="isUpdatingStatus"
               class="!rounded-2xl !text-xs font-bold !bg-emerald-600 !border-emerald-600 text-white px-6 py-2.5 shadow-md shadow-emerald-600/20"
@@ -587,22 +584,22 @@
       <div v-if="selectedApp" class="space-y-6 pt-2">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 text-xs">
           <div>
-            <span class="text-slate-500 font-medium block">Vehículo Solicitado</span>
+            <span class="text-slate-500 font-medium block">{{ t('applications.colVehicle') }}</span>
             <span class="font-bold text-slate-900 dark:text-white text-sm">{{ selectedAppVehicle }}</span>
           </div>
 
           <div>
-            <span class="text-slate-500 font-medium block">Entidad Financiera Aliada</span>
+            <span class="text-slate-500 font-medium block">{{ t('applications.colFinancialEntity') }}</span>
             <span class="font-bold text-slate-900 dark:text-white text-sm">{{ selectedAppEntity }}</span>
           </div>
 
           <div>
-            <span class="text-slate-500 font-medium block">Monto Solicitado</span>
+            <span class="text-slate-500 font-medium block">{{ t('applications.colAmount') }}</span>
             <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{{ selectedApp.formattedRequestedAmount }}</span>
           </div>
 
           <div>
-            <span class="text-slate-500 font-medium block">Ingreso Mensual Declarado</span>
+            <span class="text-slate-500 font-medium block">{{ t('applications.declaredIncomeLabel') }}</span>
             <span class="font-semibold text-slate-800 dark:text-slate-200">{{ selectedApp.formattedMonthlyIncome }}</span>
           </div>
 
@@ -612,7 +609,7 @@
           </div>
 
           <div>
-            <span class="text-slate-500 font-medium block">Estado Actual</span>
+            <span class="text-slate-500 font-medium block">{{ t('applications.colStatus') }}</span>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border mt-0.5" :class="getStatusBadgeClass(selectedApp.status)">
               {{ selectedApp.statusLabel }}
             </span>
@@ -620,13 +617,13 @@
         </div>
 
         <div v-if="selectedApp.notes" class="rounded-2xl bg-slate-100 dark:bg-slate-800/40 p-4 text-xs">
-          <span class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Notas del Solicitante:</span>
+          <span class="font-bold text-slate-700 dark:text-slate-300 block mb-1">{{ t('applications.notesLabel') }}</span>
           <p class="text-slate-600 dark:text-slate-400">{{ selectedApp.notes }}</p>
         </div>
 
         <div class="flex justify-end pt-3 border-t border-slate-200 dark:border-slate-800">
           <Button
-            label="Cerrar"
+            :label="t('applications.closeBtn')"
             severity="secondary"
             text
             class="!rounded-xl !text-xs font-bold"
@@ -640,6 +637,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -652,6 +650,7 @@ import { useCrmStore } from '@/financing/application/crm.store'
 import { useAnalyticsStore } from '@/analytics/application/analytics.store'
 import type { CreditApplication } from '@/financing/domain/credit-application.entity'
 
+const { t } = useI18n()
 const financingStore = useFinancingStore()
 const partnersStore = usePartnersStore()
 const catalogStore = useCatalogStore()
@@ -669,14 +668,14 @@ const bankAnalytics = computed(() => analyticsStore.financialInstitutionAnalytic
 const bankSearchFilter = ref('')
 const bankSelectedStatus = ref('ALL')
 
-const bankStatusTabs = [
-  { label: 'Todas', value: 'ALL' },
-  { label: 'Pendientes', value: 'PENDING' },
-  { label: 'En Evaluación', value: 'IN_REVIEW' },
-  { label: 'Pre-Aprobadas', value: 'PRE_APPROVED' },
-  { label: 'Desembolsadas', value: 'DISBURSED' },
-  { label: 'Rechazadas', value: 'REJECTED' }
-]
+const bankStatusTabs = computed(() => [
+  { label: t('applications.tabAll'), value: 'ALL' },
+  { label: t('applications.tabPending'), value: 'PENDING' },
+  { label: t('applications.tabInReview'), value: 'IN_REVIEW' },
+  { label: t('applications.tabPreApproved'), value: 'PRE_APPROVED' },
+  { label: t('applications.tabDisbursed'), value: 'DISBURSED' },
+  { label: t('applications.tabRejected'), value: 'REJECTED' }
+])
 
 // Dictamen modal state
 const showDictamenDialog = ref(false)
@@ -779,7 +778,7 @@ const submitDictamen = async () => {
       notes: evalNotes.value
     })
 
-    // Update local state item if in mock/cached list
+    // Update local state item
     dictamenApp.value.status = evalStatus.value
     dictamenApp.value.statusLabel = getStatusLabelText(evalStatus.value)
 
@@ -797,12 +796,12 @@ const submitDictamen = async () => {
 
 const getStatusLabelText = (status: string) => {
   switch (status) {
-    case 'PENDING': return 'Pendiente'
-    case 'IN_REVIEW': return 'En Evaluación'
-    case 'PRE_APPROVED': return 'Pre-Aprobado'
-    case 'APPROVED': return 'Aprobado'
-    case 'DISBURSED': return 'Desembolsado'
-    case 'REJECTED': return 'Rechazado'
+    case 'PENDING': return t('applications.tabPending')
+    case 'IN_REVIEW': return t('applications.tabInReview')
+    case 'PRE_APPROVED': return t('applications.tabPreApproved')
+    case 'APPROVED': return t('applications.kpiApproved')
+    case 'DISBURSED': return t('applications.tabDisbursed')
+    case 'REJECTED': return t('applications.tabRejected')
     default: return status
   }
 }

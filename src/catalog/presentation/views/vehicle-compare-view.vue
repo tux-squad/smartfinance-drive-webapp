@@ -68,6 +68,7 @@
               <!-- Column Header 2: Vehicle 1 Selector & Title -->
               <th scope="col" class="w-3/8 p-6 text-left border-l border-slate-100 dark:border-slate-800 space-y-3">
                 <div class="space-y-2">
+                  <div class="h-28 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
                     <img
                       v-if="vehicle1?.imagePath"
                       :src="vehicle1.imagePath"
