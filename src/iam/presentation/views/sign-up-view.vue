@@ -486,7 +486,7 @@
               <InputText
                 id="reg-phone"
                 v-model="phoneNumber"
-                @input="phoneNumber = phoneNumber.replace(/[^\d+ ]/g, '')"
+                @input="handlePhoneInput"
                 placeholder="+51 987 654 321"
                 class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
               />
@@ -790,9 +790,25 @@ const isPhoneValid = computed(() => {
   if (!digits) return true
   if (digits.length === 9 && digits.startsWith('9')) return true
   if (digits.length === 11 && digits.startsWith('519')) return true
-  if (digits.length >= 7 && digits.length <= 15) return true
   return false
 })
+
+const handlePhoneInput = () => {
+  let digits = phoneNumber.value.replace(/\D/g, '')
+  if (digits.startsWith('51') && digits.length > 9) {
+    digits = digits.slice(2)
+  }
+  digits = digits.slice(0, 9)
+  if (digits.length > 6) {
+    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+  } else if (digits.length > 3) {
+    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3)}`
+  } else if (digits.length > 0) {
+    phoneNumber.value = `+51 ${digits}`
+  } else {
+    phoneNumber.value = ''
+  }
+}
 
 // Step Advance Guards
 const canAdvanceStep1 = computed(() => {

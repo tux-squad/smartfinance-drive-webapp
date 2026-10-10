@@ -19,16 +19,26 @@ function normalizeEmploymentStatus(status?: string): string {
 function extractPhoneParts(rawPhone?: string): { code: string, mobile: string } {
   if (!rawPhone) return { code: '+51', mobile: '999999999' }
   const clean = rawPhone.trim()
+  let code = '+51'
+  let mobile = clean.replace(/\D/g, '')
+
   if (clean.startsWith('+')) {
     const spaceIdx = clean.indexOf(' ')
     if (spaceIdx > 0) {
-      const code = clean.substring(0, spaceIdx)
-      const mobile = clean.substring(spaceIdx + 1).replace(/\D/g, '')
-      return { code: code || '+51', mobile: mobile || '999999999' }
+      code = clean.substring(0, spaceIdx)
+      mobile = clean.substring(spaceIdx + 1).replace(/\D/g, '')
     }
   }
-  const digits = clean.replace(/\D/g, '')
-  return { code: '+51', mobile: digits || '999999999' }
+
+  if (code === '+51' && mobile.startsWith('51') && mobile.length === 11) {
+    mobile = mobile.substring(2)
+  }
+
+  if (mobile.length > 9) {
+    mobile = mobile.slice(-9)
+  }
+
+  return { code: code || '+51', mobile: mobile || '999999999' }
 }
 
 /**

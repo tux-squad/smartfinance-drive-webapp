@@ -159,15 +159,39 @@
               />
             </div>
 
-            <!-- Teléfono -->
+            <!-- Teléfono / Celular -->
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-700">Teléfono / Celular</label>
-              <input
-                v-model="form.phoneNumber"
-                type="tel"
-                placeholder="+51 987 654 321"
-                class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-              />
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-semibold text-gray-700">Teléfono / Celular <span class="text-rose-500">*</span></label>
+                <span v-if="phoneValidationStatus === 'valid'" class="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                  <i class="pi pi-check-circle"></i> Celular válido
+                </span>
+                <span v-else-if="phoneValidationStatus === 'invalid'" class="text-[10px] font-medium text-rose-500 flex items-center gap-1">
+                  <i class="pi pi-exclamation-circle"></i> 9 dígitos (inicia con 9)
+                </span>
+              </div>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-xs font-bold text-slate-500 gap-1.5 select-none">
+                  <span>🇵🇪 +51</span>
+                  <span class="text-slate-300">|</span>
+                </div>
+                <input
+                  v-model="form.phoneNumber"
+                  type="tel"
+                  maxlength="11"
+                  placeholder="987 654 321"
+                  @input="handlePhoneInput"
+                  :class="[
+                    'w-full pl-20 pr-3.5 py-2.5 bg-gray-50/50 border rounded-xl text-xs font-mono font-medium text-gray-900 focus:bg-white focus:outline-none transition-all shadow-2xs',
+                    phoneValidationStatus === 'invalid'
+                      ? 'border-rose-300 focus:ring-2 focus:ring-rose-400 bg-rose-50/20'
+                      : 'border-gray-200 focus:ring-2 focus:ring-blue-600'
+                  ]"
+                />
+              </div>
+              <p class="text-[10px] text-gray-400">
+                Formato oficial de 9 dígitos para Perú. Ejemplo: 987 654 321.
+              </p>
             </div>
           </div>
         </div>
@@ -837,6 +861,39 @@ const handleBankBannerSelected = async (event: Event) => {
   }
 }
 
+// Phone Validation & Mask State
+const cleanPhoneDigits = computed(() => {
+  return form.phoneNumber.replace(/\D/g, '')
+})
+
+const isPhoneValid = computed(() => {
+  const digits = cleanPhoneDigits.value
+  if (!digits) return false
+  return digits.length === 9 && digits.startsWith('9')
+})
+
+const phoneValidationStatus = computed<'empty' | 'valid' | 'invalid'>(() => {
+  const digits = cleanPhoneDigits.value
+  if (!digits) return 'empty'
+  if (digits.length === 9 && digits.startsWith('9')) return 'valid'
+  return 'invalid'
+})
+
+const handlePhoneInput = () => {
+  let digits = form.phoneNumber.replace(/\D/g, '')
+  if (digits.startsWith('51') && digits.length > 9) {
+    digits = digits.slice(2)
+  }
+  digits = digits.slice(0, 9)
+  if (digits.length > 6) {
+    form.phoneNumber = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+  } else if (digits.length > 3) {
+    form.phoneNumber = `${digits.slice(0, 3)} ${digits.slice(3)}`
+  } else {
+    form.phoneNumber = digits
+  }
+}
+
 // RENIEC Lookup State
 const isQueryingReniec = ref(false)
 const reniecMessage = ref<string | null>(null)
@@ -883,7 +940,18 @@ const populateFormData = () => {
     form.email = p.email || ''
     form.dni = p.dni || ''
     form.dateOfBirth = p.dateOfBirth || ''
-    form.phoneNumber = p.phoneNumber || ''
+    if (p.phoneNumber) {
+      let digits = p.phoneNumber.replace(/\D/g, '')
+      if (digits.startsWith('51') && digits.length > 9) digits = digits.slice(2)
+      digits = digits.slice(0, 9)
+      if (digits.length === 9) {
+        form.phoneNumber = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+      } else {
+        form.phoneNumber = digits
+      }
+    } else {
+      form.phoneNumber = ''
+    }
     form.monthlyIncomeAmount = p.monthlyIncomeAmount || 3500
     form.currency = p.currency || 'PEN'
     form.employmentStatus = p.employmentStatus || 'dependent'
@@ -976,7 +1044,13 @@ const handleSaveProfile = async () => {
     const cleanEmail = form.email.trim() || iamStore.username || 'usuario@smartfinance.com'
     const cleanDni = form.dni.trim()
     const cleanDob = form.dateOfBirth || '2000-01-01'
-    const cleanPhone = form.phoneNumber ? form.phoneNumber.replace(/\D/g, '').slice(-9) : '999999999'
+    const digits = cleanPhoneDigits.value
+    if (!digits || !isPhoneValid.value) {
+      profilesStore.error = 'Por favor ingresa un número de celular válido para Perú (9 dígitos que empiece con 9).'
+      isSaving.value = false
+      return
+    }
+    const cleanPhone = `+51 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
 
     if (profilesStore.hasProfile && profilesStore.currentProfile?.id) {
       const command = new UpdateProfileCommand({
