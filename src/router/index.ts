@@ -74,12 +74,6 @@ const routes: Array<RouteRecordRaw> = [
         children: projectionsRoutes
       },
       {
-        path: 'messages',
-        name: 'messages',
-        component: () => import('@/shared/presentation/views/messages-view.vue'),
-        meta: { title: 'Bandeja de Entrada' }
-      },
-      {
         path: 'consultation',
         name: 'ai-consultation',
         component: () => import('@/financing/presentation/views/ai-consultation-view.vue'),
@@ -107,37 +101,31 @@ const routes: Array<RouteRecordRaw> = [
         path: 'dealer/inventory',
         name: 'dealer-inventory',
         component: () => import('@/catalog/presentation/views/dealer-inventory-view.vue'),
-        meta: { title: 'Gestión de Inventario' }
+        meta: { title: 'Gestión de Inventario', roles: ['ROLE_DEALER', 'ROLE_ADMIN'] }
       },
       {
         path: 'dealer/inventory/new',
         name: 'dealer-inventory-new',
         component: () => import('@/catalog/presentation/views/publish-vehicle-view.vue'),
-        meta: { title: 'Publicar Nuevo Vehículo' }
+        meta: { title: 'Publicar Nuevo Vehículo', roles: ['ROLE_DEALER', 'ROLE_ADMIN'] }
       },
       {
         path: 'dealer/prospects',
         name: 'dealer-prospects',
         component: () => import('@/financing/presentation/views/prospects-list-view.vue'),
-        meta: { title: 'Prospectos de Concesionaria' }
+        meta: { title: 'Prospectos de Concesionaria', roles: ['ROLE_DEALER', 'ROLE_ADMIN'] }
       },
       {
         path: 'dealer/prospects/:id',
         name: 'dealer-prospect-detail',
         component: () => import('@/financing/presentation/views/prospect-detail-view.vue'),
-        meta: { title: 'Detalle del Prospecto' }
-      },
-      {
-        path: 'dealer/messages',
-        name: 'dealer-messages',
-        component: () => import('@/shared/presentation/views/dealer-messages-view.vue'),
-        meta: { title: 'Bandeja de Entrada' }
+        meta: { title: 'Detalle del Prospecto', roles: ['ROLE_DEALER', 'ROLE_ADMIN'] }
       },
       {
         path: 'dealer/settings/appearance',
         name: 'dealer-settings-appearance',
         component: () => import('@/partners/presentation/views/store-appearance-view.vue'),
-        meta: { title: 'Apariencia de la Tienda' }
+        meta: { title: 'Apariencia de la Tienda', roles: ['ROLE_DEALER', 'ROLE_ADMIN'] }
       }
     ]
   },

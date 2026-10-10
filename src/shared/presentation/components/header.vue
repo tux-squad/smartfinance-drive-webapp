@@ -149,9 +149,6 @@ const breadcrumbTrail = computed<string[]>(() => {
   if (path === '/dealer/prospects') {
     return [panel, t('header.breadcrumbs.prospects')]
   }
-  if (path === '/dealer/messages') {
-    return [panel, t('header.breadcrumbs.messages')]
-  }
   if (path.startsWith('/dealer/settings')) {
     return [panel, t('header.breadcrumbs.settings'), t('header.breadcrumbs.appearance')]
   }
@@ -162,9 +159,6 @@ const breadcrumbTrail = computed<string[]>(() => {
     return [panel, t('header.breadcrumbs.dashboard')]
   }
 
-  if (path === '/messages') {
-    return [panel, t('header.breadcrumbs.messages')]
-  }
   if (path === '/vehicles/compare') {
     return [panel, t('header.breadcrumbs.compareVehicles')]
   }

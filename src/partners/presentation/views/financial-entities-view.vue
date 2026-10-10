@@ -50,6 +50,8 @@ const isBankUser = computed(() => {
   return iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION') || iamStore.roles.includes('ROLE_ADMIN')
 })
 
+const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
+
 onMounted(async () => {
   partnersStore.fetchFinancialEntities()
   if (isBankUser.value) {
@@ -312,8 +314,8 @@ const handleConfirmDeleteEntity = async () => {
           </p>
         </div>
 
-        <!-- 4.1 Create Financial Entity Action Button -->
-        <div>
+        <!-- 4.1 Create Financial Entity Action Button (Admin only) -->
+        <div v-if="isAdmin">
           <Button
             label="+ Registrar Entidad"
             icon="pi pi-plus"

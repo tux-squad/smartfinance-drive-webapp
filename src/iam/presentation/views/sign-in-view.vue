@@ -321,6 +321,9 @@ const rememberMe = ref(true)
 const STORAGE_REMEMBERED_EMAIL = 'smartfinance_remembered_username'
 
 onMounted(() => {
+  if (route.query.expired === '1') {
+    iamStore.error = 'Tu sesión ha expirado por seguridad o inactividad. Por favor, vuelve a iniciar sesión.'
+  }
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem(STORAGE_REMEMBERED_EMAIL)
     if (saved) {

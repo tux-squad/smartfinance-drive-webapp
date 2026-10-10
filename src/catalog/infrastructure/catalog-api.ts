@@ -50,7 +50,13 @@ export class CatalogApi extends BaseApi {
       manufactureYear: command.manufactureYear,
       condition: command.condition,
       priceAmount: command.priceAmount,
-      currency: command.currency
+      currency: command.currency,
+      mileage: command.mileage,
+      transmission: command.transmission,
+      engine: command.engine,
+      traction: command.traction,
+      imagePath: command.imagePath,
+      images: command.images
     }
 
     const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>('/api/v1/vehicles', payload)
@@ -66,22 +72,29 @@ export class CatalogApi extends BaseApi {
   }
 
   /**
-   * 3.2 Get Vehicles of authenticated dealer (/api/v1/vehicles/my-listings)
-   * with fallback to 3.3 Get Vehicles by User ID (/api/v1/vehicles/users/{userId}).
+   * 2.16 Get Vehicles of authenticated dealer (/api/v1/vehicles/my-listings)
+   * with fallback to 2.17 Get Vehicles by User ID (/api/v1/vehicles/users/{userId}).
    */
-  public async getVehiclesByUserId(userId: string): Promise<Vehicle[]> {
+  public async getVehiclesByUserId(userId?: string): Promise<Vehicle[]> {
     try {
       const myResponse = await this.http.get<VehicleResource[]>('/api/v1/vehicles/my-listings')
       if (Array.isArray(myResponse.data)) {
         return myResponse.data.map(r => VehicleAssembler.toEntity(r))
       }
-    } catch {
-      // Fallback to /api/v1/vehicles/users/{userId} if /my-listings is not available
-    }
-
-    if (userId) {
-      const response: AxiosResponse<VehicleResource[]> = await this.http.get<VehicleResource[]>(`/api/v1/vehicles/users/${userId}`)
-      return Array.isArray(response.data) ? response.data.map(r => VehicleAssembler.toEntity(r)) : []
+    } catch (err: any) {
+      const status = err.response?.status
+      if (status === 401 || status === 403) {
+        throw err
+      }
+      if (userId && userId !== '1' && userId !== 'undefined' && userId !== 'null') {
+        try {
+          const response: AxiosResponse<VehicleResource[]> = await this.http.get<VehicleResource[]>(`/api/v1/vehicles/users/${userId}`)
+          return Array.isArray(response.data) ? response.data.map(r => VehicleAssembler.toEntity(r)) : []
+        } catch {
+          // ignore
+        }
+      }
+      throw err
     }
     return []
   }
@@ -131,12 +144,7 @@ export class CatalogApi extends BaseApi {
 
     const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>(
       `/api/v1/vehicles/${command.vehicleId}/image`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+      formData
     )
 
     return VehicleAssembler.toEntity(response.data)
@@ -152,12 +160,7 @@ export class CatalogApi extends BaseApi {
 
     const response: AxiosResponse<VehicleResource> = await this.http.post<VehicleResource>(
       `/api/v1/vehicles/${vehicleId}/images`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
+      formData
     )
 
     return VehicleAssembler.toEntity(response.data)

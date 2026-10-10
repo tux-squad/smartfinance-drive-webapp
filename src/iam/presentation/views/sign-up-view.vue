@@ -966,16 +966,12 @@ const advanceFromStep1 = async () => {
   isAdvancingStep1.value = true
 
   try {
-    // 1. Registrar cuenta base en backend (POST /api/v1/auth/registrations)
+    // 1. Registrar cuenta base en backend como ROLE_USER (POST /api/v1/auth/registrations)
     const emailPrefix = cleanEmail.split('@')[0] || 'Usuario'
     const defaultFirst = firstName.value.trim() || emailPrefix
     const defaultLast = lastName.value.trim() || 'SmartFinance'
 
-    const initialRoles = accountType.value === 'dealer'
-      ? ['ROLE_USER', 'ROLE_DEALER']
-      : accountType.value === 'bank'
-        ? ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
-        : ['ROLE_USER']
+    const initialRoles = ['ROLE_USER']
 
     const signUpCommand = new SignUpCommand({
       username: cleanEmail,
@@ -1228,6 +1224,26 @@ const handleFinalSubmit = async () => {
         iamStore.currentUser.roles = ['ROLE_USER', 'ROLE_DEALER']
       }
       localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER', 'ROLE_DEALER']))
+      localStorage.setItem('dealer_ruc', cleanRuc)
+      localStorage.setItem('dealer_company_name', cleanCompName)
+
+      // 3.1 Initialize Dealership showroom profile in backend database (PUT /api/v1/dealerships/me)
+      try {
+        const { usePartnersStore } = await import('@/partners/application/partners.store')
+        const partnersStore = usePartnersStore()
+        await partnersStore.updateMyDealership({
+          ruc: cleanRuc,
+          name: cleanCompName || 'Concesionaria Oficial',
+          address: 'Av. Javier Prado Este 4520, Surco, Lima',
+          hours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
+          operatingHours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
+          description: 'Concesionario oficial especializado en venta y financiamiento vehicular.',
+          email: cleanEmail,
+          phone: cleanPhoneNumber.value || '+51 987654321'
+        })
+      } catch (dealerProfileErr) {
+        console.warn('Dealership initialization non-blocking warning:', dealerProfileErr)
+      }
 
       await iamStore.refreshSession()
       successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu inventario...'

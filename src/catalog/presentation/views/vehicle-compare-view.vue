@@ -68,13 +68,15 @@
               <!-- Column Header 2: Vehicle 1 Selector & Title -->
               <th scope="col" class="w-3/8 p-6 text-left border-l border-slate-100 dark:border-slate-800 space-y-3">
                 <div class="space-y-2">
-                  <div class="h-28 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
                     <img
-                      :src="vehicle1?.imagePath || defaultImage"
+                      v-if="vehicle1?.imagePath"
+                      :src="vehicle1.imagePath"
                       :alt="vehicle1?.displayName"
                       class="w-full h-full object-cover"
-                      @error="(e: Event) => ((e.target as HTMLImageElement).src = defaultImage)"
                     />
+                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400">
+                      <i class="pi pi-car text-3xl"></i>
+                    </div>
                   </div>
                   <div class="text-lg font-black text-slate-900 dark:text-white">
                     {{ vehicle1?.brand }} {{ vehicle1?.model }} {{ vehicle1?.manufactureYear }}
@@ -96,11 +98,14 @@
                 <div class="space-y-2">
                   <div class="h-28 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
                     <img
-                      :src="vehicle2?.imagePath || defaultImage"
+                      v-if="vehicle2?.imagePath"
+                      :src="vehicle2.imagePath"
                       :alt="vehicle2?.displayName"
                       class="w-full h-full object-cover"
-                      @error="(e: Event) => ((e.target as HTMLImageElement).src = defaultImage)"
                     />
+                    <div v-else class="w-full h-full flex items-center justify-center text-slate-400">
+                      <i class="pi pi-car text-3xl"></i>
+                    </div>
                   </div>
                   <div class="text-lg font-black text-slate-900 dark:text-white">
                     {{ vehicle2?.brand }} {{ vehicle2?.model }} {{ vehicle2?.manufactureYear }}
@@ -223,8 +228,6 @@ import { useCatalogStore } from '@/catalog/application/catalog.store'
 const router = useRouter()
 const route = useRoute()
 const catalogStore = useCatalogStore()
-
-const defaultImage = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'
 
 const selectedId1 = ref<string>('')
 const selectedId2 = ref<string>('')

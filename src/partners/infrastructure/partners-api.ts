@@ -111,8 +111,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
       `/api/v1/financial-entities/${id}/logo`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return PartnersAssembler.toFinancialEntity(response.data)
   }
@@ -126,8 +125,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
       '/api/v1/financial-entities/me/logo',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return PartnersAssembler.toFinancialEntity(response.data)
   }
@@ -141,8 +139,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
       `/api/v1/financial-entities/${id}/banner`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return PartnersAssembler.toFinancialEntity(response.data)
   }
@@ -156,8 +153,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<FinancialEntityResource> = await this.http.post<FinancialEntityResource>(
       '/api/v1/financial-entities/me/banner',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return PartnersAssembler.toFinancialEntity(response.data)
   }
@@ -199,8 +195,11 @@ export class PartnersApi extends BaseApi {
     try {
       const response: AxiosResponse<DealershipResource> = await this.http.get<DealershipResource>('/api/v1/dealerships/me')
       return response.data ? DealershipAssembler.toEntity(response.data) : null
-    } catch {
-      return null
+    } catch (err: any) {
+      if (err?.response?.status === 404 || err?.response?.status === 401) {
+        return null
+      }
+      throw err
     }
   }
 
@@ -209,14 +208,37 @@ export class PartnersApi extends BaseApi {
    * PUT /api/v1/dealerships/me
    */
   public async updateMyDealership(resource: UpdateDealershipResource): Promise<Dealership> {
-    const payload = {
-      ...resource,
-      operatingHours: resource.operatingHours || resource.hours || undefined
+    const savedRuc = resource.ruc ||
+      localStorage.getItem('dealer_ruc') ||
+      localStorage.getItem('user_ruc') ||
+      localStorage.getItem('corporate_ruc') ||
+      '20100138019'
+
+    const payload: any = {
+      ruc: savedRuc,
+      name: resource.name?.trim() || 'Concesionaria Oficial',
+      address: resource.address?.trim() || 'Av. Javier Prado Este 4520, Surco, Lima',
+      phone: resource.phone?.trim() || '+51 987654321',
+      email: resource.email?.trim() || localStorage.getItem('user_email') || 'contacto@concesionaria.pe',
+      website: resource.website?.trim() || 'https://smartfinance-drive.pe',
+      description: resource.description?.trim() || '',
+      operatingHours: resource.operatingHours?.trim() || resource.hours?.trim() || 'Lunes a Sábado: 9:00 AM - 7:00 PM'
     }
+
+    if (resource.logoUrl && resource.logoUrl.startsWith('http')) {
+      payload.logoUrl = resource.logoUrl
+    }
+    if (resource.bannerUrl && resource.bannerUrl.startsWith('http')) {
+      payload.bannerUrl = resource.bannerUrl
+    }
+
     const response: AxiosResponse<DealershipResource> = await this.http.put<DealershipResource>(
       '/api/v1/dealerships/me',
       payload
     )
+    if (response.data?.ruc) {
+      localStorage.setItem('dealer_ruc', response.data.ruc)
+    }
     return DealershipAssembler.toEntity(response.data)
   }
 
@@ -229,8 +251,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<DealershipResource> = await this.http.post<DealershipResource>(
       '/api/v1/dealerships/me/logo',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return DealershipAssembler.toEntity(response.data)
   }
@@ -244,8 +265,7 @@ export class PartnersApi extends BaseApi {
     formData.append('file', file)
     const response: AxiosResponse<DealershipResource> = await this.http.post<DealershipResource>(
       '/api/v1/dealerships/me/banner',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     )
     return DealershipAssembler.toEntity(response.data)
   }

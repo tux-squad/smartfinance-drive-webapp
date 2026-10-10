@@ -116,7 +116,7 @@
           <div>
             <div class="text-3xl font-black text-surface-900 dark:text-surface-0 font-mono">{{ dealerListingsCount }} {{ t('dashboard.dealer.kpi.listingsUnits') }}</div>
             <p class="text-xs text-surface-600 dark:text-surface-300 font-medium mt-1">
-              <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ t('dashboard.dealer.kpi.listingsAvailable') }}</span> · {{ t('dashboard.dealer.kpi.listingsReserved') }} · {{ t('dashboard.dealer.kpi.listingsSold') }}
+              <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ dealerAvailableCount }} disponibles</span> · {{ dealerReservedCount }} reservados · {{ dealerSoldCount }} vendidos
             </p>
           </div>
           <div class="text-[11px] text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-100 dark:border-surface-800">
@@ -144,23 +144,23 @@
           </div>
         </div>
 
-        <!-- Card 6: Financed Volume -->
+        <!-- Card 6: Inventory Value / Financed Volume -->
         <div class="bg-surface-0 dark:bg-surface-900 rounded-3xl border border-surface-200 dark:border-surface-800 p-6 shadow-xs space-y-4 hover:shadow-md hover:border-sky-500/40 dark:hover:border-sky-500/40 transition-all">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider">{{ t('dashboard.dealer.kpi.volumeTitle') }}</span>
+            <span class="text-xs font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider">Valor de Inventario</span>
             <div class="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
               <i class="pi pi-credit-card text-lg"></i>
             </div>
           </div>
           <div>
-            <div class="text-3xl font-black text-surface-900 dark:text-surface-0 font-mono">$ 284,500 USD</div>
+            <div class="text-3xl font-black text-surface-900 dark:text-surface-0 font-mono">{{ dealerInventoryValueUsd }}</div>
             <p class="text-xs text-sky-600 dark:text-sky-400 font-semibold flex items-center gap-1 mt-1">
               <i class="pi pi-check-circle text-[10px]"></i>
-              <span>{{ t('dashboard.dealer.kpi.volumeSub') }}</span>
+              <span>{{ dealerFinancingApplicationsCount }} solicitudes de financiamiento</span>
             </p>
           </div>
           <div class="text-[11px] text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-100 dark:border-surface-800">
-            {{ t('dashboard.dealer.kpi.volumeDesc') }}
+            Métricas consolidadas de inventario y crédito automotriz
           </div>
         </div>
       </div>
@@ -238,39 +238,38 @@
             </router-link>
           </div>
 
-          <div class="space-y-4 divide-y divide-surface-100 dark:divide-surface-800">
-            <div class="flex items-center gap-4 pt-3 first:pt-0">
+          <div v-if="dealerVehicles.length === 0" class="py-8 text-center text-xs text-slate-400">
+            <i class="pi pi-car text-2xl mb-2 text-slate-300"></i>
+            <p>No tienes vehículos registrados en tu inventario.</p>
+          </div>
+          <div v-else class="space-y-4 divide-y divide-surface-100 dark:divide-surface-800">
+            <router-link
+              v-for="car in dealerVehicles.slice(0, 5)"
+              :key="car.id"
+              :to="`/vehicles/${car.id}`"
+              class="flex items-center gap-4 pt-3 first:pt-0 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <div class="w-12 h-12 rounded-2xl bg-surface-100 dark:bg-surface-800 overflow-hidden shrink-0 flex items-center justify-center text-primary">
-                <i class="pi pi-car text-xl"></i>
+                <img v-if="car.imagePath" :src="car.imagePath" :alt="car.displayName" class="w-full h-full object-cover" />
+                <i v-else class="pi pi-car text-xl"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-xs font-bold text-surface-900 dark:text-surface-0 truncate">Toyota Corolla Cross (2023)</h3>
-                <p class="text-[11px] text-surface-500 dark:text-surface-400 font-medium">$ 26,900 USD · 540 vistas</p>
+                <h3 class="text-xs font-bold text-surface-900 dark:text-surface-0 truncate">
+                  {{ car.brand }} {{ car.model }} ({{ car.manufactureYear }})
+                </h3>
+                <p class="text-[11px] text-surface-500 dark:text-surface-400 font-medium">
+                  {{ car.formattedPrice }} · {{ car.condition === 'NEW' ? 'Nuevo (0 km)' : 'Seminuevo' }}
+                </p>
               </div>
-              <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0 font-mono">14 leads</span>
-            </div>
-
-            <div class="flex items-center gap-4 pt-3">
-              <div class="w-12 h-12 rounded-2xl bg-surface-100 dark:bg-surface-800 overflow-hidden shrink-0 flex items-center justify-center text-primary">
-                <i class="pi pi-car text-xl"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="text-xs font-bold text-surface-900 dark:text-surface-0 truncate">Honda CR-V (2024)</h3>
-                <p class="text-[11px] text-surface-500 dark:text-surface-400 font-medium">$ 34,500 USD · 410 vistas</p>
-              </div>
-              <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0 font-mono">9 leads</span>
-            </div>
-
-            <div class="flex items-center gap-4 pt-3">
-              <div class="w-12 h-12 rounded-2xl bg-surface-100 dark:bg-surface-800 overflow-hidden shrink-0 flex items-center justify-center text-primary">
-                <i class="pi pi-car text-xl"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="text-xs font-bold text-surface-900 dark:text-surface-0 truncate">Mazda CX-5 (2023)</h3>
-                <p class="text-[11px] text-surface-500 dark:text-surface-400 font-medium">$ 29,800 USD · 320 vistas</p>
-              </div>
-              <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0 font-mono">8 leads</span>
-            </div>
+              <span
+                class="text-xs font-extrabold shrink-0 font-mono"
+                :class="car.status === 'ACTIVE' || car.status === 'AVAILABLE'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : (car.status === 'RESERVED' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500')"
+              >
+                {{ car.status === 'ACTIVE' || car.status === 'AVAILABLE' ? 'Activo' : (car.status === 'RESERVED' ? 'Reservado' : 'Vendido') }}
+              </span>
+            </router-link>
           </div>
         </div>
       </div>
@@ -317,7 +316,7 @@
             <div class="text-2xl font-black text-surface-900 dark:text-surface-0 font-mono">{{ buyerScore }}</div>
             <!-- Progress bar -->
             <div class="w-full bg-surface-100 dark:bg-surface-800 h-2 rounded-full mt-2 overflow-hidden">
-              <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full" style="width: 82%"></div>
+              <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" :style="{ width: `${buyerScorePercent}%` }"></div>
             </div>
           </div>
           <div class="flex items-center justify-between pt-1">
@@ -513,7 +512,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '@/iam/application/iam.store'
 import { useBillingStore } from '@/billing/application/billing.store'
@@ -522,6 +521,7 @@ import { useScoringStore } from '@/scoring/application/scoring.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { useAnalyticsStore } from '@/analytics/application/analytics.store'
+import type { Vehicle } from '@/catalog/domain/vehicle.entity'
 
 const { t } = useI18n()
 const iamStore = useIamStore()
@@ -536,27 +536,46 @@ const isDealer = computed(() => iamStore.roles.includes('ROLE_DEALER'))
 const isBank = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION'))
 const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
-// Dealer Metrics directly from real analytics store (GET /api/v1/analytics/dealer)
+const dealerVehicles = ref<Vehicle[]>([])
+
+// Dealer Metrics directly from real analytics store (GET /api/v1/analytics/dealer) or dealer's inventory
 const dealerLeadsCount = computed(() => analyticsStore.dealerAnalytics?.crm.totalLeads ?? billingStore.dealerMetrics?.totalLeadsGenerated ?? 0)
 const dealerConversionRate = computed(() => analyticsStore.dealerAnalytics?.crm.conversionRate ?? billingStore.dealerMetrics?.conversionRate ?? 0)
 const dealerViewsCount = computed(() => billingStore.dealerMetrics?.totalVehicleViews ?? 0)
-const dealerListingsCount = computed(() => analyticsStore.dealerAnalytics?.inventory.totalVehicles ?? catalogStore.vehicles.length)
+const dealerListingsCount = computed(() => analyticsStore.dealerAnalytics?.inventory.totalVehicles ?? dealerVehicles.value.length)
+const dealerAvailableCount = computed(() => analyticsStore.dealerAnalytics?.inventory.availableVehicles ?? dealerVehicles.value.filter(v => v.status === 'AVAILABLE' || v.status === 'ACTIVE').length)
+const dealerReservedCount = computed(() => analyticsStore.dealerAnalytics?.inventory.reservedVehicles ?? dealerVehicles.value.filter(v => v.status === 'RESERVED').length)
+const dealerSoldCount = computed(() => analyticsStore.dealerAnalytics?.inventory.soldVehicles ?? dealerVehicles.value.filter(v => v.status === 'SOLD').length)
 const dealerRoiValue = computed(() => billingStore.dealerMetrics?.membershipRoi || '0.0x')
 
+const dealerInventoryValueUsd = computed(() => {
+  if (analyticsStore.dealerAnalytics?.inventory.totalInventoryValueUsd) {
+    const val = analyticsStore.dealerAnalytics.inventory.totalInventoryValueUsd
+    return `$ ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+  }
+  const total = dealerVehicles.value.reduce((acc, v) => acc + (v.priceAmount || 0), 0)
+  return `$ ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
+})
+const dealerFinancingApplicationsCount = computed(() => analyticsStore.dealerAnalytics?.financing.totalApplicationsReceived ?? 0)
+
 // Dealer Funnel Stages
-const funnelNew = computed(() => analyticsStore.dealerAnalytics?.crm.newLeads ?? 12)
-const funnelContacted = computed(() => analyticsStore.dealerAnalytics?.crm.contactedLeads ?? 10)
-const funnelQualified = computed(() => analyticsStore.dealerAnalytics?.crm.qualifiedLeads ?? 8)
-const funnelClosedWon = computed(() => analyticsStore.dealerAnalytics?.crm.closedWonLeads ?? 3)
+const funnelNew = computed(() => analyticsStore.dealerAnalytics?.crm.newLeads ?? 0)
+const funnelContacted = computed(() => analyticsStore.dealerAnalytics?.crm.contactedLeads ?? 0)
+const funnelQualified = computed(() => analyticsStore.dealerAnalytics?.crm.qualifiedLeads ?? 0)
+const funnelClosedWon = computed(() => analyticsStore.dealerAnalytics?.crm.closedWonLeads ?? 0)
 
 const funnelPercentage = (val: number) => {
   const total = dealerLeadsCount.value || 1
-  return `${Math.min(100, Math.max(10, Math.round((val / total) * 100)))}%`
+  return `${Math.min(100, Math.max(0, Math.round((val / total) * 100)))}%`
 }
 
 // Buyer Metrics from real stores
 const buyerScore = computed(() => scoringStore.currentScore ? `${scoringStore.currentScore.score} pts` : 'Sin evaluar')
 const buyerScoreLevel = computed(() => scoringStore.currentScore?.riskTierLabel || 'Sin registro')
+const buyerScorePercent = computed(() => {
+  if (!scoringStore.currentScore?.score) return 0
+  return Math.min(100, Math.max(5, Math.round(((scoringStore.currentScore.score - 300) / (850 - 300)) * 100)))
+})
 const buyerCapacity = computed(() => scoringStore.currentScore ? scoringStore.currentScore.formattedMaxLoan : 'Pendiente')
 const buyerSimulationsCount = computed(() => financingStore.simulations.length)
 const buyerApplicationsStatus = computed(() => `${financingStore.creditApplications.length} activas`)
@@ -591,7 +610,13 @@ onMounted(async () => {
     await Promise.all([
       analyticsStore.fetchDealerAnalytics(),
       billingStore.fetchBillingData(),
-      catalogStore.fetchVehicles()
+      (async () => {
+        try {
+          dealerVehicles.value = await catalogStore.fetchVehiclesByUserId()
+        } catch {
+          dealerVehicles.value = []
+        }
+      })()
     ])
   } else if (isBank.value) {
     await Promise.all([

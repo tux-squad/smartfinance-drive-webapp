@@ -104,10 +104,20 @@ export const useIamStore = defineStore('iam', () => {
       }
     }) as EventListener)
 
-    window.addEventListener('session-expired', () => {
+    window.addEventListener('session-expired', async () => {
       currentUser.value = null
       token.value = null
       refreshTokenValue.value = null
+      try {
+        const { default: router } = await import('@/router')
+        if (router.currentRoute.value.path !== '/sign-in') {
+          router.push({ path: '/sign-in', query: { expired: '1' } })
+        }
+      } catch {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/sign-in')) {
+          window.location.href = '/sign-in?expired=1'
+        }
+      }
     })
   }
 

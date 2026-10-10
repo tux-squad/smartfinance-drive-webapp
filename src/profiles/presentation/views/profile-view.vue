@@ -686,7 +686,8 @@ const form = reactive({
 const dealerBusinessName = ref('')
 const dealerRuc = ref('')
 const dealerAddress = ref('')
-const dealerVehiclesCount = computed(() => catalogStore.vehicles.length)
+const dealerVehiclesList = ref<import('@/catalog/domain/vehicle.entity').Vehicle[]>([])
+const dealerVehiclesCount = computed(() => dealerVehiclesList.value.length)
 
 // Bank Data
 const bankEntityName = ref('')
@@ -784,7 +785,11 @@ onMounted(async () => {
     promises.push(profilesStore.fetchProfileByUserId(userId))
   }
   if (isDealer.value) {
-    promises.push(catalogStore.fetchVehicles())
+    promises.push(catalogStore.fetchVehiclesByUserId().then(v => {
+      dealerVehiclesList.value = v || []
+    }).catch(() => {
+      dealerVehiclesList.value = []
+    }))
     promises.push(partnersStore.fetchMyDealership().then(d => {
       if (d) {
         dealerBusinessName.value = d.name || ''
@@ -837,8 +842,13 @@ const handleSaveProfile = async () => {
         saveSuccessMessage.value = 'Información de perfil actualizada con éxito.'
         if (cleanFirst) localStorage.setItem('user_first_name', cleanFirst)
         if (cleanLast) localStorage.setItem('user_last_name', cleanLast)
-        const full = `${cleanFirst} ${cleanLast}`.trim()
-        if (full) localStorage.setItem('user_name', full)
+        if (isDealer.value && (dealerBusinessName.value || dealerAddress.value)) {
+          await partnersStore.updateMyDealership({
+            name: dealerBusinessName.value,
+            address: dealerAddress.value,
+            ruc: dealerRuc.value
+          })
+        }
       }
     } else {
       const command = new CreateProfileCommand({
@@ -860,6 +870,13 @@ const handleSaveProfile = async () => {
         if (cleanLast) localStorage.setItem('user_last_name', cleanLast)
         const full = `${cleanFirst} ${cleanLast}`.trim()
         if (full) localStorage.setItem('user_name', full)
+        if (isDealer.value && (dealerBusinessName.value || dealerAddress.value)) {
+          await partnersStore.updateMyDealership({
+            name: dealerBusinessName.value,
+            address: dealerAddress.value,
+            ruc: dealerRuc.value
+          })
+        }
       }
     }
   } catch {

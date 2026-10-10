@@ -13,9 +13,7 @@ const props = defineProps<{
 const router = useRouter()
 const { t } = useI18n()
 
-// Default fallback image if vehicle has no custom image URL
-const defaultImage = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'
-const imageUrl = computed(() => props.vehicle.imagePath || defaultImage)
+const imageUrl = computed(() => props.vehicle.imagePath || '')
 
 const isNew = computed(() => props.vehicle.condition === 'NEW')
 
@@ -43,15 +41,19 @@ const goToSimulation = () => {
     class="group flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/40 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
   >
     <!-- Card Header / Image Section -->
-    <div class="relative h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+    <div class="relative h-52 w-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
       <img
+        v-if="imageUrl"
         :src="imageUrl"
         :alt="vehicle.displayName"
         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        @error="(e: Event) => ((e.target as HTMLImageElement).src = defaultImage)"
       />
+      <div v-else class="flex flex-col items-center justify-center text-slate-400 space-y-1">
+        <i class="pi pi-car text-5xl"></i>
+        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">{{ vehicle.brand }}</span>
+      </div>
       <!-- Gradient overlay -->
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20 pointer-events-none"></div>
 
       <!-- Badges overlay -->
       <div class="absolute top-3 left-3 right-3 flex items-center justify-between">

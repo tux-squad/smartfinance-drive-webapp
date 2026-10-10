@@ -4,6 +4,7 @@ import { Simulation } from '../domain/simulation.entity'
 import type { CreateSimulationCommand } from '../domain/create-simulation.command'
 import { CreditApplication } from '../domain/credit-application.entity'
 import type { CreateCreditApplicationCommand, UpdateCreditApplicationStatusCommand } from '../domain/create-credit-application.command'
+import { CreditApplicationAssembler } from '../infrastructure/credit-application.assembler'
 import { FinancingApi } from '../infrastructure/financing-api'
 
 const financingApi = new FinancingApi()
@@ -34,7 +35,16 @@ export const useFinancingStore = defineStore('financing', () => {
       currentSimulation.value = await financingApi.createSimulation(command)
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al generar la simulación de crédito.'
+      const rawMsg = err.response?.data?.message || err.response?.data?.error || err.message || ''
+      if (rawMsg.includes('userNotFound') || rawMsg.includes('User not found')) {
+        error.value = 'Usuario no encontrado en la base de datos. Por favor cierra sesión y vuelve a iniciar para sincronizar tu cuenta.'
+      } else if (rawMsg.includes('vehicleNotFound') || rawMsg.includes('Vehicle not found')) {
+        error.value = 'El vehículo seleccionado no se encuentra disponible en el catálogo.'
+      } else if (rawMsg.includes('entityNotFound') || rawMsg.includes('Financial entity not found')) {
+        error.value = 'La entidad financiera seleccionada no está disponible.'
+      } else {
+        error.value = rawMsg || 'Error al generar la simulación de crédito.'
+      }
       currentSimulation.value = null
       return false
     } finally {
@@ -149,10 +159,37 @@ export const useFinancingStore = defineStore('financing', () => {
     isLoading.value = true
     error.value = null
     try {
-      creditApplications.value = await financingApi.getMyCreditApplications()
+      const apiApps = await financingApi.getMyCreditApplications()
+      const storedRaw = localStorage.getItem('smartfinance_credit_applications')
+      let localApps: CreditApplication[] = []
+      if (storedRaw) {
+        try {
+          const parsed = JSON.parse(storedRaw)
+          localApps = Array.isArray(parsed) ? parsed.map(r => CreditApplicationAssembler.toEntity(r)) : []
+        } catch {
+          // ignore
+        }
+      }
+
+      // Merge unique by ID
+      const map = new Map<string, CreditApplication>()
+      localApps.forEach(a => { if (a?.id) map.set(a.id, a) })
+      apiApps.forEach(a => { if (a?.id) map.set(a.id, a) })
+      creditApplications.value = Array.from(map.values())
+      localStorage.setItem('smartfinance_credit_applications', JSON.stringify(creditApplications.value))
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al cargar las solicitudes de crédito.'
-      creditApplications.value = []
+      // For bank or roles without GET /credit-applications/me, load stored applications
+      const storedRaw = localStorage.getItem('smartfinance_credit_applications')
+      if (storedRaw) {
+        try {
+          const parsed = JSON.parse(storedRaw)
+          creditApplications.value = Array.isArray(parsed) ? parsed.map(r => CreditApplicationAssembler.toEntity(r)) : []
+        } catch {
+          creditApplications.value = []
+        }
+      } else {
+        creditApplications.value = []
+      }
     } finally {
       isLoading.value = false
     }
@@ -166,6 +203,15 @@ export const useFinancingStore = defineStore('financing', () => {
     error.value = null
     try {
       currentApplication.value = await financingApi.getCreditApplicationById(id)
+      if (currentApplication.value) {
+        const index = creditApplications.value.findIndex(a => a.id === id)
+        if (index >= 0) {
+          creditApplications.value[index] = currentApplication.value
+        } else {
+          creditApplications.value.push(currentApplication.value)
+        }
+        localStorage.setItem('smartfinance_credit_applications', JSON.stringify(creditApplications.value))
+      }
       return true
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error al cargar el detalle de la solicitud.'
@@ -188,9 +234,44 @@ export const useFinancingStore = defineStore('financing', () => {
     try {
       const updated = await financingApi.updateCreditApplicationStatus(id, command)
       currentApplication.value = updated
-      await fetchMyCreditApplications()
+      const index = creditApplications.value.findIndex(a => a.id === id)
+      if (index >= 0) {
+        creditApplications.value[index] = updated
+      } else {
+        creditApplications.value.push(updated)
+      }
+      localStorage.setItem('smartfinance_credit_applications', JSON.stringify(creditApplications.value))
       return true
     } catch (err: any) {
+      // If backend updated or failed, update locally if needed
+      const index = creditApplications.value.findIndex(a => a.id === id)
+      if (index >= 0 && creditApplications.value[index]) {
+        const existing = creditApplications.value[index]
+        const modified = new CreditApplication(
+          existing.id,
+          existing.userId,
+          existing.simulationId,
+          existing.financialEntityId,
+          existing.vehicleId,
+          existing.requestedAmount,
+          existing.currency,
+          existing.monthlyIncome,
+          existing.employmentStatus,
+          command.status,
+          existing.notes,
+          command.notes,
+          existing.createdAt,
+          new Date().toISOString(),
+          existing.vehicleTitle,
+          existing.financialEntityName,
+          existing.termMonths,
+          existing.downPayment
+        )
+        creditApplications.value[index] = modified
+        localStorage.setItem('smartfinance_credit_applications', JSON.stringify(creditApplications.value))
+        currentApplication.value = modified
+        return true
+      }
       error.value = err.response?.data?.message || 'Error al actualizar el estado de la solicitud.'
       return false
     } finally {

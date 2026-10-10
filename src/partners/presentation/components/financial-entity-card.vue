@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import type { FinancialEntity } from '../../domain/financial-entity.entity'
+import { useIamStore } from '@/iam/application/iam.store'
 
 const props = defineProps<{
   entity: FinancialEntity
@@ -15,8 +16,14 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const iamStore = useIamStore()
 
 const benchmarksCount = computed(() => props.entity.rateBenchmarks?.length || 0)
+
+const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
+const isBankOwner = computed(() => iamStore.roles.includes('ROLE_FINANCIAL_INSTITUTION') && (props.entity.userId === String(iamStore.currentUser?.id)))
+const canEdit = computed(() => isAdmin.value || isBankOwner.value)
+const canDelete = computed(() => isAdmin.value)
 
 const onOpen = () => {
   emit('open-benchmarks', props.entity)
@@ -65,8 +72,9 @@ const onOpen = () => {
         class="w-full rounded-xl !text-xs !py-2.5 font-semibold border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
         @click="onOpen"
       />
-      <div class="flex items-center gap-2 pt-0.5">
+      <div v-if="canEdit || canDelete" class="flex items-center gap-2 pt-0.5">
         <Button
+          v-if="canEdit"
           label="Editar"
           icon="pi pi-pencil"
           text
@@ -75,6 +83,7 @@ const onOpen = () => {
           @click="emit('edit-entity', entity)"
         />
         <Button
+          v-if="canDelete"
           label="Eliminar"
           icon="pi pi-trash"
           text

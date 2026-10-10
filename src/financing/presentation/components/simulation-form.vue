@@ -29,7 +29,7 @@ const loanTermMonths = ref<number>(36)
 const annualEffectiveRate = ref<number>(9.5)
 const monthlyCreditLifeInsuranceRate = ref<number>(0.05)
 const vehicleInsuranceFeeAmount = ref<number>(60)
-const vehicleInsuranceType = ref<string>('FULL_COVERAGE')
+const vehicleInsuranceType = ref<string>('MENSUAL')
 const gracePeriodType = ref<string>('NONE')
 const gracePeriodMonths = ref<number>(0)
 const initialFeesAmount = ref<number>(150)
@@ -43,6 +43,12 @@ const financialEntityId = ref<string>('')
 const currencyOptions = [
   { label: 'USD ($) - Dólares', value: 'USD' },
   { label: 'PEN (S/) - Soles', value: 'PEN' }
+]
+
+const vehicleInsuranceTypeOptions = [
+  { label: 'Cuota Mensual (MENSUAL)', value: 'MENSUAL' },
+  { label: 'Financiado en el Préstamo (FINANCIADO)', value: 'FINANCIADO' },
+  { label: 'Póliza Endosada / Propia (ENDOSADO)', value: 'ENDOSADO' }
 ]
 
 const termPresets = [12, 24, 36, 48, 60]
@@ -141,14 +147,52 @@ watch([financialEntityId, loanTermMonths], ([newEntityId, newTerm]) => {
   }
 })
 
+const resolveCurrentUserId = (): string => {
+  if (iamStore.currentUser?.id && String(iamStore.currentUser.id) !== 'undefined' && String(iamStore.currentUser.id) !== 'null') {
+    return String(iamStore.currentUser.id)
+  }
+  const saved = localStorage.getItem('user_id')
+  if (saved && saved !== 'undefined' && saved !== 'null') {
+    return saved
+  }
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    try {
+      const parts = token.split('.')
+      if (parts.length === 3 && parts[1]) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+        if (payload.id) return String(payload.id)
+        if (payload.userId) return String(payload.userId)
+        if (payload.sub && !payload.sub.includes('@')) return String(payload.sub)
+      }
+    } catch {
+      // Ignore
+    }
+  }
+  return '101'
+}
+
 const handleSubmit = async () => {
-  const currentUserId = iamStore.currentUser?.id ? String(iamStore.currentUser.id) : '101'
+  const currentUserId = resolveCurrentUserId()
+
+  const selectedVehicleId = vehicleId.value || (catalogStore.vehicles[0]?.id || '')
+  const selectedEntityId = financialEntityId.value || (partnersStore.financialEntities[0]?.id || '')
+
+  if (!selectedVehicleId) {
+    financingStore.error = 'Por favor selecciona un vehículo del catálogo para calcular la simulación.'
+    return
+  }
+
+  if (!selectedEntityId) {
+    financingStore.error = 'Por favor selecciona una entidad financiera aliada para calcular la simulación.'
+    return
+  }
 
   const command = new CreateSimulationCommand(
-    title.value,
+    title.value || `Simulación de Crédito`,
     currentUserId,
-    vehicleId.value || 'c9d8e7f6-5432-1098-7654-3210fe210987',
-    financialEntityId.value || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566',
+    selectedVehicleId,
+    selectedEntityId,
     vehiclePriceAmount.value,
     currency.value,
     downPaymentPercentage.value,
@@ -388,6 +432,18 @@ const handleSubmit = async () => {
               :currency="currency"
               locale="en-US"
               class="w-full !rounded-2xl !text-sm"
+            />
+          </div>
+
+          <!-- Vehicle Insurance Type -->
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipo de Seguro Vehicular</label>
+            <Select
+              v-model="vehicleInsuranceType"
+              :options="vehicleInsuranceTypeOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full !rounded-2xl !text-sm border-slate-200 dark:border-slate-800"
             />
           </div>
 
