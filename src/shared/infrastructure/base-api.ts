@@ -28,6 +28,8 @@ function clearLocalSession(): void {
   localStorage.removeItem('user_name')
   localStorage.removeItem('user_id')
   localStorage.removeItem('user_roles')
+  localStorage.removeItem('user_first_name')
+  localStorage.removeItem('user_last_name')
 }
 
 /**
@@ -60,6 +62,13 @@ export class BaseApi {
           url.includes('/api/v1/auth/google') ||
           url.includes('/api/v1/auth/email-verification')
 
+        if (config.data instanceof FormData) {
+          if (config.headers) {
+            delete config.headers['Content-Type']
+            delete config.headers['content-type']
+          }
+        }
+
         if (isPublicAuthEndpoint) {
           if (config.headers && config.headers.Authorization) {
             delete config.headers.Authorization
@@ -81,7 +90,10 @@ export class BaseApi {
       async (error: AxiosError) => {
         const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
 
-        if (error.response?.status === 401 && originalRequest) {
+        const status = error.response?.status
+        const isAuthError = (status === 401 || status === 403)
+
+        if (isAuthError && originalRequest) {
           const requestUrl = originalRequest.url || ''
 
           // Never retry authentication endpoints to prevent endless loops
@@ -104,9 +116,11 @@ export class BaseApi {
 
           const storedRefreshToken = localStorage.getItem('refresh_token')
           if (!storedRefreshToken) {
-            clearLocalSession()
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('session-expired'))
+            if (status === 401) {
+              clearLocalSession()
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('session-expired'))
+              }
             }
             return Promise.reject(error)
           }

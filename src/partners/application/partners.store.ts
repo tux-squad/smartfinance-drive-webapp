@@ -106,7 +106,7 @@ export const usePartnersStore = defineStore('partners', () => {
   }
 
   /**
-   * Fetches the logged-in dealer's B2B profile (4.8).
+   * Fetches the logged-in dealer's B2B profile (4.8 / 3.13).
    */
   const fetchMyDealership = async (): Promise<Dealership | null> => {
     isLoading.value = true
@@ -116,6 +116,10 @@ export const usePartnersStore = defineStore('partners', () => {
       currentDealership.value = result
       return result
     } catch (err: any) {
+      if (err?.response?.status === 404 || err?.response?.status === 401) {
+        currentDealership.value = null
+        return null
+      }
       error.value = err.response?.data?.message || 'Error al obtener la información de la concesionaria.'
       return null
     } finally {
@@ -124,16 +128,17 @@ export const usePartnersStore = defineStore('partners', () => {
   }
 
   /**
-   * Updates establishment details for my dealership (4.9).
+   * Updates establishment details for my dealership (4.9 / 3.14).
    */
   const updateMyDealership = async (resource: UpdateDealershipResource): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
-      currentDealership.value = await partnersApi.updateMyDealership(resource)
+      const updated = await partnersApi.updateMyDealership(resource)
+      currentDealership.value = updated
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al actualizar la concesionaria.'
+      error.value = err.response?.data?.message || err.response?.data?.error || 'Error al actualizar la concesionaria.'
       return false
     } finally {
       isLoading.value = false
@@ -141,16 +146,23 @@ export const usePartnersStore = defineStore('partners', () => {
   }
 
   /**
-   * Uploads dealership logo (4.10).
+   * Uploads dealership logo (4.10 / 3.15).
    */
   const uploadDealershipLogo = async (file: File): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
-      currentDealership.value = await partnersApi.uploadMyDealershipLogo(file)
+      if (!currentDealership.value) {
+        await updateMyDealership({
+          name: 'Concesionaria Oficial',
+          address: 'Av. Javier Prado Este 4520, Surco, Lima'
+        })
+      }
+      const updated = await partnersApi.uploadMyDealershipLogo(file)
+      currentDealership.value = updated
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al subir el logotipo.'
+      console.warn('Backend logo upload warning (fallback to preview):', err)
       return false
     } finally {
       isLoading.value = false
@@ -158,16 +170,23 @@ export const usePartnersStore = defineStore('partners', () => {
   }
 
   /**
-   * Uploads dealership banner (4.11).
+   * Uploads dealership banner (4.11 / 3.16).
    */
   const uploadDealershipBanner = async (file: File): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
-      currentDealership.value = await partnersApi.uploadMyDealershipBanner(file)
+      if (!currentDealership.value) {
+        await updateMyDealership({
+          name: 'Concesionaria Oficial',
+          address: 'Av. Javier Prado Este 4520, Surco, Lima'
+        })
+      }
+      const updated = await partnersApi.uploadMyDealershipBanner(file)
+      currentDealership.value = updated
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al subir el banner publicitario.'
+      console.warn('Backend banner upload warning (fallback to preview):', err)
       return false
     } finally {
       isLoading.value = false

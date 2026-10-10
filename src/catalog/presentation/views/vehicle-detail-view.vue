@@ -31,18 +31,36 @@
 
     <!-- Main Detail Content matching Mockup Image 2 -->
     <template v-else>
-      <!-- Header Bar matching Mockup Image 2 -->
+      <!-- Header Bar -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-100 pb-6">
         <div class="space-y-1">
+          <div class="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <router-link :to="isDealerOrOwner ? '/dealer/inventory' : '/vehicles'" class="hover:text-blue-600 transition-colors">
+              {{ isDealerOrOwner ? 'Panel de Concesionaria / Mi Inventario' : 'Vehículos a buscar' }}
+            </router-link>
+            <i class="pi pi-chevron-right text-[10px]"></i>
+            <span class="text-gray-900 font-bold">{{ vehicle.brand }} {{ vehicle.model }}</span>
+          </div>
           <h1 class="text-3xl font-extrabold tracking-tight text-gray-950">
-            Detalle del Vehículo
+            {{ isDealerOrOwner ? 'Detalle y Gestión de Vehículo' : 'Detalle del Vehículo' }}
           </h1>
           <p class="text-sm text-gray-500">
-            Revisa el auto seleccionado y continúa con tu solicitud.
+            {{ isDealerOrOwner ? 'Administra las especificaciones, precio, galería y estado de tu publicación.' : 'Revisa el auto seleccionado y continúa con tu solicitud.' }}
           </p>
         </div>
 
-        <div>
+        <div class="flex items-center gap-2">
+          <span
+            v-if="isDealerOrOwner"
+            class="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold"
+            :class="vehicle.status === 'ACTIVE'
+              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              : (vehicle.status === 'RESERVED'
+                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                : 'bg-gray-100 text-gray-800 border border-gray-300')"
+          >
+            {{ vehicle.status === 'ACTIVE' ? '● Publicación Activa' : (vehicle.status === 'RESERVED' ? '● Reservado' : '● Vendido') }}
+          </span>
           <span class="inline-flex items-center px-4 py-1.5 rounded-xl text-xs font-mono font-semibold bg-gray-100 text-gray-700 border border-gray-200 shadow-2xs">
             Código SF-{{ vehicle.manufactureYear }}-{{ vehicle.model.toUpperCase().replace(/\s+/g, '') }}
           </span>
@@ -68,18 +86,31 @@
         <!-- Left Column: Media & Highlights (approx 7 cols) -->
         <div class="lg:col-span-7 space-y-6">
           <!-- Hero Image -->
-          <div class="relative rounded-3xl overflow-hidden border border-gray-200 bg-gray-100 h-96 shadow-xs flex items-center justify-center">
+          <div class="relative rounded-3xl overflow-hidden border border-gray-200 bg-gray-100 h-96 shadow-xs flex items-center justify-center group">
             <!-- Verified Badge -->
             <span class="absolute top-4 left-4 z-10 inline-flex items-center px-3 py-1 rounded-md text-xs font-semibold bg-[#00a887] text-white shadow-sm">
               Vehículo Verificado
             </span>
+
+            <!-- Change Cover Photo Button (Owner / Dealer only) -->
+            <button
+              v-if="isDealerOrOwner"
+              type="button"
+              @click="triggerCoverUpload"
+              :disabled="isUploadingCover"
+              class="absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/75 hover:bg-black/90 text-white text-xs font-bold shadow-lg backdrop-blur-md border border-white/20 transition-all opacity-90 group-hover:opacity-100"
+              title="Actualizar foto de portada (POST /api/v1/vehicles/{id}/image o fallback persistente)"
+            >
+              <i :class="isUploadingCover ? 'pi pi-spin pi-spinner' : 'pi pi-camera'" class="text-xs"></i>
+              <span>{{ isUploadingCover ? 'Subiendo portada...' : 'Cambiar Portada' }}</span>
+            </button>
 
             <img
               v-if="currentHeroImage"
               :src="currentHeroImage"
               :alt="vehicle.displayName"
               class="w-full h-full object-cover transition-all duration-300"
-              @error="onImageError($event, vehicle.brand)"
+              @error="onImageError($event)"
             />
             <div v-else class="flex flex-col items-center justify-center text-gray-300 space-y-2">
               <i class="pi pi-car text-6xl text-blue-900/20"></i>
@@ -88,7 +119,7 @@
           </div>
 
           <!-- Thumbnail Gallery Row -->
-          <div class="grid grid-cols-4 gap-3">
+          <div class="grid grid-cols-5 gap-3">
             <div
               v-for="(imgUrl, index) in galleryImages"
               :key="index"
@@ -102,10 +133,10 @@
                 :src="imgUrl"
                 :alt="`Vista ${index + 1}`"
                 class="w-full h-full object-cover"
-                @error="onImageError($event, vehicle.brand)"
+                @error="onImageError($event)"
               />
               <button
-                v-if="isDealerOrOwner"
+                v-if="isDealerOrOwner && galleryImages.length > 1"
                 type="button"
                 @click.stop="handleDeleteGalleryImage(index)"
                 title="Eliminar foto de la galería"
@@ -114,57 +145,94 @@
                 <i class="pi pi-times text-[9px]"></i>
               </button>
             </div>
+
+            <!-- Add photo to gallery card (Owner/Dealer only) -->
+            <button
+              v-if="isDealerOrOwner"
+              type="button"
+              @click="triggerGalleryUpload"
+              :disabled="isUploadingGallery"
+              class="h-20 rounded-2xl border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50/60 hover:bg-blue-50/50 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-blue-600 transition-all text-xs font-semibold"
+              title="Agregar imagen adicional a la galería (POST /api/v1/vehicles/{id}/images)"
+            >
+              <i :class="isUploadingGallery ? 'pi pi-spin pi-spinner' : 'pi pi-plus'" class="text-xs"></i>
+              <span class="text-[10px]">{{ isUploadingGallery ? 'Subiendo...' : '+ Galería' }}</span>
+            </button>
           </div>
 
-          <!-- Equipamiento Destacado matching Mockup Image 2 -->
+          <!-- Hidden File Inputs -->
+          <input
+            type="file"
+            ref="coverFileInputRef"
+            class="hidden"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            @change="handleCoverFileSelected"
+          />
+          <input
+            type="file"
+            ref="galleryFileInputRef"
+            class="hidden"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            @change="handleGalleryFileSelected"
+          />
+
+          <!-- Especificaciones Técnicas Oficiales (Datos reales del API) -->
           <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs space-y-4">
             <div>
-              <h2 class="text-base font-bold text-gray-950">Equipamiento Destacado</h2>
-              <p class="text-xs text-gray-500">Lo mejor del auto en mini-cards visuales.</p>
+              <h2 class="text-base font-bold text-gray-950">Especificaciones Técnicas</h2>
+              <p class="text-xs text-gray-500">Detalles oficiales registrados por el concesionario.</p>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <!-- Airbags -->
-              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
-                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
-                  <i class="pi pi-shield text-base"></i>
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-gray-900">Airbags</div>
-                  <div class="text-[11px] text-gray-500">7 airbags de serie</div>
-                </div>
-              </div>
-
-              <!-- Pantalla -->
-              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
-                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
-                  <i class="pi pi-desktop text-base"></i>
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-gray-900">Pantalla</div>
-                  <div class="text-[11px] text-gray-500">Pantalla táctil 9"</div>
-                </div>
-              </div>
-
-              <!-- Conectividad -->
-              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
-                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
-                  <i class="pi pi-wifi text-base"></i>
-                </div>
-                <div>
-                  <div class="text-xs font-bold text-gray-900">Conectividad</div>
-                  <div class="text-[11px] text-gray-500">Apple CarPlay y Android Auto</div>
-                </div>
-              </div>
-
-              <!-- Híbrido / Motor -->
+              <!-- Motor -->
               <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
                 <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
                   <i class="pi pi-bolt text-base"></i>
                 </div>
                 <div>
-                  <div class="text-xs font-bold text-gray-900">{{ isHybridOrEfficient ? 'Híbrido' : 'Motor Eficiente' }}</div>
-                  <div class="text-[11px] text-gray-500">Inyección electrónica de alto rendimiento</div>
+                  <div class="text-xs font-bold text-gray-900">Motorización</div>
+                  <div class="text-[11px] text-gray-600 font-medium">
+                    {{ vehicle.engine || 'Estándar de fábrica' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transmisión -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-cog text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Transmisión</div>
+                  <div class="text-[11px] text-gray-600 font-medium">
+                    {{ vehicle.transmission === 'AUTOMATIC' ? 'Automática' : (vehicle.transmission === 'MANUAL' ? 'Mecánica / Manual' : (vehicle.transmission || 'Automática')) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tracción -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-compass text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Tracción</div>
+                  <div class="text-[11px] text-gray-600 font-medium">
+                    {{ vehicle.traction === 'FWD' ? 'Delantera (FWD)' : (vehicle.traction === 'AWD' ? 'Integral (AWD)' : (vehicle.traction === 'RWD' ? 'Trasera (RWD)' : (vehicle.traction || 'Delantera (FWD)'))) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kilometraje -->
+              <div class="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50/70 border border-gray-100">
+                <div class="w-9 h-9 rounded-lg bg-white shadow-2xs border border-gray-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <i class="pi pi-gauge text-base"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">Kilometraje</div>
+                  <div class="text-[11px] text-gray-600 font-medium font-mono">
+                    {{ vehicle.mileage !== undefined && vehicle.mileage !== null ? `${vehicle.mileage.toLocaleString()} km` : (vehicle.condition === 'NEW' ? '0 km (Nuevo)' : 'No especificado') }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -196,14 +264,15 @@
 
         <!-- Right Column: Pricing, Loan Simulation & Concessionaire (approx 5 cols) -->
         <div class="lg:col-span-5 space-y-6">
-          <div class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-6">
+          <!-- CASE A: BUYER VIEW (ROLE_USER or Guest) -->
+          <div v-if="!isDealerOrOwner" class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-6">
             <!-- Vehicle Main Title & Spec Line -->
             <div class="space-y-1">
               <h2 class="text-2xl font-extrabold text-gray-950 tracking-tight">
                 {{ vehicle.brand }} {{ vehicle.model }} {{ vehicle.manufactureYear }}
               </h2>
               <p class="text-xs text-gray-500 font-medium">
-                {{ vehicle.condition === 'NEW' ? '0 km' : 'Certificado' }} · Automática · {{ vehicle.condition === 'NEW' ? 'Nuevo' : 'Seminuevo' }}
+                {{ vehicle.condition === 'NEW' ? '0 km' : 'Certificado' }} · {{ vehicle.transmission === 'AUTOMATIC' ? 'Automática' : (vehicle.transmission === 'MANUAL' ? 'Mecánica' : (vehicle.transmission || 'Automática')) }} · {{ vehicle.condition === 'NEW' ? 'Nuevo' : 'Seminuevo' }}
               </p>
             </div>
 
@@ -255,7 +324,7 @@
               </div>
             </div>
 
-            <!-- Action Buttons matching Mockup Image 2 & CRM integration -->
+            <!-- Action Buttons for Buyer matching Mockup Image 2 & CRM integration -->
             <div class="space-y-2.5 pt-2">
               <button
                 type="button"
@@ -298,9 +367,323 @@
               Tu solicitud se envía directamente al concesionario y un asesor financiero te contacta para confirmar disponibilidad y condiciones.
             </p>
           </div>
+
+          <!-- CASE B: DEALER / OWNER VIEW (ROLE_DEALER or Listing Owner) -->
+          <div v-else class="bg-white rounded-3xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-6">
+            <!-- Header: Vehicle Title & Status -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                  <i class="pi pi-building text-[10px]"></i>
+                  <span>Gestión de Concesionario</span>
+                </span>
+
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold"
+                  :class="vehicle.status === 'ACTIVE'
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : (vehicle.status === 'RESERVED'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                      : 'bg-gray-100 text-gray-800 border border-gray-300')"
+                >
+                  {{ vehicle.status === 'ACTIVE' ? '● Activo' : (vehicle.status === 'RESERVED' ? '● Reservado' : '● Vendido') }}
+                </span>
+              </div>
+
+              <h2 class="text-2xl font-extrabold text-gray-950 tracking-tight">
+                {{ vehicle.brand }} {{ vehicle.model }} {{ vehicle.manufactureYear }}
+              </h2>
+              <p class="text-xs text-gray-500 font-medium">
+                {{ vehicle.condition === 'NEW' ? 'Nuevo (0 km)' : 'Seminuevo' }} · {{ vehicle.transmission === 'AUTOMATIC' ? 'Automática' : (vehicle.transmission === 'MANUAL' ? 'Manual' : (vehicle.transmission || 'Automática')) }}
+              </p>
+            </div>
+
+            <!-- Price Section -->
+            <div class="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100/80 border border-gray-200 space-y-1">
+              <div class="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Precio de Lista Publicado</div>
+              <div class="text-3xl font-black text-gray-950">
+                {{ vehicle.formattedPrice }}
+              </div>
+              <div class="text-[11px] text-gray-500">
+                Moneda de venta: <span class="font-bold text-gray-700">{{ vehicle.currency || 'USD' }}</span>
+              </div>
+            </div>
+
+            <!-- Quick Status Changer (PATCH /api/v1/vehicles/{id}/status) -->
+            <div class="rounded-2xl bg-white border border-gray-200 p-4 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                  <i class="pi pi-sync text-xs text-blue-600"></i>
+                  <span>Estado de Publicación</span>
+                </label>
+                <span class="text-[10px] text-gray-400 font-mono">Actualización en vivo</span>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  @click="handleStatusChange('ACTIVE')"
+                  :class="[
+                    'py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-1 cursor-pointer',
+                    vehicle.status === 'ACTIVE'
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-400/30'
+                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-emerald-50 hover:border-emerald-300'
+                  ]"
+                >
+                  <i class="pi pi-check-circle text-xs"></i>
+                  <span>Activo</span>
+                </button>
+
+                <button
+                  type="button"
+                  @click="handleStatusChange('RESERVED')"
+                  :class="[
+                    'py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-1 cursor-pointer',
+                    vehicle.status === 'RESERVED'
+                      ? 'bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/30'
+                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-amber-50 hover:border-amber-300'
+                  ]"
+                >
+                  <i class="pi pi-clock text-xs"></i>
+                  <span>Reservado</span>
+                </button>
+
+                <button
+                  type="button"
+                  @click="handleStatusChange('SOLD')"
+                  :class="[
+                    'py-2 px-2 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-1 cursor-pointer',
+                    vehicle.status === 'SOLD'
+                      ? 'bg-gray-800 text-white border-gray-800 shadow-xs ring-2 ring-gray-400/30'
+                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-200 hover:border-gray-400'
+                  ]"
+                >
+                  <i class="pi pi-lock text-xs"></i>
+                  <span>Vendido</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Administrative Data Card -->
+            <div class="rounded-2xl border border-gray-200 p-4 space-y-2.5 text-xs">
+              <div class="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2 flex items-center justify-between">
+                <span>Información del Registro</span>
+                <i class="pi pi-info-circle text-gray-400"></i>
+              </div>
+
+              <div class="flex justify-between text-gray-600">
+                <span>Entidad Financiera:</span>
+                <span class="font-bold text-gray-900 text-right">{{ dealerName }}</span>
+              </div>
+
+              <div class="flex justify-between text-gray-600">
+                <span>Condición:</span>
+                <span class="font-bold text-gray-900">{{ vehicle.condition === 'NEW' ? 'Nuevo (0 km)' : 'Seminuevo' }}</span>
+              </div>
+
+              <div class="flex justify-between text-gray-600">
+                <span>Kilometraje:</span>
+                <span class="font-bold text-gray-900 font-mono">{{ vehicle.mileage !== undefined && vehicle.mileage !== null ? `${vehicle.mileage.toLocaleString()} km` : '0 km' }}</span>
+              </div>
+
+              <div class="flex justify-between text-gray-600">
+                <span>ID Registro en BD:</span>
+                <span class="font-mono text-[11px] text-gray-500 truncate max-w-[150px]" :title="vehicle.id">{{ vehicle.id }}</span>
+              </div>
+            </div>
+
+            <!-- Dealer Management Actions -->
+            <div class="space-y-2.5 pt-2">
+              <!-- Edit Specs Button -->
+              <button
+                type="button"
+                @click="openEditModal"
+                class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs text-center shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-pencil text-xs"></i>
+                <span>Editar Especificaciones y Precio</span>
+              </button>
+
+              <!-- View CRM Prospects for this vehicle -->
+              <button
+                type="button"
+                @click="router.push('/dealer/prospects')"
+                class="w-full py-2.5 px-4 rounded-xl border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-users text-xs"></i>
+                <span>Ver Clientes Interesados / CRM</span>
+              </button>
+
+              <!-- Back to inventory button -->
+              <button
+                type="button"
+                @click="router.push('/dealer/inventory')"
+                class="w-full py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-arrow-left text-xs"></i>
+                <span>Volver a Mi Inventario</span>
+              </button>
+
+              <!-- Delete Vehicle Button -->
+              <button
+                type="button"
+                @click="confirmDeleteVehicle"
+                class="w-full py-2.5 px-4 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-trash text-xs"></i>
+                <span>Eliminar Publicación</span>
+              </button>
+            </div>
+
+            <!-- Help Notice for Dealer -->
+            <p class="text-[11px] text-gray-400 leading-relaxed pt-1">
+              Como concesionario propietario, las actualizaciones que realices en el precio o especificaciones se sincronizarán inmediatamente con el catálogo y el simulador crediticio.
+            </p>
+          </div>
         </div>
       </div>
     </template>
+
+    <!-- Modal Editar Vehículo (Dealer Action) -->
+    <Dialog
+      v-model:visible="isEditOpen"
+      modal
+      header="Editar Especificaciones de Vehículo"
+      :style="{ width: '520px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <form @submit.prevent="handleSaveEdit" class="space-y-4 pt-2">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Marca</label>
+          <InputText v-model="editForm.brand" class="w-full text-xs" required />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Modelo</label>
+          <InputText v-model="editForm.model" class="w-full text-xs" required />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Año de Fabricación</label>
+            <InputNumber v-model="editForm.manufactureYear" class="w-full text-xs" :useGrouping="false" :min="1990" :max="2030" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Condición</label>
+            <Select
+              v-model="editForm.condition"
+              :options="[{ label: 'Nuevo (0 km)', value: 'NEW' }, { label: 'Seminuevo', value: 'USED' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Precio</label>
+            <InputNumber v-model="editForm.priceAmount" class="w-full text-xs" :min="0" mode="currency" currency="USD" locale="en-US" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Moneda</label>
+            <Select
+              v-model="editForm.currency"
+              :options="[{ label: 'USD ($)', value: 'USD' }, { label: 'PEN (S/)', value: 'PEN' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Kilometraje (km)</label>
+            <InputNumber v-model="editForm.mileage" class="w-full text-xs" :min="0" :useGrouping="false" placeholder="0" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Transmisión</label>
+            <Select
+              v-model="editForm.transmission"
+              :options="[{ label: 'Automática', value: 'AUTOMATIC' }, { label: 'Manual/Mecánica', value: 'MANUAL' }, { label: 'CVT', value: 'CVT' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Motor</label>
+            <InputText v-model="editForm.engine" placeholder="Ej. 2.0L, 2.5L Hybrid" class="w-full text-xs" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Tracción</label>
+            <Select
+              v-model="editForm.traction"
+              :options="[{ label: 'Delantera (FWD)', value: 'FWD' }, { label: 'Integral (AWD)', value: 'AWD' }, { label: 'Trasera (RWD)', value: 'RWD' }, { label: '4x4 (4WD)', value: '4WD' }]"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+        <div v-if="partnersStore.financialEntities.length > 0">
+          <label class="block text-xs font-bold text-gray-700 mb-1">Entidad Financiera Aliada</label>
+          <Select
+            v-model="editForm.financialEntityId"
+            :options="partnersStore.financialEntities"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Seleccionar banco o financiera"
+            class="w-full text-xs"
+            required
+          />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isEditOpen = false" class="!text-xs" />
+          <Button
+            type="submit"
+            label="Guardar Cambios"
+            icon="pi pi-check"
+            :loading="isSavingEdit"
+            class="!text-xs !bg-blue-600 !border-blue-600"
+          />
+        </div>
+      </form>
+    </Dialog>
+
+    <!-- Modal Eliminar Vehículo (Dealer Action) -->
+    <Dialog
+      v-model:visible="isDeleteOpen"
+      modal
+      header="Eliminar Vehículo del Catálogo"
+      :style="{ width: '450px', maxWidth: '95vw' }"
+      :dismissableMask="true"
+    >
+      <div class="space-y-4 pt-2">
+        <div class="flex items-start gap-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs">
+          <i class="pi pi-exclamation-triangle text-rose-600 text-lg shrink-0 mt-0.5"></i>
+          <div>
+            <div class="font-bold">Esta acción no se puede deshacer</div>
+            <div class="text-rose-700 mt-0.5">
+              Se eliminará permanentemente la publicación de <strong>{{ vehicle?.brand }} {{ vehicle?.model }} ({{ vehicle?.manufactureYear }})</strong> y todas sus imágenes asociadas.
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+          <Button label="Cancelar" text severity="secondary" @click="isDeleteOpen = false" class="!text-xs" />
+          <Button
+            type="button"
+            label="Sí, Eliminar Publicación"
+            icon="pi pi-trash"
+            severity="danger"
+            :loading="isDeleting"
+            @click="handleDeleteVehicle"
+            class="!text-xs !bg-rose-600 !border-rose-600"
+          />
+        </div>
+      </div>
+    </Dialog>
 
     <!-- Modal Estoy Interesado (2.41 createProspect) -->
     <Dialog
@@ -463,7 +846,9 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
 import { useCatalogStore } from '../../application/catalog.store'
+import { UploadVehicleImageCommand } from '../../domain/upload-vehicle-image.command'
 import { usePartnersStore } from '@/partners/application/partners.store'
 import { useCrmStore } from '@/financing/application/crm.store'
 import { useIamStore } from '@/iam/application/iam.store'
@@ -481,19 +866,198 @@ const vehicle = computed(() => catalogStore.selectedVehicle)
 const activeThumbnailIndex = ref<number>(0)
 const bannerFeedback = ref<string | null>(null)
 
+// File upload refs & state
+const coverFileInputRef = ref<HTMLInputElement | null>(null)
+const galleryFileInputRef = ref<HTMLInputElement | null>(null)
+const isUploadingCover = ref<boolean>(false)
+const isUploadingGallery = ref<boolean>(false)
+
+const triggerCoverUpload = () => {
+  if (coverFileInputRef.value) {
+    coverFileInputRef.value.value = ''
+    coverFileInputRef.value.click()
+  }
+}
+
+const handleCoverFileSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file || !vehicle.value?.id) return
+
+  isUploadingCover.value = true
+  bannerFeedback.value = null
+
+  try {
+    const cmd = new UploadVehicleImageCommand(vehicle.value.id, file)
+    const success = await catalogStore.uploadVehicleImage(cmd)
+    if (success) {
+      bannerFeedback.value = 'Foto de portada del vehículo actualizada exitosamente.'
+      await catalogStore.fetchVehicleById(vehicle.value.id)
+    } else {
+      bannerFeedback.value = catalogStore.error || 'No se pudo actualizar la foto de portada.'
+    }
+  } catch (err: any) {
+    bannerFeedback.value = err.response?.data?.message || err.message || 'Error al subir la imagen.'
+  } finally {
+    isUploadingCover.value = false
+  }
+}
+
+const triggerGalleryUpload = () => {
+  if (galleryFileInputRef.value) {
+    galleryFileInputRef.value.value = ''
+    galleryFileInputRef.value.click()
+  }
+}
+
+const handleGalleryFileSelected = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file || !vehicle.value?.id) return
+
+  isUploadingGallery.value = true
+  bannerFeedback.value = null
+
+  try {
+    const success = await catalogStore.uploadGalleryImage(vehicle.value.id, file)
+    if (success) {
+      bannerFeedback.value = 'Nueva foto agregada a la galería del vehículo.'
+      await catalogStore.fetchVehicleById(vehicle.value.id)
+      activeThumbnailIndex.value = Math.max(0, galleryImages.value.length - 1)
+    } else {
+      bannerFeedback.value = catalogStore.error || 'No se pudo subir la foto a la galería.'
+    }
+  } catch (err: any) {
+    bannerFeedback.value = err.response?.data?.message || err.message || 'Error al subir la imagen a la galería.'
+  } finally {
+    isUploadingGallery.value = false
+  }
+}
+
 const isDealerOrOwner = computed(() => {
   return iamStore.roles.includes('ROLE_DEALER') ||
          iamStore.roles.includes('ROLE_ADMIN') ||
          Boolean(vehicle.value && iamStore.currentUser?.id && String(iamStore.currentUser.id) === String(vehicle.value.userId))
 })
 
+// Dealer Management State & Handlers
+const isEditOpen = ref(false)
+const isDeleteOpen = ref(false)
+const isSavingEdit = ref(false)
+const isDeleting = ref(false)
+
+const editForm = reactive({
+  id: '',
+  brand: '',
+  model: '',
+  manufactureYear: new Date().getFullYear(),
+  condition: 'NEW' as 'NEW' | 'USED',
+  priceAmount: 0,
+  currency: 'USD',
+  mileage: 0,
+  transmission: 'AUTOMATIC',
+  engine: '',
+  traction: 'FWD',
+  financialEntityId: ''
+})
+
+const openEditModal = () => {
+  if (!vehicle.value) return
+  editForm.id = vehicle.value.id
+  editForm.brand = vehicle.value.brand
+  editForm.model = vehicle.value.model
+  editForm.manufactureYear = vehicle.value.manufactureYear
+  editForm.condition = (vehicle.value.condition as 'NEW' | 'USED') || 'NEW'
+  editForm.priceAmount = vehicle.value.priceAmount
+  editForm.currency = vehicle.value.currency || 'USD'
+  editForm.mileage = vehicle.value.mileage || 0
+  editForm.transmission = vehicle.value.transmission || 'AUTOMATIC'
+  editForm.engine = vehicle.value.engine || ''
+  editForm.traction = vehicle.value.traction || 'FWD'
+  editForm.financialEntityId = vehicle.value.financialEntityId || (partnersStore.financialEntities[0]?.id || '')
+  isEditOpen.value = true
+}
+
+const handleSaveEdit = async () => {
+  if (!editForm.id) return
+  isSavingEdit.value = true
+  bannerFeedback.value = null
+  try {
+    const updated = await catalogStore.updateVehicle(editForm.id, {
+      financialEntityId: editForm.financialEntityId,
+      brand: editForm.brand,
+      model: editForm.model,
+      manufactureYear: editForm.manufactureYear,
+      condition: editForm.condition,
+      priceAmount: editForm.priceAmount,
+      currency: editForm.currency,
+      mileage: editForm.mileage,
+      transmission: editForm.transmission,
+      engine: editForm.engine,
+      traction: editForm.traction,
+      imagePath: vehicle.value?.imagePath,
+      images: vehicle.value?.images
+    })
+    if (updated) {
+      bannerFeedback.value = 'Especificaciones del vehículo actualizadas exitosamente.'
+      isEditOpen.value = false
+      await catalogStore.fetchVehicleById(editForm.id)
+    } else {
+      bannerFeedback.value = catalogStore.error || 'Error al actualizar el vehículo.'
+    }
+  } catch (err: any) {
+    bannerFeedback.value = err.message || 'Error al actualizar el vehículo.'
+  } finally {
+    isSavingEdit.value = false
+  }
+}
+
+const handleStatusChange = async (newStatus: string) => {
+  if (!vehicle.value?.id) return
+  bannerFeedback.value = null
+  const success = await catalogStore.updateVehicleStatus(vehicle.value.id, newStatus)
+  if (success) {
+    bannerFeedback.value = `Estado de publicación actualizado a "${newStatus === 'ACTIVE' ? 'Activo' : (newStatus === 'RESERVED' ? 'Reservado' : 'Vendido')}".`
+  } else {
+    bannerFeedback.value = catalogStore.error || 'Error al cambiar estado del vehículo.'
+  }
+}
+
+const confirmDeleteVehicle = () => {
+  isDeleteOpen.value = true
+}
+
+const handleDeleteVehicle = async () => {
+  if (!vehicle.value?.id) return
+  isDeleting.value = true
+  try {
+    const success = await catalogStore.deleteVehicle(vehicle.value.id)
+    if (success) {
+      isDeleteOpen.value = false
+      router.push('/dealer/inventory')
+    } else {
+      bannerFeedback.value = catalogStore.error || 'Error al eliminar el vehículo.'
+    }
+  } finally {
+    isDeleting.value = false
+  }
+}
+
 const handleDeleteGalleryImage = async (index: number) => {
   if (!vehicle.value?.id) return
   if (!window.confirm(`¿Estás seguro de eliminar la imagen #${index + 1} de la galería?`)) return
   try {
-    const success = await catalogStore.deleteGalleryImage(vehicle.value.id, index)
+    // Note: If index 0 is cover image (imagePath), gallery images start at 0 in backend images array
+    // Check if index corresponds to images array
+    const actualGalleryIndex = vehicle.value.imagePath ? (index - 1) : index
+    if (actualGalleryIndex < 0) {
+      bannerFeedback.value = 'Para cambiar la foto de portada principal, usa el botón "Cambiar Portada".'
+      return
+    }
+    const success = await catalogStore.deleteGalleryImage(vehicle.value.id, actualGalleryIndex)
     if (success) {
       bannerFeedback.value = `Imagen #${index + 1} eliminada exitosamente.`
+      await catalogStore.fetchVehicleById(vehicle.value.id)
       if (activeThumbnailIndex.value >= galleryImages.value.length) {
         activeThumbnailIndex.value = Math.max(0, galleryImages.value.length - 1)
       }
@@ -525,27 +1089,37 @@ const testDriveForm = reactive({
   notes: ''
 })
 
+const defaultVehicleFallback = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80'
+
 const galleryImages = computed<string[]>(() => {
   if (!vehicle.value) return []
-  if (vehicle.value.images && vehicle.value.images.length > 0) {
-    return vehicle.value.images.slice(0, 4)
-  }
+  const list: string[] = []
   if (vehicle.value.imagePath) {
-    return [vehicle.value.imagePath]
+    list.push(vehicle.value.imagePath)
   }
-  return []
+  if (vehicle.value.images && Array.isArray(vehicle.value.images)) {
+    vehicle.value.images.forEach((img) => {
+      if (img && !list.includes(img)) list.push(img)
+    })
+  }
+  if (list.length === 0) {
+    list.push(defaultVehicleFallback)
+  }
+  return list
 })
 
 const currentHeroImage = computed<string>(() => {
   if (galleryImages.value.length > 0 && galleryImages.value[activeThumbnailIndex.value]) {
     return galleryImages.value[activeThumbnailIndex.value]!
   }
-  return vehicle.value?.imagePath || ''
+  return vehicle.value?.imagePath || defaultVehicleFallback
 })
 
-const onImageError = (event: Event, _brand?: string) => {
+const onImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
-  target.src = 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80'
+  if (!target.src.includes('unsplash.com')) {
+    target.src = defaultVehicleFallback
+  }
 }
 
 onMounted(async () => {

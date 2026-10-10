@@ -137,7 +137,21 @@ export const useCatalogStore = defineStore('catalog', () => {
   }
 
   /**
+   * Helper to convert File to Data URL string (Base64).
+   */
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  /**
    * Uploads an image for a vehicle (3.4).
+   * Tries POST /vehicles/{id}/image (Cloudinary). If backend throws Cloudinary signature error (500),
+   * falls back to saving the image directly via PUT /vehicles/{id} with imagePath.
    */
   const uploadVehicleImage = async (command: UploadVehicleImageCommand): Promise<boolean> => {
     isLoading.value = true
@@ -153,6 +167,36 @@ export const useCatalogStore = defineStore('catalog', () => {
       }
       return true
     } catch (err: any) {
+      // Robust Fallback: If backend Cloudinary signature on Render fails (HTTP 500)
+      try {
+        const base64Data = await fileToDataUrl(command.file)
+        const current = selectedVehicle.value?.id === command.vehicleId
+          ? selectedVehicle.value
+          : vehicles.value.find((v) => v.id === command.vehicleId) || await catalogApi.getVehicleById(command.vehicleId)
+
+        if (current) {
+          const updatedVehicle = await catalogApi.updateVehicle(command.vehicleId, {
+            financialEntityId: current.financialEntityId,
+            brand: current.brand,
+            model: current.model,
+            manufactureYear: current.manufactureYear,
+            condition: current.condition,
+            priceAmount: current.priceAmount,
+            currency: current.currency,
+            imagePath: base64Data
+          })
+          if (selectedVehicle.value && selectedVehicle.value.id === updatedVehicle.id) {
+            selectedVehicle.value = updatedVehicle
+          }
+          const index = vehicles.value.findIndex((v) => v.id === updatedVehicle.id)
+          if (index !== -1) {
+            vehicles.value[index] = updatedVehicle
+          }
+          return true
+        }
+      } catch (fallbackErr) {
+        console.warn('Fallback direct image update failed:', fallbackErr)
+      }
       error.value = err.response?.data?.message || 'Error al subir la imagen del vehículo.'
       return false
     } finally {
@@ -161,16 +205,16 @@ export const useCatalogStore = defineStore('catalog', () => {
   }
 
   /**
-   * Fetches vehicles belonging to a specific user/dealer (3.4).
+   * Fetches vehicles belonging to authenticated user or specific user (2.16 / 2.17).
    */
-  const fetchVehiclesByUserId = async (userId: string): Promise<Vehicle[]> => {
+  const fetchVehiclesByUserId = async (userId?: string): Promise<Vehicle[]> => {
     isLoading.value = true
     error.value = null
     try {
       return await catalogApi.getVehiclesByUserId(userId)
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error al cargar los vehículos del concesionario.'
-      return []
+      throw err
     } finally {
       isLoading.value = false
     }
@@ -215,6 +259,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   /**
    * Uploads an additional image to vehicle gallery (3.10).
+   * Tries POST /vehicles/{id}/images. If backend Cloudinary fails, falls back to PUT /vehicles/{id} with images array.
    */
   const uploadGalleryImage = async (vehicleId: string, file: File): Promise<boolean> => {
     isLoading.value = true
@@ -230,6 +275,39 @@ export const useCatalogStore = defineStore('catalog', () => {
       }
       return true
     } catch (err: any) {
+      // Robust Fallback: If Cloudinary fails on Render backend
+      try {
+        const base64Data = await fileToDataUrl(file)
+        const current = selectedVehicle.value?.id === vehicleId
+          ? selectedVehicle.value
+          : vehicles.value.find(v => v.id === vehicleId) || await catalogApi.getVehicleById(vehicleId)
+
+        if (current) {
+          const currentImages = Array.isArray(current.images) ? [...current.images] : []
+          currentImages.push(base64Data)
+          const updated = await catalogApi.updateVehicle(vehicleId, {
+            financialEntityId: current.financialEntityId,
+            brand: current.brand,
+            model: current.model,
+            manufactureYear: current.manufactureYear,
+            condition: current.condition,
+            priceAmount: current.priceAmount,
+            currency: current.currency,
+            imagePath: current.imagePath,
+            images: currentImages
+          })
+          if (selectedVehicle.value?.id === updated.id) {
+            selectedVehicle.value = updated
+          }
+          const index = vehicles.value.findIndex(v => v.id === updated.id)
+          if (index !== -1) {
+            vehicles.value[index] = updated
+          }
+          return true
+        }
+      } catch (fallbackErr) {
+        console.warn('Fallback gallery upload failed:', fallbackErr)
+      }
       error.value = err.response?.data?.message || 'Error al cargar imagen adicional a la galería.'
       return false
     } finally {
@@ -254,6 +332,36 @@ export const useCatalogStore = defineStore('catalog', () => {
       }
       return true
     } catch (err: any) {
+      // Fallback: update images array via PUT
+      try {
+        const current = selectedVehicle.value?.id === vehicleId
+          ? selectedVehicle.value
+          : vehicles.value.find(v => v.id === vehicleId)
+        if (current && Array.isArray(current.images)) {
+          const updatedImages = current.images.filter((_, idx) => idx !== imageIndex)
+          const updated = await catalogApi.updateVehicle(vehicleId, {
+            financialEntityId: current.financialEntityId,
+            brand: current.brand,
+            model: current.model,
+            manufactureYear: current.manufactureYear,
+            condition: current.condition,
+            priceAmount: current.priceAmount,
+            currency: current.currency,
+            imagePath: current.imagePath,
+            images: updatedImages
+          })
+          if (selectedVehicle.value?.id === updated.id) {
+            selectedVehicle.value = updated
+          }
+          const index = vehicles.value.findIndex(v => v.id === updated.id)
+          if (index !== -1) {
+            vehicles.value[index] = updated
+          }
+          return true
+        }
+      } catch (fallbackErr) {
+        console.warn('Fallback gallery delete failed:', fallbackErr)
+      }
       error.value = err.response?.data?.message || 'Error al eliminar foto de la galería.'
       return false
     } finally {
@@ -300,7 +408,14 @@ export const useCatalogStore = defineStore('catalog', () => {
       totalElements.value = Math.max(0, totalElements.value - 1)
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al eliminar el vehículo del catálogo.'
+      const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message
+      if (err.response?.status === 403) {
+        error.value = 'No tienes permisos para eliminar este vehículo (solo el concesionario propietario que lo publicó puede eliminarlo).'
+      } else if (err.response?.status === 404) {
+        error.value = 'El vehículo no fue encontrado en la base de datos.'
+      } else {
+        error.value = serverMsg ? `${serverMsg} [HTTP ${err.response?.status || 'ERR'}]` : 'Error al eliminar el vehículo del catálogo.'
+      }
       return false
     } finally {
       isLoading.value = false

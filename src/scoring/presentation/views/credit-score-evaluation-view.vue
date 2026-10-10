@@ -74,8 +74,8 @@ const handleDelete = async (id: string) => {
 <template>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     <!-- Header Banner -->
-    <div class="rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-8 text-white shadow-xl relative overflow-hidden">
-      <div class="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none"></div>
+    <div class="rounded-3xl bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-purple-500/15 blur-3xl pointer-events-none"></div>
       <div class="relative z-10 max-w-2xl">
         <div class="inline-flex items-center gap-2 rounded-full bg-purple-500/20 px-3.5 py-1 text-xs font-semibold text-purple-300 backdrop-blur-md mb-3 border border-purple-500/30">
           <i class="pi pi-bolt"></i>
@@ -94,19 +94,22 @@ const handleDelete = async (id: string) => {
     <EvaluateScoreForm />
 
     <!-- Current Evaluation Result Panel -->
-    <div v-if="scoringStore.hasCurrentScore && scoringStore.currentScore" class="space-y-4">
-      <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-          <i class="pi pi-chart-bar text-sm"></i>
+    <div v-if="scoringStore.hasCurrentScore && scoringStore.currentScore" class="space-y-4 pt-2">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+          <i class="pi pi-chart-bar text-base"></i>
         </div>
-        <h2 class="text-xl font-extrabold text-gray-900 dark:text-white">
-          {{ t('scoring.resultTitle') }}
-        </h2>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+            {{ t('scoring.resultTitle') }}
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Diagnóstico de elegibilidad financiera según Buró / SBS</p>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         <!-- Gauge Speedometer Card -->
-        <div class="lg:col-span-5 flex items-center justify-center rounded-3xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="lg:col-span-5 flex items-center justify-center rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-md">
           <CreditScoreGauge :score="scoringStore.currentScore.score" />
         </div>
 
@@ -119,13 +122,13 @@ const handleDelete = async (id: string) => {
 
     <!-- Evaluation History Section -->
     <div class="space-y-4 pt-4">
-      <div class="flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center justify-between flex-wrap gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
-          <h2 class="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-            <i class="pi pi-history text-purple-600"></i>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="pi pi-history text-purple-600 dark:text-purple-400"></i>
             {{ t('scoring.historyTitle') }}
           </h2>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {{ t('scoring.historySubtitle') }}
           </p>
         </div>
@@ -137,7 +140,7 @@ const handleDelete = async (id: string) => {
             :outlined="filterMode !== 'all'"
             label="Todas las Evaluaciones"
             icon="pi pi-list"
-            class="!text-xs"
+            class="!rounded-xl !text-xs font-bold active:scale-[0.98] transition-all"
             @click="handleToggleFilter('all')"
           />
           <Button
@@ -147,7 +150,7 @@ const handleDelete = async (id: string) => {
             :outlined="filterMode !== 'profile'"
             label="Filtrar por Mi Perfil"
             icon="pi pi-user"
-            class="!text-xs"
+            class="!rounded-xl !text-xs font-bold active:scale-[0.98] transition-all"
             @click="handleToggleFilter('profile')"
           />
         </div>
@@ -156,21 +159,21 @@ const handleDelete = async (id: string) => {
       <!-- Loading State -->
       <div v-if="scoringStore.isLoading" class="flex flex-col items-center justify-center py-16 gap-3">
         <ProgressSpinner style="width: 50px; height: 50px" :strokeWidth="4" />
-        <p class="text-sm text-gray-500 font-medium">{{ t('scoring.loadingText') }}</p>
+        <p class="text-sm text-slate-500 font-medium">{{ t('scoring.loadingText') }}</p>
       </div>
 
       <!-- Empty State -->
       <div
         v-else-if="!scoringStore.hasCreditScores"
-        class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-12 text-center"
+        class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center"
       >
         <div class="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 mb-4">
           <i class="pi pi-bolt text-2xl"></i>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">
           {{ t('scoring.emptyTitle') }}
         </h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-md">
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-md">
           {{ t('scoring.emptySubtitle') }}
         </p>
       </div>
@@ -199,3 +202,4 @@ const handleDelete = async (id: string) => {
     </div>
   </div>
 </template>
+

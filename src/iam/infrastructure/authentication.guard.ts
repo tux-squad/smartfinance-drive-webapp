@@ -28,5 +28,15 @@ export const authenticationGuard = (
     return { name: 'home' }
   }
 
+  // Role-based route authorization
+  const requiredRoles = to.meta.roles as string[] | undefined
+  if (iamStore.isAuthenticated && requiredRoles && requiredRoles.length > 0) {
+    const hasRole = iamStore.roles.some((role: string) => requiredRoles.includes(role))
+    if (!hasRole) {
+      // User doesn't have sufficient privileges for this section
+      return { name: 'home' }
+    }
+  }
+
   return true
 }

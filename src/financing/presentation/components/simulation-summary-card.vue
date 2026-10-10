@@ -35,90 +35,114 @@ const handleApply = async () => {
 </script>
 
 <template>
-  <div class="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-950 p-6 text-white shadow-2xl relative overflow-hidden space-y-6">
+  <div class="rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden space-y-6">
     <!-- Glowing background accent -->
-    <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+    <div class="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
 
     <!-- Title Header -->
-    <div class="flex items-center justify-between border-b border-emerald-500/20 pb-4">
+    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
       <div>
-        <Tag
-          :value="t('financing.simulationResultBadge')"
-          severity="success"
-          class="!text-xs font-bold px-3 py-1 rounded-full mb-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-        />
-        <h2 class="text-xl font-black text-white tracking-tight">
+        <div class="flex items-center gap-2 mb-2">
+          <Tag
+            :value="t('financing.simulationResultBadge')"
+            severity="success"
+            class="!text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-md"
+          />
+          <span class="text-xs text-slate-400 font-medium">Método Francés • SBS</span>
+        </div>
+        <h2 class="text-2xl font-black text-white tracking-tight">
           {{ simulation.title }}
         </h2>
       </div>
 
-      <div class="text-right">
-        <span class="text-xs text-emerald-300/80 block font-medium">{{ t('financing.tceaLabel') }}</span>
-        <span class="text-2xl font-black text-emerald-400 drop-shadow-md">
+      <div class="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center bg-white/5 sm:bg-transparent rounded-2xl p-3 sm:p-0 border border-white/10 sm:border-none">
+        <span class="text-xs text-emerald-300/80 font-medium">{{ t('financing.tceaLabel') }}</span>
+        <span class="text-3xl font-black font-mono text-emerald-400 drop-shadow-md">
           {{ simulation.formattedTcea }}
         </span>
       </div>
     </div>
 
-    <!-- Main Metrics Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Monthly Payment -->
-      <div class="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-        <span class="text-xs font-semibold text-emerald-200/80 block mb-1">
-          {{ t('financing.monthlyPaymentLabel') }}
-        </span>
-        <span class="text-2xl font-black text-white">
+    <!-- Main Metrics Bento Grid -->
+    <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Monthly Payment (Highlight) -->
+      <div class="rounded-2xl bg-gradient-to-br from-emerald-950/80 to-slate-900/90 p-5 backdrop-blur-md border border-emerald-500/30 shadow-inner">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-300/90">
+            {{ t('financing.monthlyPaymentLabel') }}
+          </span>
+          <i class="pi pi-credit-card text-emerald-400"></i>
+        </div>
+        <div class="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
           {{ simulation.formattedMonthlyPayment }}
-        </span>
+        </div>
+        <span class="text-[11px] text-emerald-200/70 mt-1 block">Incluye capital, interés y seguros</span>
       </div>
 
       <!-- Loan Amount -->
-      <div class="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-        <span class="text-xs font-semibold text-emerald-200/80 block mb-1">
-          {{ t('financing.loanAmountLabel') }}
-        </span>
-        <span class="text-xl font-bold text-white">
+      <div class="rounded-2xl bg-white/5 p-5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-300">
+            {{ t('financing.loanAmountLabel') }}
+          </span>
+          <i class="pi pi-dollar text-slate-400"></i>
+        </div>
+        <div class="text-xl font-bold font-mono text-white">
           {{ simulation.formattedLoanAmount }}
-        </span>
+        </div>
+        <span class="text-[11px] text-slate-400 mt-1 block">Precio vehículo menos cuota inicial</span>
       </div>
 
       <!-- Term & Rate -->
-      <div class="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-        <span class="text-xs font-semibold text-emerald-200/80 block mb-1">
-          {{ t('financing.termAndRateLabel') }}
-        </span>
-        <span class="text-sm font-bold text-white block">
-          {{ simulation.loanTermMonths }} {{ t('financing.monthsLabel') }} @ {{ simulation.annualEffectiveRate }}% TEA
-        </span>
+      <div class="rounded-2xl bg-white/5 p-5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-300">
+            {{ t('financing.termAndRateLabel') }}
+          </span>
+          <i class="pi pi-clock text-slate-400"></i>
+        </div>
+        <div class="text-lg font-bold text-white">
+          {{ simulation.loanTermMonths }} {{ t('financing.monthsLabel') }}
+        </div>
+        <span class="text-[11px] text-emerald-300 mt-1 block font-medium">TEA: {{ simulation.annualEffectiveRate }}%</span>
       </div>
 
-      <!-- NPV & IRR -->
-      <div class="rounded-2xl bg-white/5 p-4 backdrop-blur-md border border-white/10">
-        <span class="text-xs font-semibold text-emerald-200/80 block mb-1">
-          {{ t('financing.financialMetricsLabel') }}
-        </span>
-        <span class="text-xs text-emerald-100 font-mono block">
-          VAN: {{ simulation.currencySymbol }} {{ simulation.npv.toFixed(2) }}
-        </span>
-        <span class="text-xs text-emerald-100 font-mono block">
-          TIR: {{ simulation.irr.toFixed(2) }}%
-        </span>
+      <!-- NPV & IRR (Financial Metrics) -->
+      <div class="rounded-2xl bg-white/5 p-5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-300">
+            {{ t('financing.financialMetricsLabel') }}
+          </span>
+          <i class="pi pi-chart-line text-slate-400"></i>
+        </div>
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-xs font-mono text-emerald-200">
+            <span>VAN:</span>
+            <span class="font-bold">{{ simulation.currencySymbol }} {{ simulation.npv.toFixed(2) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono text-teal-200">
+            <span>TIR:</span>
+            <span class="font-bold">{{ simulation.irr.toFixed(2) }}%</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Action Bar: Apply Simulation to Formal Credit Application (#66) -->
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/20">
-      <div class="text-xs text-emerald-200/90 leading-relaxed text-center sm:text-left">
-        ¿Te interesan estas condiciones? Postula directamente para convertir esta simulación en una solicitud formal de crédito vehicular.
+    <!-- Action Bar: Apply Simulation to Formal Credit Application -->
+    <div class="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-emerald-500/20">
+      <div class="text-xs text-emerald-100/80 leading-relaxed text-center sm:text-left flex items-center gap-2">
+        <i class="pi pi-info-circle text-emerald-400 shrink-0"></i>
+        <span>¿Te satisfacen estas cuotas? Postula directamente para convertir esta simulación en una solicitud formal de crédito.</span>
       </div>
       <Button
         :label="applySuccess ? '¡Solicitud enviada!' : 'Solicitar este Crédito'"
         :icon="applySuccess ? 'pi pi-check' : 'pi pi-send'"
         :loading="isApplying"
-        severity="success"
-        class="!rounded-xl px-5 py-2.5 font-bold !bg-emerald-500 hover:!bg-emerald-600 text-white border-none shadow-md shrink-0 w-full sm:w-auto"
+        class="!rounded-2xl px-6 py-3 font-bold !bg-emerald-500 hover:!bg-emerald-600 text-white border-none shadow-lg shadow-emerald-500/30 active:scale-[0.98] transition-all shrink-0 w-full sm:w-auto"
         @click="handleApply"
       />
     </div>
   </div>
 </template>
+

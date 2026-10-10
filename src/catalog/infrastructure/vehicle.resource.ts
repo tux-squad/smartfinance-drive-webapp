@@ -13,6 +13,10 @@ export interface VehicleResource {
   currency: string
   imagePath?: string
   status?: string
+  mileage?: number
+  transmission?: string
+  engine?: string
+  traction?: string
   images?: string[]
 }
 
@@ -37,6 +41,13 @@ export interface CreateVehicleResource {
   condition: string
   priceAmount: number
   currency: string
+  mileage?: number
+  transmission?: string
+  engine?: string
+  traction?: string
+  status?: string
+  imagePath?: string
+  images?: string[]
 }
 
 /**
@@ -50,5 +61,12 @@ export interface UpdateVehicleResource {
   condition?: string
   priceAmount?: number
   currency?: string
+  mileage?: number
+  transmission?: string
+  engine?: string
+  traction?: string
+  status?: string
+  imagePath?: string
+  images?: string[]
 }
 

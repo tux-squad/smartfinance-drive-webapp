@@ -198,7 +198,6 @@ const isCurrentRoute = (targetPath: string): boolean => {
   if (targetPath === '/dealer/inventory/new') return $route.path === '/dealer/inventory/new'
   if (targetPath === '/dealer/inventory') return $route.path === '/dealer/inventory'
   if (targetPath === '/dealer/prospects') return $route.path.startsWith('/dealer/prospects')
-  if (targetPath === '/dealer/messages') return $route.path === '/dealer/messages'
   if (targetPath === '/dealer/settings/appearance') return $route.path.startsWith('/dealer/settings')
   if (targetPath === '/billing') return $route.path.startsWith('/billing')
   if (targetPath === '/user') return $route.path.startsWith('/user')
@@ -229,11 +228,6 @@ const navItems = computed<NavItem[]>(() => {
         labelKey: 'nav.dealerProspects',
         to: '/dealer/prospects',
         icon: 'pi-users'
-      },
-      {
-        labelKey: 'nav.dealerMessages',
-        to: '/dealer/messages',
-        icon: 'pi-comment'
       },
       {
         labelKey: 'nav.dealerMembership',
@@ -398,14 +392,14 @@ const navItems = computed<NavItem[]>(() => {
       icon: 'pi-building-columns'
     },
     {
-      labelKey: 'nav.buyerMessages',
-      to: '/messages',
-      icon: 'pi-comment'
-    },
-    {
       labelKey: 'nav.buyerAiConsultation',
       to: '/consultation',
       icon: 'pi-sparkles'
+    },
+    {
+      labelKey: 'nav.billing',
+      to: '/billing',
+      icon: 'pi-id-card'
     },
     {
       labelKey: 'nav.buyerProfile',

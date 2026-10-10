@@ -170,6 +170,7 @@
             Selecciona el plan que mejor se adapte a tu volumen de inventario y solicitudes crediticias.
           </p>
           <Button
+            v-if="isAdmin"
             label="+ Nuevo Plan"
             icon="pi pi-plus"
             size="small"
@@ -393,10 +394,13 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import { useBillingStore } from '../../application/billing.store'
+import { useIamStore } from '@/iam/application/iam.store'
 import type { BillingPlan } from '../../domain/subscription.entity'
 
 const { t } = useI18n()
 const billingStore = useBillingStore()
+const iamStore = useIamStore()
+const isAdmin = computed(() => iamStore.roles.includes('ROLE_ADMIN'))
 
 const feedbackMessage = ref<string | null>(null)
 const isChangePlanOpen = ref(false)

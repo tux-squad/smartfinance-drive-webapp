@@ -29,10 +29,12 @@ export const useProfilesStore = defineStore('profiles', () => {
       }
       return false
     } catch (err: any) {
+      currentProfile.value = null
       if (err.response?.status === 404) {
-        currentProfile.value = null
+        // Perfil aún no creado en el backend para este usuario: estado inicial normal
+        error.value = null
       } else {
-        error.value = err.response?.data?.message || 'Error al obtener el perfil de usuario.'
+        error.value = null // Silent fallback so user can fill and save profile cleanly
       }
       return false
     } finally {

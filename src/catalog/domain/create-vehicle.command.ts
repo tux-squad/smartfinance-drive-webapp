@@ -10,6 +10,12 @@ export class CreateVehicleCommand {
     public readonly priceAmount: number,
     public readonly currency: string,
     public readonly financialEntityId: string,
-    public readonly userId: string
+    public readonly userId: string,
+    public readonly mileage?: number,
+    public readonly transmission?: string,
+    public readonly engine?: string,
+    public readonly traction?: string,
+    public readonly imagePath?: string,
+    public readonly images?: string[]
   ) {}
 }

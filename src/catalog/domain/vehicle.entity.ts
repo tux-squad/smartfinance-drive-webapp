@@ -14,7 +14,11 @@ export class Vehicle {
     public readonly currency: string,
     public readonly imagePath?: string,
     public readonly status: string = 'ACTIVE',
-    public readonly images: string[] = []
+    public readonly images: string[] = [],
+    public readonly mileage?: number,
+    public readonly transmission?: string,
+    public readonly engine?: string,
+    public readonly traction?: string
   ) {}
 
   /**

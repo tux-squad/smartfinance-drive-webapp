@@ -40,15 +40,15 @@
       </p>
     </div>
 
-    <!-- Floating Minimalist Form Capsule (Encimado al video, Light Theme Blanco acorde al tema) -->
+    <!-- Floating Minimalist Form Capsule (Encimado al video, Glassmorphism acorde al tema) -->
     <div
-      class="relative z-10 w-full max-w-md my-auto bg-surface-0/95 backdrop-blur-2xl rounded-3xl border border-surface-200/80 shadow-2xl shadow-black/40 p-5 sm:p-8 lg:p-10 flex flex-col justify-between text-surface-800 transition-all"
+      class="relative z-10 w-full max-w-md my-auto bg-surface-0/95 dark:bg-surface-900/90 backdrop-blur-2xl rounded-3xl border border-surface-200/80 dark:border-surface-800/80 shadow-2xl shadow-black/40 p-5 sm:p-8 lg:p-10 flex flex-col justify-between text-surface-800 dark:text-surface-100 transition-all"
     >
       <!-- Top Navigation Bar -->
       <div class="flex items-center justify-between mb-5">
         <router-link
           to="/home"
-          class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 transition-colors"
+          class="inline-flex items-center gap-2 text-xs font-semibold text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
         >
           <i class="pi pi-arrow-left text-xs" />
           <span>Volver al inicio</span>
@@ -63,19 +63,20 @@
         <div class="space-y-1.5">
           <!-- Mobile Brand Logo -->
           <div class="lg:hidden flex items-center space-x-2.5 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-surface-100 p-1 flex items-center justify-center shadow-xs border border-surface-200">
-              <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain" />
+            <div class="w-10 h-10 rounded-xl bg-surface-100 dark:bg-surface-800 p-1 flex items-center justify-center shadow-xs border border-surface-200 dark:border-surface-700">
+              <img src="/logo.svg" alt="SmartFinance Logo" class="w-full h-full object-contain dark:hidden" />
+              <img src="/logo-white.svg" alt="SmartFinance Logo" class="w-full h-full object-contain hidden dark:block" />
             </div>
             <div>
-              <span class="text-base font-black text-surface-900 block leading-tight">SmartFinance</span>
+              <span class="text-base font-black text-surface-900 dark:text-surface-0 block leading-tight">SmartFinance</span>
               <span class="text-[10px] text-primary font-bold tracking-wider uppercase">Drive</span>
             </div>
           </div>
 
-          <h2 class="text-2xl font-black text-surface-900 tracking-tight">
+          <h2 class="text-2xl font-black text-surface-900 dark:text-surface-0 tracking-tight">
             {{ t('iam.signInTitle') }}
           </h2>
-          <p class="text-xs text-surface-500 leading-relaxed">
+          <p class="text-xs text-surface-500 dark:text-surface-400 leading-relaxed">
             {{ t('iam.signInSubtitle') }}
           </p>
         </div>
@@ -86,7 +87,7 @@
           severity="error"
           :closable="true"
           @close="iamStore.error = null"
-          class="w-full shadow-xs"
+          class="w-full shadow-xs text-xs"
         >
           <div class="flex items-center gap-2 text-xs font-medium">
             <span>{{ iamStore.error }}</span>
@@ -98,7 +99,7 @@
           <form class="space-y-4" @submit.prevent="handleSignIn">
             <!-- Email Input -->
             <div class="space-y-1.5">
-              <label for="username" class="block text-[11px] font-bold text-surface-700 uppercase tracking-wider">
+              <label for="username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
                 {{ t('iam.email') }}
               </label>
               <IconField class="w-full">
@@ -110,6 +111,7 @@
                   required
                   autocomplete="email"
                   fluid
+                  class="!rounded-xl !py-2.5 !text-xs"
                   :placeholder="t('iam.emailPlaceholder')"
                 />
               </IconField>
@@ -117,7 +119,7 @@
 
             <!-- Password Input -->
             <div class="space-y-1.5">
-              <label for="password" class="block text-[11px] font-bold text-surface-700 uppercase tracking-wider">
+              <label for="password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
                 {{ t('iam.password') }}
               </label>
               <Password
@@ -129,6 +131,8 @@
                 required
                 autocomplete="current-password"
                 fluid
+                class="!rounded-xl"
+                inputClass="!rounded-xl !py-2.5 !text-xs w-full"
                 :placeholder="t('iam.passwordPlaceholder')"
               />
             </div>
@@ -143,7 +147,7 @@
                 />
                 <label
                   for="remember-me"
-                  class="text-xs text-surface-600 cursor-pointer select-none font-medium"
+                  class="text-xs text-surface-600 dark:text-surface-400 cursor-pointer select-none font-medium"
                 >
                   Recordar mi sesión
                 </label>
@@ -166,7 +170,7 @@
               iconPos="right"
               severity="primary"
               fluid
-              class="font-bold shadow-md shadow-primary/20 !rounded-xl !py-2.5 transition-all"
+              class="font-bold shadow-md shadow-primary/20 !rounded-xl !py-2.5 active:scale-[0.98] transition-all !text-xs"
             />
           </form>
         </Fluid>
@@ -178,39 +182,92 @@
           </span>
         </Divider>
 
-        <!-- Alternative Auth Buttons (Responsive Grid) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          <!-- Google Button -->
-          <Button
-            type="button"
-            @click="handleGoogleSignIn"
-            :disabled="iamStore.isLoading"
-            severity="secondary"
-            variant="outlined"
-            fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs transition-all justify-center"
-          >
-            <i class="pi pi-google mr-2" />
-            <span class="truncate">{{ t('iam.googleSignIn') }}</span>
-          </Button>
+        <!-- Quick Demo Role Profiles Header -->
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-surface-500 dark:text-surface-400 uppercase tracking-wider">
+              Acceso Rápido Demo por Rol
+            </span>
+            <span class="text-[10px] text-primary font-semibold">1-Click</span>
+          </div>
 
-          <!-- Quick Demo Button -->
-          <Button
-            type="button"
-            @click="handleQuickDemoSignIn"
-            :disabled="iamStore.isLoading"
-            severity="info"
-            variant="outlined"
-            fluid
-            class="font-medium text-xs !rounded-xl !py-2.5 transition-all justify-center"
-          >
-            <i class="pi pi-bolt mr-2" />
-            <span class="truncate">{{ t('iam.demoLoginBtn') }}</span>
-          </Button>
+          <!-- 3 Distinct Role Quick Buttons Grid -->
+          <div class="grid grid-cols-3 gap-2">
+            <!-- 1. Concesionaria Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_DEALER')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-car text-xs text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                  Dealer
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Concesionaria</span>
+                <span class="text-[9px] text-surface-400 block truncate">Inventario</span>
+              </div>
+            </button>
+
+            <!-- 2. Banco Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_FINANCIAL_INSTITUTION')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-building text-xs text-blue-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300">
+                  Banco
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Financiera</span>
+                <span class="text-[9px] text-surface-400 block truncate">Tasas B2B</span>
+              </div>
+            </button>
+
+            <!-- 3. Comprador Button -->
+            <button
+              type="button"
+              @click="handleRoleDemoSignIn('ROLE_USER')"
+              :disabled="iamStore.isLoading"
+              class="p-2 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 text-left transition-all group cursor-pointer flex flex-col justify-between shadow-2xs"
+            >
+              <div class="flex items-center justify-between">
+                <i class="pi pi-user text-xs text-indigo-600 group-hover:scale-110 transition-transform"></i>
+                <span class="text-[8px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300">
+                  Buyer
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="text-[11px] font-bold text-surface-800 dark:text-surface-100 block leading-tight truncate">Comprador</span>
+                <span class="text-[9px] text-surface-400 block truncate">Catálogo</span>
+              </div>
+            </button>
+          </div>
         </div>
 
+        <!-- Google OAuth Button -->
+        <Button
+          type="button"
+          @click="handleGoogleSignIn"
+          :disabled="iamStore.isLoading"
+          severity="secondary"
+          variant="outlined"
+          fluid
+          class="font-medium text-xs !rounded-xl !py-2.5 shadow-xs active:scale-[0.98] transition-all justify-center"
+        >
+          <i class="pi pi-google mr-2" />
+          <span class="truncate">{{ t('iam.googleSignIn') }}</span>
+        </Button>
+
         <!-- Sign Up Link -->
-        <div class="text-center text-xs text-surface-500 pt-2 border-t border-surface-200">
+        <div class="text-center text-xs text-surface-500 dark:text-surface-400 pt-2 border-t border-surface-200 dark:border-surface-800">
           <span>{{ t('iam.noAccount') }} </span>
           <router-link
             to="/iam/sign-up"
@@ -264,6 +321,9 @@ const rememberMe = ref(true)
 const STORAGE_REMEMBERED_EMAIL = 'smartfinance_remembered_username'
 
 onMounted(() => {
+  if (route.query.expired === '1') {
+    iamStore.error = 'Tu sesión ha expirado por seguridad o inactividad. Por favor, vuelve a iniciar sesión.'
+  }
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem(STORAGE_REMEMBERED_EMAIL)
     if (saved) {
@@ -274,11 +334,11 @@ onMounted(() => {
 })
 
 const getRoleRedirect = (userRoles: string[] = []): string => {
-  if (userRoles.includes('ROLE_ADMIN')) return '/admin/dashboard'
-  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION')) return '/bank/dashboard'
-  if (userRoles.includes('ROLE_DEALER')) return '/dealer/dashboard'
-  if (userRoles.includes('ROLE_SALES_AGENT')) return '/agent/dashboard'
-  return '/catalog'
+  if (userRoles.includes('ROLE_ADMIN')) return '/home'
+  if (userRoles.includes('ROLE_DEALER')) return '/dealer/inventory'
+  if (userRoles.includes('ROLE_FINANCIAL_INSTITUTION') || userRoles.includes('ROLE_FINANCIAL_ANALYST')) return '/concessionaries/entities'
+  if (userRoles.includes('ROLE_SALES_AGENT')) return '/dealer/prospects'
+  return '/vehicles'
 }
 
 const handleSignIn = async () => {
@@ -314,8 +374,8 @@ const handleSignIn = async () => {
   }
 }
 
-const handleQuickDemoSignIn = async () => {
-  const success = await iamStore.signInDemo()
+const handleRoleDemoSignIn = async (role: 'ROLE_USER' | 'ROLE_DEALER' | 'ROLE_FINANCIAL_INSTITUTION' = 'ROLE_USER') => {
+  const success = await iamStore.signInDemo(role)
   if (success) {
     const queryRedirect = route.query.redirect as string
     const redirectPath = (queryRedirect && queryRedirect !== '/' && queryRedirect !== '/home')

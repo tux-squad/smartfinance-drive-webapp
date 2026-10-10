@@ -57,7 +57,7 @@ export class SimulationAssembler {
       resource.annualEffectiveRate || 9.5,
       resource.monthlyCreditLifeInsuranceRate || 0.05,
       resource.vehicleInsuranceFeeAmount || 0,
-      resource.vehicleInsuranceType || 'FULL_COVERAGE',
+      resource.vehicleInsuranceType || 'MENSUAL',
       resource.loanTermMonths || 36,
       resource.gracePeriodType || 'NONE',
       resource.gracePeriodMonths || 0,
