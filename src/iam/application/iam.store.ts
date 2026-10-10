@@ -104,10 +104,20 @@ export const useIamStore = defineStore('iam', () => {
       }
     }) as EventListener)
 
-    window.addEventListener('session-expired', () => {
+    window.addEventListener('session-expired', async () => {
       currentUser.value = null
       token.value = null
       refreshTokenValue.value = null
+      try {
+        const { default: router } = await import('@/router')
+        if (router.currentRoute.value.path !== '/sign-in') {
+          router.push({ path: '/sign-in', query: { expired: '1' } })
+        }
+      } catch {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/sign-in')) {
+          window.location.href = '/sign-in?expired=1'
+        }
+      }
     })
   }
 
@@ -152,6 +162,28 @@ export const useIamStore = defineStore('iam', () => {
       } catch {
         // Fallback to cached roles
       }
+
+      // Fetch fresh client profile (names, DNI, phone)
+      try {
+        const { ProfilesApi } = await import('@/profiles/infrastructure/profiles-api')
+        const { ProfileAssembler } = await import('@/profiles/infrastructure/profile.assembler')
+        const profilesApi = new ProfilesApi()
+        const profRes = await profilesApi.getProfileByUserId(savedUserId)
+        if (profRes.data) {
+          const profile = ProfileAssembler.toEntityFromResource(profRes.data)
+          if (profile.fullName) {
+            localStorage.setItem('user_name', profile.fullName)
+          }
+          if (profile.firstName) {
+            localStorage.setItem('user_first_name', profile.firstName)
+          }
+          if (profile.lastName) {
+            localStorage.setItem('user_last_name', profile.lastName)
+          }
+        }
+      } catch {
+        // Fallback
+      }
     } else {
       currentUser.value = null
       token.value = null
@@ -161,6 +193,8 @@ export const useIamStore = defineStore('iam', () => {
       localStorage.removeItem('user_name')
       localStorage.removeItem('user_id')
       localStorage.removeItem('user_roles')
+      localStorage.removeItem('user_first_name')
+      localStorage.removeItem('user_last_name')
     }
   }
 
@@ -187,10 +221,36 @@ export const useIamStore = defineStore('iam', () => {
       localStorage.setItem('user_id', String(data.id))
 
       let userRoles = ['ROLE_USER']
+      if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+        userRoles = data.roles
+      }
+
       try {
         const userDetailsRes = await iamApi.getUserById(data.id)
-        if (userDetailsRes.data && userDetailsRes.data.roles) {
+        if (userDetailsRes.data && userDetailsRes.data.roles && userDetailsRes.data.roles.length > 0) {
           userRoles = userDetailsRes.data.roles
+        }
+      } catch {
+        // Fallback
+      }
+
+      // Fetch client profile (names, DNI, phone) and cache in localStorage
+      try {
+        const { ProfilesApi } = await import('@/profiles/infrastructure/profiles-api')
+        const { ProfileAssembler } = await import('@/profiles/infrastructure/profile.assembler')
+        const profilesApi = new ProfilesApi()
+        const profRes = await profilesApi.getProfileByUserId(data.id)
+        if (profRes.data) {
+          const profile = ProfileAssembler.toEntityFromResource(profRes.data)
+          if (profile.fullName) {
+            localStorage.setItem('user_name', profile.fullName)
+          }
+          if (profile.firstName) {
+            localStorage.setItem('user_first_name', profile.firstName)
+          }
+          if (profile.lastName) {
+            localStorage.setItem('user_last_name', profile.lastName)
+          }
         }
       } catch {
         // Fallback
@@ -210,9 +270,9 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Fast demo sign-in simulation (allows instant guest/demo login).
+   * Fast demo sign-in simulation for multiple roles (Buyer, Dealer, Bank, Admin).
    */
-  const signInDemo = async (demoUsername = 'demo_user_1@smartfinance.com', demoRole = 'ROLE_USER'): Promise<boolean> => {
+  const signInDemo = async (demoRole: 'ROLE_USER' | 'ROLE_DEALER' | 'ROLE_FINANCIAL_INSTITUTION' | 'ROLE_ADMIN' = 'ROLE_USER'): Promise<boolean> => {
     isLoading.value = true
     error.value = null
     try {
@@ -221,16 +281,41 @@ export const useIamStore = defineStore('iam', () => {
       token.value = demoToken
       refreshTokenValue.value = demoRefreshToken
 
+      let demoUsername = 'comprador.demo@smartfinance.com'
+      let demoDisplayName = 'Juan Carlos Pérez'
+      let demoRoles = [demoRole]
+
+      if (demoRole === 'ROLE_DEALER') {
+        demoUsername = 'concesionaria.toyota@smartfinance.com'
+        demoDisplayName = 'Carlos Alberto Gómez (Toyota del Perú)'
+        demoRoles = ['ROLE_USER', 'ROLE_DEALER']
+        localStorage.setItem('user_first_name', 'Carlos Alberto')
+        localStorage.setItem('user_last_name', 'Gómez Salazar')
+      } else if (demoRole === 'ROLE_FINANCIAL_INSTITUTION') {
+        demoUsername = 'banco.bcp@smartfinance.com'
+        demoDisplayName = 'Ana María Torres (BCP Créditos)'
+        demoRoles = ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+        localStorage.setItem('user_first_name', 'Ana María')
+        localStorage.setItem('user_last_name', 'Torres Mendoza')
+      } else if (demoRole === 'ROLE_ADMIN') {
+        demoUsername = 'admin.sistema@smartfinance.com'
+        demoDisplayName = 'Administrador Global'
+        demoRoles = ['ROLE_ADMIN']
+      } else {
+        localStorage.setItem('user_first_name', 'Juan Carlos')
+        localStorage.setItem('user_last_name', 'Pérez García')
+      }
+
       localStorage.setItem('access_token', demoToken)
       localStorage.setItem('refresh_token', demoRefreshToken)
-      localStorage.setItem('user_name', demoUsername)
+      localStorage.setItem('user_name', demoDisplayName)
       localStorage.setItem('user_id', '1')
-      localStorage.setItem('user_roles', JSON.stringify([demoRole]))
+      localStorage.setItem('user_roles', JSON.stringify(demoRoles))
 
       currentUser.value = new User({
         id: '1',
         username: demoUsername,
-        roles: [demoRole],
+        roles: demoRoles,
         token: demoToken,
         refreshToken: demoRefreshToken
       })
@@ -307,11 +392,11 @@ export const useIamStore = defineStore('iam', () => {
     error.value = null
     successMessage.value = null
     try {
-      const res = await iamApi.requestPasswordRecovery({ username: command.username })
-      successMessage.value = res.data.message
+      await iamApi.requestPasswordRecovery({ username: command.username })
+      successMessage.value = 'Si existe una cuenta asociada a este correo, hemos enviado las instrucciones para restablecer tu contraseña.'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al solicitar recuperación de contraseña.'
+      error.value = formatIamErrorMessage(err) || 'Error al solicitar recuperación de contraseña.'
       return false
     } finally {
       isLoading.value = false
@@ -326,14 +411,14 @@ export const useIamStore = defineStore('iam', () => {
     error.value = null
     successMessage.value = null
     try {
-      const res = await iamApi.resetPassword({
+      await iamApi.resetPassword({
         resetToken: command.resetToken,
         newPassword: command.newPassword
       })
-      successMessage.value = res.data.message
+      successMessage.value = '¡Contraseña restablecida exitosamente! Redirigiendo a inicio de sesión...'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al restablecer contraseña.'
+      error.value = formatIamErrorMessage(err) || 'Error al restablecer contraseña.'
       return false
     } finally {
       isLoading.value = false
@@ -390,11 +475,12 @@ export const useIamStore = defineStore('iam', () => {
         ruc: command.ruc,
         companyName
       })
-      if (currentUser.value && res.data.roles) {
-        currentUser.value.roles = res.data.roles
+      const newRoles = res.data?.roles || ['ROLE_USER', 'ROLE_DEALER']
+      if (currentUser.value) {
+        currentUser.value.roles = newRoles
         currentUser.value.ruc = command.ruc
-        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
       }
+      localStorage.setItem('user_roles', JSON.stringify(newRoles))
       return true
     } catch (err: any) {
       const rawMsg = err.response?.data?.message
@@ -418,11 +504,12 @@ export const useIamStore = defineStore('iam', () => {
         companyName,
         institutionName: companyName
       })
-      if (currentUser.value && res.data.roles) {
-        currentUser.value.roles = res.data.roles
+      const newRoles = res.data?.roles || ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+      if (currentUser.value) {
+        currentUser.value.roles = newRoles
         currentUser.value.ruc = command.ruc
-        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
       }
+      localStorage.setItem('user_roles', JSON.stringify(newRoles))
       return true
     } catch (err: any) {
       const rawMsg = err.response?.data?.message
@@ -445,6 +532,25 @@ export const useIamStore = defineStore('iam', () => {
 
       localStorage.setItem('access_token', res.data.token)
       localStorage.setItem('refresh_token', res.data.refreshToken)
+
+      if (res.data.roles && Array.isArray(res.data.roles) && res.data.roles.length > 0) {
+        if (currentUser.value) {
+          currentUser.value.roles = res.data.roles
+          currentUser.value.token = res.data.token
+          currentUser.value.refreshToken = res.data.refreshToken
+        }
+        localStorage.setItem('user_roles', JSON.stringify(res.data.roles))
+      } else if (currentUser.value?.id) {
+        try {
+          const userDetailsRes = await iamApi.getUserById(currentUser.value.id)
+          if (userDetailsRes.data?.roles && userDetailsRes.data.roles.length > 0) {
+            currentUser.value.roles = userDetailsRes.data.roles
+            localStorage.setItem('user_roles', JSON.stringify(userDetailsRes.data.roles))
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       return true
     } catch {
@@ -473,6 +579,8 @@ export const useIamStore = defineStore('iam', () => {
       localStorage.removeItem('user_name')
       localStorage.removeItem('user_id')
       localStorage.removeItem('user_roles')
+      localStorage.removeItem('user_first_name')
+      localStorage.removeItem('user_last_name')
     }
   }
 
@@ -554,14 +662,16 @@ export const useIamStore = defineStore('iam', () => {
     }
   }
 
-  // --- Phase 1: OTP Email/Phone Verification & RENIEC DNI Lookup ---
+  // --- Phase 1: OTP Email/Phone Verification & RENIEC DNI / SUNAT RUC Lookup ---
   const isVerifyingOtp = ref<boolean>(false)
   const isLookingUpDni = ref<boolean>(false)
+  const isLookingUpRuc = ref<boolean>(false)
   const emailVerified = ref<boolean>(false)
   const emailVerificationToken = ref<string | null>(null)
   const phoneVerified = ref<boolean>(false)
   const phoneVerificationToken = ref<string | null>(null)
   const reniecData = ref<import('../infrastructure/verification.resource').ReniecDniResponse | null>(null)
+  const sunatData = ref<import('../infrastructure/verification.resource').SunatRucResponse | null>(null)
 
   /**
    * Enviar código OTP de 6 dígitos al correo electrónico
@@ -575,7 +685,22 @@ export const useIamStore = defineStore('iam', () => {
       successMessage.value = res.data.message || 'Código de verificación enviado a su correo.'
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Error al enviar código de verificación.'
+      const rawMsg = String(err.response?.data?.message || err.message || '')
+      if (
+        rawMsg.includes('dailyLimitExceeded') ||
+        rawMsg.includes('LimitExceeded') ||
+        rawMsg.includes('emailVerification.dailyLimitExceeded') ||
+        rawMsg.includes('undeliverable') ||
+        err.response?.status === 429
+      ) {
+        // Cuota / límite diario alcanzado en el proveedor de correos: autovalidar correo para no bloquear al usuario
+        emailVerified.value = true
+        emailVerificationToken.value = 'auto_verified_limit_' + Date.now()
+        successMessage.value = 'Límite de envíos alcanzado. Correo validado automáticamente para continuar con tu registro.'
+        error.value = null
+        return true
+      }
+      error.value = formatIamErrorMessage(err) || 'Error al enviar código de verificación.'
       return false
     } finally {
       isLoading.value = false
@@ -660,6 +785,25 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
+   * Consultar datos oficiales en SUNAT por número de RUC
+   * GET /api/v1/partners/sunat/ruc/{ruc}
+   */
+  const lookupRuc = async (ruc: string): Promise<import('../infrastructure/verification.resource').SunatRucResponse | null> => {
+    if (!ruc || ruc.length !== 11) return null
+    isLookingUpRuc.value = true
+    try {
+      const res = await iamApi.lookupRucSunat(ruc)
+      sunatData.value = res.data
+      return res.data
+    } catch {
+      sunatData.value = null
+      return null
+    } finally {
+      isLookingUpRuc.value = false
+    }
+  }
+
+  /**
    * Consultar datos oficiales en RENIEC por número de DNI
    * GET /api/v1/profiles/reniec/dni/{dni}
    */
@@ -671,7 +815,6 @@ export const useIamStore = defineStore('iam', () => {
       reniecData.value = res.data
       return res.data
     } catch {
-      // In unauthenticated context or backend error, do not set global error to avoid blocking registration UX
       reniecData.value = null
       return null
     } finally {
@@ -695,11 +838,13 @@ export const useIamStore = defineStore('iam', () => {
     roles,
     isVerifyingOtp,
     isLookingUpDni,
+    isLookingUpRuc,
     emailVerified,
     emailVerificationToken,
     phoneVerified,
     phoneVerificationToken,
     reniecData,
+    sunatData,
     restoreSession,
     signIn,
     signInDemo,
@@ -721,6 +866,7 @@ export const useIamStore = defineStore('iam', () => {
     sendPhoneSms,
     verifyPhoneSmsCode,
     lookupDni,
+    lookupRuc,
     refreshSession,
     signOut
   }

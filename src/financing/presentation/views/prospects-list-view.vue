@@ -12,15 +12,17 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <router-link
-          to="/dealer/messages"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          <i class="pi pi-comments text-xs"></i>
-          <span>{{ t('prospects.messagesBtn') }}</span>
-        </router-link>
+        <Button
+          icon="pi pi-users"
+          label="Gestionar Asesores de Ventas"
+          class="!rounded-xl !text-xs !bg-[#eb8f47] !border-[#eb8f47] text-white font-bold shadow-xs hover:opacity-95"
+          @click="showSalesAgentsDialog = true"
+        />
       </div>
     </div>
+
+    <!-- Sales Agents Management Dialog (3.8-3.11) -->
+    <SalesAgentsManagementDialog v-model="showSalesAgentsDialog" />
 
     <!-- Loading State -->
     <div v-if="financingStore.isLoading || catalogStore.isLoading" class="flex flex-col items-center justify-center py-20 gap-3">
@@ -123,18 +125,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProgressSpinner from 'primevue/progressspinner'
+import Button from 'primevue/button'
 import { useCrmStore } from '@/financing/application/crm.store'
 import { useFinancingStore } from '@/financing/application/financing.store'
 import { useCatalogStore } from '@/catalog/application/catalog.store'
+import SalesAgentsManagementDialog from '@/iam/presentation/components/sales-agents-management-dialog.vue'
 
 const { t } = useI18n()
 
 const crmStore = useCrmStore()
 const financingStore = useFinancingStore()
 const catalogStore = useCatalogStore()
+
+const showSalesAgentsDialog = ref(false)
 
 onMounted(async () => {
   await Promise.all([

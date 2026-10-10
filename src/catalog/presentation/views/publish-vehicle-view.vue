@@ -67,9 +67,30 @@
           <!-- Right Column: Especificaciones (approx 6 cols) -->
           <div class="lg:col-span-6 space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Entidad Financiera Aliada (Obligatorio en backend) -->
+              <div class="sm:col-span-2 space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">
+                  Entidad Financiera Aliada <span class="text-rose-500">*</span>
+                </label>
+                <select
+                  v-model="form.financialEntityId"
+                  required
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer shadow-2xs"
+                >
+                  <option value="" disabled>Seleccione el banco o financiera aliada</option>
+                  <option
+                    v-for="entity in partnersStore.financialEntities"
+                    :key="entity.id"
+                    :value="entity.id"
+                  >
+                    {{ entity.name }}
+                  </option>
+                </select>
+              </div>
+
               <!-- Condición -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.conditionLabel') }}</label>
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.conditionLabel') }} <span class="text-rose-500">*</span></label>
                 <select
                   v-model="form.condition"
                   required
@@ -81,28 +102,20 @@
               </div>
 
               <!-- Marca -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.brandLabel') }}</label>
-                <select
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.brandLabel') }} <span class="text-rose-500">*</span></label>
+                <input
                   v-model="form.brand"
+                  type="text"
                   required
-                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer shadow-2xs"
-                >
-                  <option value="Toyota">Toyota</option>
-                  <option value="Honda">Honda</option>
-                  <option value="Ford">Ford</option>
-                  <option value="Hyundai">Hyundai</option>
-                  <option value="Jeep">Jeep</option>
-                  <option value="Mazda">Mazda</option>
-                  <option value="Kia">Kia</option>
-                  <option value="Volkswagen">Volkswagen</option>
-                  <option value="Nissan">Nissan</option>
-                </select>
+                  placeholder="Ej. Toyota, Honda, Ford"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
+                />
               </div>
 
               <!-- Modelo -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.modelLabel') }}</label>
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.modelLabel') }} <span class="text-rose-500">*</span></label>
                 <input
                   v-model="form.model"
                   type="text"
@@ -112,51 +125,101 @@
                 />
               </div>
 
-              <!-- Año -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.yearLabel') }}</label>
+              <!-- Año de Fabricación -->
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.yearLabel') }} <span class="text-rose-500">*</span></label>
                 <input
                   v-model.number="form.manufactureYear"
                   type="number"
-                  min="2010"
+                  min="1990"
                   max="2027"
                   required
-                  placeholder="2023"
+                  placeholder="2025"
                   class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
                 />
               </div>
 
-              <!-- Kilometraje -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.mileageLabel') }}</label>
-                <input
-                  v-model="form.mileage"
-                  type="text"
-                  placeholder="0 km"
-                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
-                />
-              </div>
-
-              <!-- Precio -->
-              <div class="space-y-1.5">
-                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.priceLabel') }}</label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs text-gray-400 font-bold">$</span>
+              <!-- Precio y Moneda -->
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">
+                  {{ t('publishVehicle.priceLabel') }} <span class="text-rose-500">*</span>
+                </label>
+                <div class="flex items-stretch rounded-xl border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600 shadow-2xs overflow-hidden transition-all min-w-0">
+                  <select
+                    v-model="form.currency"
+                    class="bg-gray-100 hover:bg-gray-200 px-2.5 py-2.5 text-xs font-bold text-gray-800 focus:outline-none cursor-pointer border-r border-gray-200 shrink-0"
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="PEN">PEN (S/)</option>
+                  </select>
                   <input
                     v-model.number="form.priceAmount"
                     type="number"
-                    min="1000"
+                    min="100"
                     step="100"
                     required
                     placeholder="26900"
-                    class="w-full pl-7 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-semibold text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
+                    class="w-full min-w-0 px-3 py-2.5 bg-transparent text-xs font-mono font-semibold text-gray-900 focus:outline-none placeholder:text-gray-400"
                   />
                 </div>
+              </div>
+
+              <!-- Kilometraje -->
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">{{ t('publishVehicle.mileageLabel') }}</label>
+                <div class="flex items-stretch rounded-xl border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-600 focus-within:border-blue-600 shadow-2xs overflow-hidden transition-all min-w-0">
+                  <input
+                    v-model.number="form.mileage"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="w-full min-w-0 px-3.5 py-2.5 bg-transparent text-xs font-medium text-gray-900 focus:outline-none placeholder:text-gray-400"
+                  />
+                  <span class="bg-gray-100 px-3 py-2.5 text-xs text-gray-500 font-semibold border-l border-gray-200 flex items-center shrink-0">km</span>
+                </div>
+              </div>
+
+              <!-- Transmisión -->
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">Transmisión</label>
+                <select
+                  v-model="form.transmission"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer shadow-2xs"
+                >
+                  <option value="AUTOMATIC">Automática (AUTOMATIC)</option>
+                  <option value="MANUAL">Mecánica / Manual (MANUAL)</option>
+                  <option value="CVT">CVT (Continuamente Variable)</option>
+                </select>
+              </div>
+
+              <!-- Motor -->
+              <div class="space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">Motorización</label>
+                <input
+                  v-model="form.engine"
+                  type="text"
+                  placeholder="Ej. 2.0L Dual VVT-i, 2.5L Hybrid"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all shadow-2xs"
+                />
+              </div>
+
+              <!-- Tracción -->
+              <div class="sm:col-span-2 space-y-1.5 min-w-0">
+                <label class="block text-xs font-bold text-gray-700">Tracción</label>
+                <select
+                  v-model="form.traction"
+                  class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer shadow-2xs"
+                >
+                  <option value="FWD">Delantera (FWD)</option>
+                  <option value="AWD">Integral / Total (AWD)</option>
+                  <option value="RWD">Trasera (RWD)</option>
+                  <option value="4WD">4x4 con reductora (4WD)</option>
+                </select>
               </div>
             </div>
 
             <!-- Form Action Buttons matching Mockup -->
-            <div class="flex items-center justify-end gap-3 pt-6">
+            <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
               <button
                 type="button"
                 @click="handleCancel"
@@ -205,16 +268,24 @@ const isSubmitting = ref(false)
 const errorMessage = ref<string | null>(null)
 
 const form = reactive({
+  financialEntityId: '',
   condition: 'NEW',
   brand: 'Toyota',
   model: '',
-  manufactureYear: 2023,
-  mileage: '0 km',
-  priceAmount: 26900
+  manufactureYear: 2025,
+  priceAmount: 26900,
+  currency: 'USD',
+  mileage: 0,
+  transmission: 'AUTOMATIC',
+  engine: '2.0L',
+  traction: 'FWD'
 })
 
 onMounted(async () => {
   await partnersStore.fetchFinancialEntities()
+  if (partnersStore.financialEntities.length > 0 && !form.financialEntityId) {
+    form.financialEntityId = partnersStore.financialEntities[0]?.id || ''
+  }
 })
 
 const triggerFileInput = () => {
@@ -248,50 +319,48 @@ const handlePublish = async () => {
     return
   }
 
+  const selectedEntityId = form.financialEntityId || partnersStore.financialEntities[0]?.id
+  if (!selectedEntityId) {
+    errorMessage.value = 'Debe seleccionar una entidad financiera aliada para el vehículo.'
+    return
+  }
+
   isSubmitting.value = true
   errorMessage.value = null
 
   try {
     const currentUserId = String(iamStore.currentUser?.id || localStorage.getItem('user_id') || '1')
-    const entityId = partnersStore.financialEntities[0]?.id || 'b1c2d3e4-f5a6-7b8c-9d0e-112233445566'
 
     const command = new CreateVehicleCommand(
-      form.brand,
-      form.model,
+      form.brand.trim(),
+      form.model.trim(),
       Number(form.manufactureYear),
       form.condition,
       Number(form.priceAmount),
-      'USD',
-      entityId,
-      currentUserId
+      form.currency,
+      selectedEntityId,
+      currentUserId,
+      Number(form.mileage || 0),
+      form.transmission,
+      form.engine.trim() || undefined,
+      form.traction
     )
 
     const created = await catalogStore.createVehicle(command)
 
     if (!created) {
-      const serverErr = catalogStore.error || ''
-      if (serverErr.includes('created_at') || serverErr.includes('DataIntegrityViolationException')) {
-        errorMessage.value = 'Aviso de Integridad Backend (Render PostgreSQL): La petición POST /api/v1/vehicles fue transmitida con todos los campos requeridos (brand, condition, currency, financialEntityId, model, priceAmount, userId), pero el backend en Render rechazó la inserción debido a que su entidad JPA no tiene habilitado @EnableJpaAuditing para la columna "created_at" (NOT NULL).'
-      } else {
-        errorMessage.value = serverErr || 'Error al registrar el vehículo en el catálogo.'
-      }
+      errorMessage.value = catalogStore.error || 'Error al registrar el vehículo en el catálogo.'
       return
     }
 
     if (selectedFile.value && created.id) {
-      // Upload image to Cloudinary via real endpoint (3.7)
       const uploadCmd = new UploadVehicleImageCommand(created.id, selectedFile.value)
       await catalogStore.uploadVehicleImage(uploadCmd)
     }
 
     router.push('/dealer/inventory')
   } catch (err: any) {
-    const message = err.response?.data?.message || err.message || 'Error al registrar el vehículo en el catálogo.'
-    if (message.includes('created_at')) {
-      errorMessage.value = 'Aviso de Integridad Backend (Render PostgreSQL): La inserción falló en el servidor por la restricción not-null en "created_at".'
-    } else {
-      errorMessage.value = message
-    }
+    errorMessage.value = err.response?.data?.message || err.message || 'Error al registrar el vehículo en el catálogo.'
   } finally {
     isSubmitting.value = false
   }

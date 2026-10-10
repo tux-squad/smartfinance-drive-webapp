@@ -129,60 +129,61 @@
         </div>
         <div>
           <h2 class="text-base font-bold text-gray-900">Seguridad de la Cuenta</h2>
-          <p class="text-xs text-gray-500">Actualiza tu contraseña periódicamente para proteger tu información</p>
+          <p class="text-xs text-gray-500">Gestión de credenciales y restablecimiento seguro de contraseña</p>
         </div>
       </div>
 
-      <form @submit.prevent="handleUpdatePassword" class="space-y-4 max-w-xl">
-        <div class="space-y-1.5">
-          <label class="block text-xs font-semibold text-gray-700">Contraseña actual</label>
-          <input
-            v-model="passwordForm.currentPassword"
-            type="password"
-            required
-            placeholder="••••••••"
-            class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-          />
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-gray-700">Nueva contraseña</label>
-            <input
-              v-model="passwordForm.newPassword"
-              type="password"
-              required
-              minlength="6"
-              placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-            />
+      <div class="space-y-4 max-w-xl">
+        <div class="p-4 rounded-xl bg-gray-50/70 border border-gray-200 space-y-3">
+          <div class="flex items-start gap-3">
+            <i class="pi pi-info-circle text-blue-600 mt-0.5" />
+            <div class="space-y-1 text-xs text-gray-600">
+              <p class="font-semibold text-gray-800">Flujo de cambio de contraseña seguro</p>
+              <p>
+                Por políticas de seguridad bancaria, el cambio de contraseña se realiza mediante un token de verificación seguro enviado a tu correo registrado:
+                <strong class="font-mono text-gray-900">{{ currentAccountEmail || 'tu correo registrado' }}</strong>.
+              </p>
+            </div>
           </div>
 
-          <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-gray-700">Confirmar nueva contraseña</label>
-            <input
-              v-model="passwordForm.confirmPassword"
-              type="password"
-              required
-              minlength="6"
-              placeholder="••••••••"
-              class="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-2xs"
-            />
-          </div>
-        </div>
-
-        <div class="pt-2">
-          <button
-            type="submit"
-            :disabled="isUpdatingPassword"
-            class="px-5 py-2.5 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-semibold text-xs text-center shadow-xs transition-colors flex items-center gap-2"
+          <div
+            v-if="securitySuccessMsg"
+            class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center gap-2"
           >
-            <i v-if="isUpdatingPassword" class="pi pi-spin pi-spinner text-xs"></i>
-            <i v-else class="pi pi-key text-xs"></i>
-            <span>Actualizar contraseña</span>
-          </button>
+            <i class="pi pi-check-circle text-emerald-600 shrink-0" />
+            <span>{{ securitySuccessMsg }}</span>
+          </div>
+
+          <div
+            v-if="securityErrorMsg"
+            class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium flex items-center gap-2"
+          >
+            <i class="pi pi-exclamation-circle text-rose-600 shrink-0" />
+            <span>{{ securityErrorMsg }}</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              type="button"
+              :disabled="isSendingRecovery"
+              @click="handleRequestPasswordRecovery"
+              class="px-4 py-2.5 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-semibold text-xs text-center shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <i v-if="isSendingRecovery" class="pi pi-spin pi-spinner text-xs" />
+              <i v-else class="pi pi-envelope text-xs" />
+              <span>{{ isSendingRecovery ? 'Enviando solicitud...' : 'Enviar enlace de restablecimiento' }}</span>
+            </button>
+
+            <router-link
+              :to="`/iam/reset-password${currentAccountEmail ? '?email=' + encodeURIComponent(currentAccountEmail) : ''}`"
+              class="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium text-xs text-center transition-colors flex items-center gap-1.5"
+            >
+              <i class="pi pi-key text-xs" />
+              <span>Ingresar token y nueva contraseña</span>
+            </router-link>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
 
     <!-- Section 3: Zona de peligro -->
@@ -193,24 +194,24 @@
         </div>
         <div>
           <h2 class="text-base font-bold text-red-950">Zona de peligro</h2>
-          <p class="text-xs text-red-500">Acciones irreversibles sobre tu cuenta de comprador</p>
+          <p class="text-xs text-red-500">Acciones sobre tu perfil y sesión</p>
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2">
         <div class="space-y-1">
-          <h3 class="text-xs font-bold text-gray-900">Eliminar cuenta permanentemente</h3>
+          <h3 class="text-xs font-bold text-gray-900">Eliminar perfil y cerrar sesión</h3>
           <p class="text-xs text-gray-500">
-            Una vez eliminada la cuenta, se borrarán de forma irrevocable tus solicitudes, perfil y datos asociados.
+            Se eliminarán tus datos de perfil registrados y se cerrará tu sesión activa de forma irrevocable.
           </p>
         </div>
 
         <button
           type="button"
           @click="showDeleteConfirm = true"
-          class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs text-center shadow-xs transition-colors shrink-0"
+          class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs text-center shadow-xs transition-colors shrink-0 cursor-pointer"
         >
-          Eliminar cuenta
+          Eliminar perfil
         </button>
       </div>
     </div>
@@ -225,9 +226,9 @@
           <i class="pi pi-exclamation-triangle text-xl"></i>
         </div>
         <div class="text-center space-y-2">
-          <h3 class="text-lg font-bold text-gray-900">¿Estás seguro de eliminar tu cuenta?</h3>
+          <h3 class="text-lg font-bold text-gray-900">¿Estás seguro de eliminar tu perfil?</h3>
           <p class="text-xs text-gray-500">
-            Esta acción no se puede deshacer. Se cancelarán todas tus pre-evaluaciones pendientes y se eliminará tu historial.
+            Esta acción no se puede deshacer. Se eliminarán los datos personales del perfil y se revocará tu sesión activa de forma definitiva.
           </p>
         </div>
         <div class="flex gap-3 pt-2">
@@ -243,13 +244,14 @@
             @click="handleConfirmDelete"
             class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-xs font-semibold text-white"
           >
-            Confirmar eliminación
+            Confirmar y salir
           </button>
         </div>
       </div>
     </div>
-    <!-- Section: Panel de Administración de Usuarios y Roles (1.8 / 1.10) -->
-    <div class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
+
+    <!-- Section: Panel de Administración de Usuarios y Roles (Solo Admin - Error 17) -->
+    <div v-if="iamStore.roles.includes('ROLE_ADMIN')" class="bg-white rounded-2xl border border-gray-200 p-6 sm:p-7 shadow-xs space-y-5">
       <div class="flex items-center justify-between pb-4 border-b border-gray-100 flex-wrap gap-2">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -346,9 +348,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useIamStore } from '@/iam/application/iam.store'
+import { PasswordRecoveryCommand } from '@/iam/domain/password-recovery.command'
 
 const router = useRouter()
 const iamStore = useIamStore()
@@ -359,43 +362,56 @@ const notifications = reactive({
   monthlySummary: false
 })
 
-const passwordForm = reactive({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
-
-const isUpdatingPassword = ref(false)
+const isSendingRecovery = ref(false)
 const securitySuccessMsg = ref<string | null>(null)
 const securityErrorMsg = ref<string | null>(null)
 const showDeleteConfirm = ref(false)
 
-const handleUpdatePassword = async () => {
-  securitySuccessMsg.value = null
-  securityErrorMsg.value = null
+const currentAccountEmail = computed(() => {
+  return iamStore.currentUser?.username || localStorage.getItem('user_email') || ''
+})
 
-  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    securityErrorMsg.value = 'Las contraseñas nuevas no coinciden.'
+const handleRequestPasswordRecovery = async () => {
+  const email = currentAccountEmail.value
+  if (!email || !email.includes('@')) {
+    securityErrorMsg.value = 'No se encontró un correo electrónico asociado a la sesión.'
     return
   }
-
-  isUpdatingPassword.value = true
-  setTimeout(() => {
-    isUpdatingPassword.value = false
-    securitySuccessMsg.value = 'Contraseña actualizada correctamente.'
-    passwordForm.currentPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
-    setTimeout(() => {
-      securitySuccessMsg.value = null
-    }, 4000)
-  }, 800)
+  isSendingRecovery.value = true
+  securitySuccessMsg.value = null
+  securityErrorMsg.value = null
+  try {
+    const success = await iamStore.requestPasswordRecovery(new PasswordRecoveryCommand({ username: email }))
+    if (success) {
+      securitySuccessMsg.value = `Se enviaron instrucciones y el token seguro para restablecer tu contraseña al correo ${email}.`
+    } else {
+      securityErrorMsg.value = iamStore.error || 'No se pudo enviar la solicitud de recuperación.'
+    }
+  } catch {
+    securityErrorMsg.value = 'Ocurrió un error al procesar la solicitud.'
+  } finally {
+    isSendingRecovery.value = false
+  }
 }
 
-const handleConfirmDelete = () => {
+const handleConfirmDelete = async () => {
   showDeleteConfirm.value = false
-  iamStore.signOut()
-  router.push('/sign-in')
+  try {
+    const { useProfilesStore } = await import('@/profiles/application/profiles.store')
+    const profilesStore = useProfilesStore()
+    const userId = iamStore.currentUser?.id || localStorage.getItem('user_id')
+    if (userId) {
+      await profilesStore.fetchProfileByUserId(userId)
+      if (profilesStore.currentProfile?.id) {
+        await profilesStore.deleteProfile(profilesStore.currentProfile.id)
+      }
+    }
+  } catch (err) {
+    console.error('Error al remover perfil de usuario:', err)
+  } finally {
+    await iamStore.signOut()
+    router.push('/iam/sign-in')
+  }
 }
 
 // Admin User Management State & Actions (1.8 / 1.10)
@@ -408,7 +424,7 @@ const loadAdminUsers = async () => {
   isLoadingUsers.value = true
   try {
     await iamStore.fetchUsers(0, 20)
-    iamStore.userList.forEach(u => {
+    iamStore.userList.forEach((u: any) => {
       selectedUserRoles[u.id] = u.roles[0] || 'ROLE_USER'
     })
   } finally {

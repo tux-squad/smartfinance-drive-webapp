@@ -201,14 +201,14 @@ export class BillingApi extends BaseApi {
    */
   public async getDealerMetrics(): Promise<DealerMetrics> {
     const response: AxiosResponse<any> = await this.http.get('/api/v1/dealers/me/metrics')
-    const m = response.data
+    const m = response.data || {}
     return new DealerMetrics(
-      m.totalLeadsGenerated ?? 24,
-      m.conversionRate ?? 16.5,
-      m.totalVehicleViews ?? 1450,
-      m.membershipRoi ?? '5.2x',
-      m.activeListingsCount ?? 8,
-      m.period ?? 'LAST_30_DAYS'
+      Number(m.totalLeadsGenerated) || 0,
+      Number(m.conversionRate) || 0,
+      Number(m.totalVehicleViews) || 0,
+      m.membershipRoi || '0.0x',
+      Number(m.activeListingsCount) || 0,
+      m.period || 'LAST_30_DAYS'
     )
   }
 

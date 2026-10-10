@@ -20,6 +20,7 @@ export interface DealershipResource {
 }
 
 export interface UpdateDealershipResource {
+  ruc?: string
   name: string
   address: string
   phone?: string
@@ -31,3 +32,4 @@ export interface UpdateDealershipResource {
   logoUrl?: string
   bannerUrl?: string
 }
+

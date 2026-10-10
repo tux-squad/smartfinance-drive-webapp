@@ -31,80 +31,50 @@
         </p>
       </div>
 
-      <!-- Account Type Selection (Selector Inicial: Comprador, Concesionario, Entidad Financiera) -->
-      <div class="space-y-2">
-        <label class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-          {{ t('iam.accountType') }} <span class="text-rose-500">*</span>
-        </label>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <!-- Option A: Buyer / Personal -->
-          <button
-            type="button"
-            @click="accountType = 'buyer'"
-            :class="[
-              'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
-              accountType === 'buyer'
-                ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
-                : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
-            ]"
-          >
-            <div class="flex items-center justify-between">
-              <i class="pi pi-user text-base" :class="accountType === 'buyer' ? 'text-primary' : 'text-surface-400'" />
-              <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'buyer' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
-                Personal
-              </span>
-            </div>
-            <div>
-              <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeBuyer') }}</span>
-              <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Comprador de autos</span>
-            </div>
-          </button>
+      <!-- Stepper Progress Indicator -->
+      <div class="pt-2">
+        <div class="flex items-center justify-between relative">
+          <!-- Step connecting line background -->
+          <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-0.5 bg-surface-200 dark:bg-surface-800 -z-0"></div>
+          <!-- Step connecting line filled progress -->
+          <div
+            class="absolute left-6 top-1/2 -translate-y-1/2 h-0.5 bg-primary transition-all duration-300 -z-0"
+            :style="{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }"
+          ></div>
 
-          <!-- Option B: Dealer / Concesionaria -->
-          <button
-            type="button"
-            @click="accountType = 'dealer'"
-            :class="[
-              'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
-              accountType === 'dealer'
-                ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
-                : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
-            ]"
+          <!-- Step Items -->
+          <div
+            v-for="(stepItem, index) in steps"
+            :key="stepItem.step"
+            class="relative z-10 flex flex-col items-center cursor-pointer group"
+            @click="goToStep(stepItem.step)"
           >
-            <div class="flex items-center justify-between">
-              <i class="pi pi-car text-base" :class="accountType === 'dealer' ? 'text-primary' : 'text-surface-400'" />
-              <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'dealer' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
-                Empresa
-              </span>
+            <div
+              :class="[
+                'w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 shadow-sm',
+                currentStep === stepItem.step
+                  ? 'bg-primary text-white ring-4 ring-primary/20 scale-110 shadow-primary/30'
+                  : currentStep > stepItem.step
+                    ? 'bg-emerald-600 text-white shadow-emerald-600/20'
+                    : 'bg-surface-100 dark:bg-surface-800 text-surface-400 border border-surface-200 dark:border-surface-700'
+              ]"
+            >
+              <i v-if="currentStep > stepItem.step" class="pi pi-check text-xs font-black"></i>
+              <span v-else>{{ index + 1 }}</span>
             </div>
-            <div>
-              <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeDealer') }}</span>
-              <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Venta y catálogo</span>
-            </div>
-          </button>
-
-          <!-- Option C: Financial Institution / Banco -->
-          <button
-            type="button"
-            @click="accountType = 'bank'"
-            :class="[
-              'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
-              accountType === 'bank'
-                ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
-                : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
-            ]"
-          >
-            <div class="flex items-center justify-between">
-              <i class="pi pi-building text-base" :class="accountType === 'bank' ? 'text-primary' : 'text-surface-400'" />
-              <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'bank' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
-                Banco
-              </span>
-            </div>
-            <div>
-              <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeBank') }}</span>
-              <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Créditos y tasas</span>
-            </div>
-          </button>
+            <span
+              :class="[
+                'text-[10px] font-bold mt-1.5 transition-colors hidden sm:block tracking-tight text-center max-w-[110px]',
+                currentStep === stepItem.step
+                  ? 'text-primary'
+                  : currentStep > stepItem.step
+                    ? 'text-surface-700 dark:text-surface-300'
+                    : 'text-surface-400'
+              ]"
+            >
+              {{ stepItem.title }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -118,156 +88,310 @@
         {{ iamStore.error }}
       </Message>
 
-      <!-- Registration Form -->
-      <form class="space-y-4" @submit.prevent="handleSignUp">
-        <!-- Section Header for Step 1 -->
-        <div class="pt-2 border-t border-surface-200 dark:border-surface-800 flex items-center justify-between">
-          <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-1.5">
-            <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">1</span>
-            <span>{{ t('iam.step1Title') }}</span>
-          </span>
-          <span class="text-[10px] text-surface-400 font-medium">Requerido</span>
-        </div>
-
-        <!-- Names Row: First Name & Last Name -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="space-y-1.5">
-            <label for="reg-firstname" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.firstName') }} <span class="text-rose-500">*</span>
-            </label>
-            <div class="relative">
-              <i class="pi pi-user absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-              <InputText
-                id="reg-firstname"
-                v-model="firstName"
-                required
-                :placeholder="t('iam.firstNamePlaceholder')"
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-              />
-            </div>
-          </div>
-
-          <div class="space-y-1.5">
-            <label for="reg-lastname" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.lastName') }} <span class="text-rose-500">*</span>
-            </label>
-            <div class="relative">
-              <i class="pi pi-user absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-              <InputText
-                id="reg-lastname"
-                v-model="lastName"
-                required
-                :placeholder="t('iam.lastNamePlaceholder')"
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Email & Verification OTP -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-              {{ t('iam.email') }} <span class="text-rose-500">*</span>
-            </label>
-            <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-              <i class="pi pi-check" /> Verificado
+      <!-- Form Steps Container -->
+      <form class="space-y-5" novalidate @submit.prevent="handleFinalSubmit">
+        <!-- =================================================================== -->
+        <!-- PASO 1: Acceso, Tipo de Cuenta, OTP y Doble Contraseña             -->
+        <!-- =================================================================== -->
+        <div v-show="currentStep === 1" class="space-y-4">
+          <!-- Step Title Badge -->
+          <div class="flex items-center justify-between pb-2 border-b border-surface-200 dark:border-surface-800">
+            <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">1</span>
+              <span>Paso 1: Acceso y Credenciales</span>
             </span>
+            <span class="text-[10px] text-surface-400 font-medium">Creación de cuenta</span>
           </div>
 
-          <div class="flex items-center gap-2">
-            <div class="relative flex-1">
-              <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-              <InputText
-                id="reg-username"
-                v-model="username"
-                type="email"
-                required
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                :placeholder="t('iam.emailPlaceholder')"
-              />
+          <!-- Account Type Selector -->
+          <div class="space-y-2">
+            <label class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+              {{ t('iam.accountType') }} <span class="text-rose-500">*</span>
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <!-- Option A: Buyer / Personal -->
+              <button
+                type="button"
+                @click="accountType = 'buyer'"
+                :class="[
+                  'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
+                  accountType === 'buyer'
+                    ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <i class="pi pi-user text-base" :class="accountType === 'buyer' ? 'text-primary' : 'text-surface-400'" />
+                  <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'buyer' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
+                    Personal
+                  </span>
+                </div>
+                <div>
+                  <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeBuyer') }}</span>
+                  <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Comprador de autos</span>
+                </div>
+              </button>
+
+              <!-- Option B: Dealer / Concesionaria -->
+              <button
+                type="button"
+                @click="accountType = 'dealer'"
+                :class="[
+                  'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
+                  accountType === 'dealer'
+                    ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <i class="pi pi-car text-base" :class="accountType === 'dealer' ? 'text-primary' : 'text-surface-400'" />
+                  <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'dealer' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
+                    Empresa
+                  </span>
+                </div>
+                <div>
+                  <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeDealer') }}</span>
+                  <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Venta y catálogo</span>
+                </div>
+              </button>
+
+              <!-- Option C: Financial Institution / Banco -->
+              <button
+                type="button"
+                @click="accountType = 'bank'"
+                :class="[
+                  'p-3 rounded-2xl border text-left transition-all flex flex-col justify-between space-y-2',
+                  accountType === 'bank'
+                    ? 'border-primary bg-primary-50/60 dark:bg-primary-950/30 text-primary-900 dark:text-primary-100 ring-2 ring-primary/20 shadow-xs'
+                    : 'border-surface-200 dark:border-surface-700 bg-surface-50/50 dark:bg-surface-800/40 hover:border-surface-300 dark:hover:border-surface-600'
+                ]"
+              >
+                <div class="flex items-center justify-between">
+                  <i class="pi pi-building text-base" :class="accountType === 'bank' ? 'text-primary' : 'text-surface-400'" />
+                  <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" :class="accountType === 'bank' ? 'bg-primary text-white' : 'bg-surface-200 dark:bg-surface-700 text-surface-600 dark:text-surface-400'">
+                    Banco
+                  </span>
+                </div>
+                <div>
+                  <span class="font-bold text-xs block leading-tight">{{ t('iam.accountTypeBank') }}</span>
+                  <span class="text-[10px] text-surface-500 block leading-tight mt-0.5">Créditos y tasas</span>
+                </div>
+              </button>
             </div>
-            <Button
-              type="button"
-              severity="secondary"
-              outlined
-              :disabled="!username || otpCooldown > 0 || iamStore.emailVerified"
-              :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
-              @click="sendOtp"
-              class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-              :label="otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : 'Enviar OTP')"
-            />
           </div>
 
-          <!-- OTP Code Verification Box -->
-          <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
-            <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-              Ingrese el código de 6 dígitos enviado a su correo:
-            </span>
+          <!-- Email & Verification OTP -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="reg-username" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.email') }} <span class="text-rose-500">*</span>
+              </label>
+              <span v-if="iamStore.emailVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                <i class="pi pi-check" /> Verificado
+              </span>
+              <span v-else-if="username && isEmailValid" class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                <i class="pi pi-check text-[10px]" /> Formato válido
+              </span>
+              <span v-else-if="username && !isEmailValid" class="text-[10px] text-rose-500 font-medium">
+                Correo inválido
+              </span>
+            </div>
+
             <div class="flex items-center gap-2">
-              <InputText
-                v-model="otpCode"
-                maxlength="6"
-                placeholder="Ej: 849201"
-                class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
-              />
+              <div class="relative flex-1">
+                <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                <InputText
+                  id="reg-username"
+                  v-model="username"
+                  type="email"
+                  :class="[
+                    'w-full !pl-9 !py-2.5 !text-xs !rounded-xl transition-all',
+                    username && !isEmailValid ? '!border-rose-400 focus:!ring-rose-400' : ''
+                  ]"
+                  :placeholder="t('iam.emailPlaceholder')"
+                />
+              </div>
               <Button
                 type="button"
-                severity="primary"
-                :disabled="otpCode.length !== 6"
-                :loading="iamStore.isVerifyingOtp"
-                @click="confirmOtp"
+                severity="secondary"
+                outlined
+                :disabled="!isEmailValid || otpCooldown > 0 || iamStore.emailVerified"
+                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
+                @click="sendOtp"
                 class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-                label="Validar"
+                :label="otpCooldown > 0 ? `${otpCooldown}s` : (iamStore.emailVerified ? 'Verificado' : (otpSent ? 'Reenviar OTP' : 'Enviar OTP'))"
+              />
+            </div>
+
+            <!-- OTP Code Verification Box -->
+            <div v-if="otpSent && !iamStore.emailVerified" class="p-3 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 space-y-2">
+              <div class="flex items-center justify-between text-[11px] text-surface-600 dark:text-surface-300">
+                <span class="font-medium">Ingrese el código de 6 dígitos enviado a su correo:</span>
+                <span class="text-[10px] text-surface-400">Vence en 15 min</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <InputText
+                  v-model="otpCode"
+                  maxlength="6"
+                  placeholder="Ej: 849201"
+                  class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
+                />
+                <Button
+                  type="button"
+                  severity="primary"
+                  :disabled="otpCode.length !== 6"
+                  :loading="iamStore.isVerifyingOtp"
+                  @click="confirmOtp"
+                  class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
+                  label="Validar"
+                />
+              </div>
+              <p class="text-[10px] text-surface-500 dark:text-surface-400">
+                * Nota: Si solicitó un reenvío, ingrese el código más reciente recibido en su bandeja.
+              </p>
+            </div>
+
+            <!-- Verified Email Confirmation Card -->
+            <div
+              v-if="iamStore.emailVerified"
+              class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300"
+            >
+              <div class="flex items-center gap-1.5 font-bold">
+                <i class="pi pi-check-circle text-xs" />
+                <span>Correo verificado exitosamente</span>
+              </div>
+              <span v-if="iamStore.emailVerificationToken" class="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+                {{ iamStore.emailVerificationToken.slice(0, 16) }}...
+              </span>
+            </div>
+          </div>
+
+          <!-- Password Row: Principal Password & Confirm Password (Rectificar) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Password 1 -->
+            <div class="space-y-1.5">
+              <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.password') }} <span class="text-rose-500">*</span>
+              </label>
+              <Password
+                id="reg-password"
+                inputId="reg-password-input"
+                v-model="password"
+                :feedback="false"
+                toggleMask
+                class="w-full !rounded-xl"
+                inputClass="w-full !text-xs !py-2.5 !rounded-xl"
+                :placeholder="t('iam.passwordPlaceholder')"
+              />
+            </div>
+
+            <!-- Password 2: Confirm Password -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="reg-confirm-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                  Confirmar Contraseña <span class="text-rose-500">*</span>
+                </label>
+                <span v-if="confirmPassword && passwordsMatch" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <i class="pi pi-check text-[9px]" /> Coinciden
+                </span>
+                <span v-else-if="confirmPassword && !passwordsMatch" class="text-[10px] text-rose-500 font-medium">
+                  No coinciden
+                </span>
+              </div>
+              <Password
+                id="reg-confirm-password"
+                inputId="reg-confirm-password-input"
+                v-model="confirmPassword"
+                :feedback="false"
+                toggleMask
+                class="w-full !rounded-xl"
+                :inputClass="[
+                  'w-full !text-xs !py-2.5 !rounded-xl transition-all',
+                  confirmPassword && !passwordsMatch ? '!border-rose-400 focus:!ring-rose-400' : ''
+                ]"
+                placeholder="Repite tu contraseña"
               />
             </div>
           </div>
 
-          <!-- Verified Email Confirmation Card -->
-          <div
-            v-if="iamStore.emailVerified"
-            class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs flex items-center justify-between text-emerald-800 dark:text-emerald-300"
-          >
-            <div class="flex items-center gap-1.5 font-bold">
-              <i class="pi pi-check-circle text-xs" />
-              <span>Correo verificado exitosamente</span>
+          <!-- Live Password Complexity Checklist -->
+          <div v-if="password" class="p-2.5 rounded-xl bg-surface-50 dark:bg-surface-800/60 border border-surface-200 dark:border-surface-700 text-[10px] space-y-1">
+            <span class="font-bold text-surface-600 dark:text-surface-300 block mb-1">Requisitos de contraseña:</span>
+            <div class="grid grid-cols-2 gap-1 font-medium">
+              <span class="flex items-center gap-1" :class="passwordCriteria.minLength ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.minLength ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                Mínimo 8 caracteres
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasUpper ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasUpper ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Mayúscula (A-Z)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasNumber ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasNumber ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Número (0-9)
+              </span>
+              <span class="flex items-center gap-1" :class="passwordCriteria.hasSpecial ? 'text-emerald-600' : 'text-surface-400'">
+                <i :class="passwordCriteria.hasSpecial ? 'pi pi-check-circle' : 'pi pi-circle'" class="text-[9px]" />
+                1 Especial (*!@#$)
+              </span>
             </div>
-            <span v-if="iamStore.emailVerificationToken" class="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
-              {{ iamStore.emailVerificationToken.slice(0, 16) }}...
-            </span>
+          </div>
+
+          <!-- Step 1 Controls -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button
+              type="button"
+              @click="fillDemoData"
+              class="text-xs text-primary hover:underline font-semibold flex items-center space-x-1 order-2 sm:order-1"
+            >
+              <i class="pi pi-sparkles text-xs"></i>
+              <span>{{ t('iam.fillDemoBtn') }}</span>
+            </button>
+
+            <Button
+              type="button"
+              severity="primary"
+              :disabled="!canAdvanceStep1 || isAdvancingStep1"
+              :loading="isAdvancingStep1"
+              @click="advanceFromStep1"
+              class="w-full sm:w-auto !px-6 !py-2.5 !rounded-xl !text-xs font-bold order-1 sm:order-2 shadow-md shadow-primary/20"
+              label="Continuar a Identificación"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+            />
           </div>
         </div>
 
-        <!-- Password Input -->
-        <div class="space-y-1.5">
-          <label for="reg-password" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-            {{ t('iam.password') }} <span class="text-rose-500">*</span>
-          </label>
-          <Password
-            id="reg-password"
-            inputId="reg-password-input"
-            v-model="password"
-            required
-            toggleMask
-            class="w-full !rounded-xl"
-            inputClass="w-full !text-xs !py-2.5 !rounded-xl"
-            :placeholder="t('iam.passwordPlaceholder')"
-          />
-          <span class="text-[10px] text-surface-500 font-medium flex items-center gap-1">
-            <i class="pi pi-info-circle text-[10px]" />
-            <span>{{ t('iam.passwordHelp') }}</span>
-          </span>
-        </div>
+        <!-- =================================================================== -->
+        <!-- PASO 2: Identificación con Autocompletado RENIEC en Tiempo Real     -->
+        <!-- =================================================================== -->
+        <div v-show="currentStep === 2" class="space-y-4">
+          <!-- Step Title Badge -->
+          <div class="flex items-center justify-between pb-2 border-b border-surface-200 dark:border-surface-800">
+            <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">2</span>
+              <span>{{ accountType === 'buyer' ? 'Paso 2: Identificación con RENIEC' : 'Paso 2: Representante Legal / Titular' }}</span>
+            </span>
+            <span class="text-[10px] text-surface-400 font-medium">
+              {{ accountType === 'buyer' ? 'Paso final' : 'Paso 2 de 3' }}
+            </span>
+          </div>
 
-        <!-- Option A: Buyer Specific Verification (DNI & Phone) -->
-        <template v-if="accountType === 'buyer'">
-          <!-- DNI RENIEC Lookup -->
-          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2.5">
+          <!-- DNI Input with RENIEC Auto-Complete -->
+          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 space-y-2">
             <div class="flex items-center justify-between">
               <label for="reg-dni" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Documento de Identidad (DNI) <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
+                Documento de Identidad (DNI) <span class="text-rose-500">*</span>
               </label>
-              <span class="text-[10px] text-primary font-semibold">Validación RENIEC</span>
+              <div class="flex items-center gap-2">
+                <span v-if="iamStore.isLookingUpDni" class="text-[10px] text-primary font-bold flex items-center gap-1">
+                  <i class="pi pi-spin pi-spinner text-[10px]" /> Consultando RENIEC...
+                </span>
+                <span v-else-if="reniecAutocompleted" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <i class="pi pi-check-circle" /> Validado por RENIEC
+                </span>
+                <span v-else class="text-[10px] text-surface-400">8 dígitos</span>
+              </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -277,219 +401,270 @@
                   id="reg-dni"
                   v-model="dni"
                   maxlength="8"
-                  placeholder="Ingrese 8 dígitos de su DNI"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+                  placeholder="Ingresa los 8 dígitos de tu DNI"
+                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+                  @keydown.enter.prevent="queryDniManual"
                 />
               </div>
               <Button
                 type="button"
                 severity="secondary"
                 outlined
+                :disabled="dni.trim().length !== 8 || iamStore.isLookingUpDni"
                 :loading="iamStore.isLookingUpDni"
-                :disabled="dni.length !== 8"
-                @click="searchDni"
-                class="!px-3.5 !py-2.5 !rounded-xl shrink-0"
-                v-tooltip.top="'Consultar nombres en RENIEC'"
-              >
-                <i class="pi pi-search text-xs" />
-              </Button>
+                @click="queryDniManual"
+                class="!text-xs !px-3.5 !py-2.5 !rounded-xl shrink-0 font-bold"
+                label="Validar DNI"
+                icon="pi pi-search"
+              />
             </div>
 
-            <!-- RENIEC Verified Result Card -->
+            <!-- RENIEC Success Pill -->
             <div
-              v-if="iamStore.reniecData"
-              class="p-2.5 rounded-xl bg-primary-50/70 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800 text-xs space-y-1"
+              v-if="reniecAutocompleted"
+              class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] flex items-center justify-between text-emerald-800 dark:text-emerald-300"
             >
-              <div class="flex items-center gap-1.5 font-bold text-primary">
-                <i class="pi pi-check-circle text-xs" />
-                <span>{{ iamStore.reniecData.fullLegalName }}</span>
+              <div class="flex items-center gap-1.5 font-semibold">
+                <i class="pi pi-sparkles text-xs text-emerald-600" />
+                <span>Nombres y apellidos autocompletados con el padrón oficial de RENIEC.</span>
               </div>
-              <p v-if="iamStore.reniecData.district" class="text-[10px] text-surface-500">
-                {{ iamStore.reniecData.district }}, {{ iamStore.reniecData.province }} - {{ iamStore.reniecData.department }}
-              </p>
+            </div>
+            <p v-else class="text-[10px] text-surface-500">
+              * Al ingresar los 8 dígitos, el sistema completará automáticamente tus nombres oficiales desde RENIEC.
+            </p>
+          </div>
+
+          <!-- Names Row: First Name & Last Name (Autocompleted) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <label for="reg-firstname" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.firstName') }} <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <i class="pi pi-user absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                <InputText
+                  id="reg-firstname"
+                  v-model="firstName"
+                  :placeholder="t('iam.firstNamePlaceholder')"
+                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="reg-lastname" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ t('iam.lastName') }} <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <i class="pi pi-user absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                <InputText
+                  id="reg-lastname"
+                  v-model="lastName"
+                  :placeholder="t('iam.lastNamePlaceholder')"
+                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Phone Verification (Firebase SMS) -->
-          <div class="space-y-3 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
+          <!-- Phone Number (Optional) with Direct Instant Format Validation -->
+          <div class="space-y-2 p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700">
             <div class="flex items-center justify-between">
               <label for="reg-phone" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                Verificación Telefónica <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
+                Teléfono Celular <span class="normal-case text-surface-400 font-normal text-[10px]">(Opcional)</span>
               </label>
-              <span v-if="iamStore.phoneVerified" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                <i class="pi pi-check" /> Verificado
+              <span v-if="phoneNumber && isPhoneValid" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                <i class="pi pi-check" /> Formato válido (+51)
+              </span>
+              <span v-else-if="phoneNumber && !isPhoneValid" class="text-[10px] text-rose-500 font-medium">
+                Debe tener 9 dígitos (inicia con 9)
               </span>
             </div>
 
-            <div id="recaptcha-phone-container" class="hidden"></div>
-
-            <div class="flex items-center gap-2">
-              <div class="relative flex-1">
-                <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-phone"
-                  v-model="phoneNumber"
-                  placeholder="+51 987 654 321"
-                  :disabled="iamStore.phoneVerified"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                />
-              </div>
-              <Button
-                type="button"
-                severity="secondary"
-                outlined
-                :disabled="!phoneNumber || smsCooldown > 0 || iamStore.phoneVerified"
-                :loading="iamStore.isLoading && !iamStore.isVerifyingOtp"
-                @click="handleSendSms"
-                class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-                :label="smsCooldown > 0 ? `${smsCooldown}s` : (iamStore.phoneVerified ? 'Verificado' : 'Enviar SMS')"
-              />
-            </div>
-
-            <!-- SMS Code Verification Input -->
-            <div v-if="smsSent && !iamStore.phoneVerified" class="p-3 rounded-2xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 space-y-2">
-              <span class="text-[11px] text-surface-600 dark:text-surface-300 block">
-                Ingrese el código de 6 dígitos recibido por SMS:
-              </span>
-              <div class="flex items-center gap-2">
-                <InputText
-                  v-model="phoneSmsCode"
-                  maxlength="6"
-                  placeholder="Ej: 123456"
-                  class="w-full font-mono text-center tracking-widest !text-sm !py-2.5 !rounded-xl"
-                />
-                <Button
-                  type="button"
-                  severity="primary"
-                  :disabled="phoneSmsCode.length !== 6"
-                  :loading="iamStore.isVerifyingOtp"
-                  @click="handleVerifySms"
-                  class="!text-xs !px-4 !py-2.5 !rounded-xl shrink-0 font-bold"
-                  label="Validar SMS"
-                />
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- Option B: Dealer Specific Corporate Data (Step 2) -->
-        <template v-if="accountType === 'dealer'">
-          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/60 border border-surface-200 dark:border-surface-700 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-1.5">
-                <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">2</span>
-                <span>{{ t('iam.step2DealerTitle') }}</span>
-              </span>
-              <span class="text-[10px] text-primary font-bold">Validación SUNAT</span>
-            </div>
-
-            <div class="space-y-1.5">
-              <label for="reg-dealer-ruc" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.rucNumber') }} (11 dígitos) <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative">
-                <i class="pi pi-building absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-dealer-ruc"
-                  v-model="corporateRuc"
-                  maxlength="11"
-                  required
-                  placeholder="Ej: 20100138019"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                />
-              </div>
-            </div>
-
-            <div class="space-y-1.5">
-              <label for="reg-dealer-company" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.companyName') }} <span class="text-rose-500">*</span>
-              </label>
+            <div class="relative">
+              <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
               <InputText
-                id="reg-dealer-company"
-                v-model="companyName"
-                required
-                :placeholder="t('iam.companyNamePlaceholder')"
-                class="w-full !py-2.5 !text-xs !rounded-xl"
+                id="reg-phone"
+                v-model="phoneNumber"
+                @input="handlePhoneInput"
+                placeholder="+51 987 654 321"
+                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
               />
             </div>
-
-            <div class="text-[11px] text-surface-500 dark:text-surface-400 bg-surface-100 dark:bg-surface-800 p-2.5 rounded-xl flex items-start gap-2">
-              <i class="pi pi-info-circle text-primary mt-0.5 shrink-0" />
-              <span>El backend verificará que el RUC esté ACTIVO, HABIDO y registrado con actividad automotriz (CIIU 451).</span>
-            </div>
+            <p class="text-[10px] text-surface-500">
+              * Se asociará a tu perfil para contacto con asesores y recepción de cotizaciones.
+            </p>
           </div>
-        </template>
 
-        <!-- Option C: Financial Institution Specific Data (Step 2) -->
-        <template v-if="accountType === 'bank'">
-          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/60 border border-surface-200 dark:border-surface-700 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-1.5">
-                <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">2</span>
-                <span>{{ t('iam.step2BankTitle') }}</span>
-              </span>
-              <span class="text-[10px] text-primary font-bold">Validación SUNAT</span>
-            </div>
+          <!-- Step 2 Controls -->
+          <div class="pt-2 flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              @click="prevStep"
+              class="!px-4 !py-2.5 !rounded-xl !text-xs font-bold"
+              label="Atrás"
+              icon="pi pi-arrow-left"
+            />
 
-            <div class="space-y-1.5">
-              <label for="reg-bank-ruc" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.rucNumber') }} (11 dígitos) <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative">
-                <i class="pi pi-building absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
-                <InputText
-                  id="reg-bank-ruc"
-                  v-model="corporateRuc"
-                  maxlength="11"
-                  required
-                  placeholder="Ej: 20100047218"
-                  class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl"
-                />
-              </div>
-            </div>
+            <!-- If Buyer: Final Submit in Step 2 -->
+            <Button
+              v-if="accountType === 'buyer'"
+              type="button"
+              :loading="iamStore.isLoading || isSubmittingFinal"
+              :disabled="!canAdvanceStep2"
+              @click="handleFinalSubmit"
+              label="Crear Perfil y Comenzar"
+              icon="pi pi-check"
+              iconPos="right"
+              severity="primary"
+              class="w-full sm:w-auto !px-6 !py-2.5 !rounded-xl !text-xs font-bold shadow-md shadow-primary/20"
+            />
 
-            <div class="space-y-1.5">
-              <label for="reg-bank-institution" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
-                {{ t('iam.institutionName') }} <span class="text-rose-500">*</span>
-              </label>
-              <InputText
-                id="reg-bank-institution"
-                v-model="companyName"
-                required
-                :placeholder="t('iam.institutionNamePlaceholder')"
-                class="w-full !py-2.5 !text-xs !rounded-xl"
-              />
-            </div>
-
-            <div class="text-[11px] text-surface-500 dark:text-surface-400 bg-surface-100 dark:bg-surface-800 p-2.5 rounded-xl flex items-start gap-2">
-              <i class="pi pi-info-circle text-primary mt-0.5 shrink-0" />
-              <span>El backend verificará que el RUC esté ACTIVO, HABIDO y con actividad de intermediación financiera (CIIU 64/66).</span>
-            </div>
+            <!-- If Dealer/Bank: Advance to Step 3 -->
+            <Button
+              v-else
+              type="button"
+              severity="primary"
+              :disabled="!canAdvanceStep2"
+              @click="nextStep"
+              class="w-full sm:w-auto !px-6 !py-2.5 !rounded-xl !text-xs font-bold shadow-md shadow-primary/20"
+              label="Continuar a Datos de Empresa"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+            />
           </div>
-        </template>
-
-        <!-- Quick Fill Demo Button -->
-        <div class="flex justify-end pt-1">
-          <button
-            type="button"
-            @click="fillDemoData"
-            class="text-xs text-primary hover:underline font-semibold flex items-center space-x-1"
-          >
-            <i class="pi pi-sparkles text-xs"></i>
-            <span>{{ t('iam.fillDemoBtn') }} ({{ accountType === 'buyer' ? 'Comprador' : (accountType === 'dealer' ? 'Dealer' : 'Banco') }})</span>
-          </button>
         </div>
 
-        <!-- Submit Button -->
-        <Button
-          type="submit"
-          :loading="iamStore.isLoading"
-          :label="iamStore.isLoading ? t('iam.registering') : t('iam.signUpBtn')"
-          icon="pi pi-user-plus"
-          iconPos="right"
-          severity="primary"
-          class="w-full font-bold !py-3 shadow-md shadow-primary/20 !rounded-xl transition-all !text-xs"
-        />
+        <!-- =================================================================== -->
+        <!-- PASO 3: Datos de Empresa con Autocompletado SUNAT (Dealer / Bank)   -->
+        <!-- =================================================================== -->
+        <div v-show="currentStep === 3" class="space-y-4">
+          <!-- Step Title Badge -->
+          <div class="flex items-center justify-between pb-2 border-b border-surface-200 dark:border-surface-800">
+            <span class="text-xs font-bold text-surface-900 dark:text-surface-100 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">3</span>
+              <span>
+                {{ accountType === 'dealer' ? 'Paso 3: Concesionaria (SUNAT)' : 'Paso 3: Entidad Financiera (SUNAT)' }}
+              </span>
+            </span>
+            <span class="text-[10px] text-primary font-bold">Validación Oficial</span>
+          </div>
+
+          <!-- Corporate RUC Input with SUNAT Auto-Complete -->
+          <div class="p-4 rounded-2xl bg-surface-50 dark:bg-surface-800/60 border border-surface-200 dark:border-surface-700 space-y-3">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="reg-corporate-ruc" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                  {{ t('iam.rucNumber') }} (11 dígitos) <span class="text-rose-500">*</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <span v-if="iamStore.isLookingUpRuc" class="text-[10px] text-primary font-bold flex items-center gap-1">
+                    <i class="pi pi-spin pi-spinner text-[10px]" /> Consultando SUNAT...
+                  </span>
+                  <span v-else-if="sunatAutocompleted" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                    <i class="pi pi-check-circle" /> Validado por SUNAT
+                  </span>
+                  <span v-else-if="corporateRuc && corporateRuc.length === 11" class="text-[10px] text-emerald-600 font-bold">
+                    11 dígitos
+                  </span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <i class="pi pi-building absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+                  <InputText
+                    id="reg-corporate-ruc"
+                    v-model="corporateRuc"
+                    maxlength="11"
+                    placeholder="Ej: 20100138019"
+                    class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+                    @keydown.enter.prevent="queryRucManual"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  severity="secondary"
+                  outlined
+                  :disabled="corporateRuc.trim().length !== 11 || iamStore.isLookingUpRuc"
+                  :loading="iamStore.isLookingUpRuc"
+                  @click="queryRucManual"
+                  class="!text-xs !px-3.5 !py-2.5 !rounded-xl shrink-0 font-bold"
+                  label="Validar SUNAT"
+                  icon="pi pi-search"
+                />
+              </div>
+            </div>
+
+            <!-- SUNAT Success & Details Pill -->
+            <div
+              v-if="sunatAutocompleted"
+              class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs space-y-2 text-emerald-900 dark:text-emerald-200"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-bold flex items-center gap-1.5">
+                  <i class="pi pi-sparkles text-emerald-600" /> Razón Social identificada:
+                </span>
+                <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-200 dark:bg-emerald-800 px-2 py-0.5 rounded-md">
+                  {{ iamStore.sunatData?.estado || 'ACTIVO' }} · {{ iamStore.sunatData?.condicion || 'HABIDO' }}
+                </span>
+              </div>
+              <p v-if="iamStore.sunatData?.actividadEconomica" class="text-[10px] text-emerald-700 dark:text-emerald-300">
+                Actividad: {{ iamStore.sunatData.actividadEconomica }} (CIIU {{ iamStore.sunatData.ciiu }})
+              </p>
+            </div>
+
+            <!-- Company Name Input (Autocompleted) -->
+            <div class="space-y-1.5">
+              <label for="reg-company-name" class="block text-[11px] font-bold text-surface-700 dark:text-surface-300 uppercase tracking-wider">
+                {{ accountType === 'dealer' ? t('iam.companyName') : t('iam.institutionName') }} <span class="text-rose-500">*</span>
+              </label>
+              <InputText
+                id="reg-company-name"
+                v-model="companyName"
+                :placeholder="accountType === 'dealer' ? t('iam.companyNamePlaceholder') : t('iam.institutionNamePlaceholder')"
+                class="w-full !py-2.5 !text-xs !rounded-xl"
+              />
+            </div>
+
+            <div class="text-[11px] text-surface-500 dark:text-surface-400 bg-surface-100 dark:bg-surface-800 p-2.5 rounded-xl flex items-start gap-2">
+              <i class="pi pi-info-circle text-primary mt-0.5 shrink-0" />
+              <span>
+                {{
+                  accountType === 'dealer'
+                    ? 'El backend verificará que el RUC esté ACTIVO, HABIDO y con actividad automotriz (CIIU 451).'
+                    : 'El backend verificará que el RUC esté ACTIVO, HABIDO y con actividad financiera (CIIU 64/66).'
+                }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Step 3 Controls -->
+          <div class="pt-2 flex items-center justify-between gap-3">
+            <Button
+              type="button"
+              severity="secondary"
+              outlined
+              @click="prevStep"
+              class="!px-4 !py-2.5 !rounded-xl !text-xs font-bold"
+              label="Atrás"
+              icon="pi pi-arrow-left"
+            />
+
+            <Button
+              type="button"
+              :loading="iamStore.isLoading || isSubmittingFinal"
+              :disabled="!canAdvanceStep3"
+              @click="handleFinalSubmit"
+              :label="accountType === 'dealer' ? 'Completar Registro de Concesionaria' : 'Completar Registro de Entidad Financiera'"
+              icon="pi pi-check"
+              iconPos="right"
+              severity="primary"
+              class="w-full sm:w-auto !px-6 !py-2.5 !rounded-xl !text-xs font-bold shadow-md shadow-primary/20"
+            />
+          </div>
+        </div>
       </form>
 
       <!-- Footer navigation link -->
@@ -504,14 +679,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useIamStore } from '../../application/iam.store'
 import { SignUpCommand } from '../../domain/sign-up.command'
 import { SignInCommand } from '../../domain/sign-in.command'
 import { RoleRequestCommand } from '../../domain/role-request.command'
-import { firebasePhoneAuthService } from '@/iam/infrastructure/firebase-phone-auth.service'
 
 // PrimeVue Components
 import InputText from 'primevue/inputtext'
@@ -524,49 +698,185 @@ const { t } = useI18n()
 const router = useRouter()
 const iamStore = useIamStore()
 
-// Account Type Selection
+// Step Navigation State
 type AccountType = 'buyer' | 'dealer' | 'bank'
 const accountType = ref<AccountType>('buyer')
+const currentStep = ref<number>(1)
+const isAdvancingStep1 = ref<boolean>(false)
+const isSubmittingFinal = ref<boolean>(false)
 
-// Common Account Fields
-const firstName = ref('')
-const lastName = ref('')
+const totalSteps = computed(() => (accountType.value === 'buyer' ? 2 : 3))
+
+const steps = computed(() => {
+  if (accountType.value === 'buyer') {
+    return [
+      { step: 1, title: 'Acceso y Contraseña', subtitle: 'Tipo, Correo y Contraseña', icon: 'pi pi-shield' },
+      { step: 2, title: 'Identificación (RENIEC)', subtitle: 'DNI, Nombres y Celular', icon: 'pi pi-user' }
+    ]
+  } else if (accountType.value === 'dealer') {
+    return [
+      { step: 1, title: 'Acceso y Contraseña', subtitle: 'Credenciales del Administrador', icon: 'pi pi-shield' },
+      { step: 2, title: 'Representante (RENIEC)', subtitle: 'Datos del Titular / Contacto', icon: 'pi pi-user' },
+      { step: 3, title: 'Concesionaria (SUNAT)', subtitle: 'RUC y Razón Social', icon: 'pi pi-car' }
+    ]
+  } else {
+    return [
+      { step: 1, title: 'Acceso y Contraseña', subtitle: 'Credenciales del Administrador', icon: 'pi pi-shield' },
+      { step: 2, title: 'Representante (RENIEC)', subtitle: 'Datos del Titular / Contacto', icon: 'pi pi-user' },
+      { step: 3, title: 'Entidad Financiera (SUNAT)', subtitle: 'RUC y Razón Social', icon: 'pi pi-building' }
+    ]
+  }
+})
+
+// Keep currentStep within bounds if accountType changes
+watch(accountType, () => {
+  if (currentStep.value > totalSteps.value) {
+    currentStep.value = totalSteps.value
+  }
+})
+
+// Paso 1 Fields
 const username = ref('')
 const password = ref('')
-
-// Buyer specific fields
-const dni = ref('')
+const confirmPassword = ref('')
 const otpCode = ref('')
 const otpSent = ref(false)
 const otpCooldown = ref(0)
 const successMessage = ref('')
 
-// Phone Verification with Firebase
+// Paso 2 Fields (Personal / RENIEC)
+const dni = ref('')
+const firstName = ref('')
+const lastName = ref('')
 const phoneNumber = ref('')
-const phoneSmsCode = ref('')
-const smsSent = ref(false)
-const smsCooldown = ref(0)
+const reniecAutocompleted = ref<boolean>(false)
 
-// Dealer & Bank Corporate Fields
+// Paso 3 Fields (Corporate / SUNAT)
 const corporateRuc = ref('')
 const companyName = ref('')
+const sunatAutocompleted = ref<boolean>(false)
 
-watch(dni, (val) => {
-  if (!val) return
-  const clean = val.replace(/\D/g, '').slice(0, 8)
-  if (clean !== val) {
-    dni.value = clean
-  }
-  if (clean.length === 8) {
-    searchDni()
+// Computed Validations
+const isEmailValid = computed(() => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  return emailRegex.test(username.value.trim())
+})
+
+const passwordCriteria = computed(() => {
+  const val = password.value || ''
+  return {
+    minLength: val.length >= 8,
+    hasUpper: /[A-Z]/.test(val),
+    hasNumber: /[0-9]/.test(val),
+    hasSpecial: /[@$!%*?&#^+=._-]/.test(val)
   }
 })
 
-watch(corporateRuc, (val) => {
-  if (!val) return
+const isPasswordValid = computed(() => {
+  const c = passwordCriteria.value
+  return c.minLength && c.hasUpper && c.hasNumber && c.hasSpecial
+})
+
+const passwordsMatch = computed(() => {
+  return password.value.length > 0 && password.value === confirmPassword.value
+})
+
+const cleanPhoneNumber = computed(() => {
+  return phoneNumber.value.replace(/\D/g, '')
+})
+
+const isPhoneValid = computed(() => {
+  const digits = cleanPhoneNumber.value
+  if (!digits) return true
+  if (digits.length === 9 && digits.startsWith('9')) return true
+  if (digits.length === 11 && digits.startsWith('519')) return true
+  return false
+})
+
+const handlePhoneInput = () => {
+  let digits = phoneNumber.value.replace(/\D/g, '')
+  if (digits.startsWith('51') && digits.length > 9) {
+    digits = digits.slice(2)
+  }
+  digits = digits.slice(0, 9)
+  if (digits.length > 6) {
+    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+  } else if (digits.length > 3) {
+    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3)}`
+  } else if (digits.length > 0) {
+    phoneNumber.value = `+51 ${digits}`
+  } else {
+    phoneNumber.value = ''
+  }
+}
+
+// Step Advance Guards
+const canAdvanceStep1 = computed(() => {
+  return isEmailValid.value && iamStore.emailVerified && isPasswordValid.value && passwordsMatch.value
+})
+
+const canAdvanceStep2 = computed(() => {
+  const dniValid = dni.value.trim().length === 8
+  const hasNames = firstName.value.trim().length > 0 && lastName.value.trim().length > 0
+  const phoneValid = !phoneNumber.value.trim() || isPhoneValid.value
+  return dniValid && hasNames && phoneValid
+})
+
+const canAdvanceStep3 = computed(() => {
+  if (accountType.value === 'buyer') return true
+  return corporateRuc.value.trim().length === 11 && companyName.value.trim().length > 0
+})
+
+// Watchers for Masks and Auto-Complete
+watch(dni, async (val) => {
+  if (!val) {
+    reniecAutocompleted.value = false
+    return
+  }
+  const clean = val.replace(/\D/g, '').slice(0, 8)
+  if (clean !== val) {
+    dni.value = clean
+    return
+  }
+
+  // Auto-complete from RENIEC when 8 digits are entered
+  if (clean.length === 8) {
+    const res = await iamStore.lookupDni(clean)
+    if (res) {
+      const resFirstNames = res.firstNames || (res as any).nombres || ''
+      const resPaternal = res.paternalSurname || (res as any).apellidoPaterno || ''
+      const resMaternal = res.maternalSurname || (res as any).apellidoMaterno || ''
+      if (resFirstNames) firstName.value = resFirstNames
+      const fullSurname = `${resPaternal} ${resMaternal}`.trim()
+      if (fullSurname) lastName.value = fullSurname
+      reniecAutocompleted.value = true
+    }
+  } else if (clean.length < 8) {
+    reniecAutocompleted.value = false
+  }
+})
+
+watch(corporateRuc, async (val) => {
+  if (!val) {
+    sunatAutocompleted.value = false
+    return
+  }
   const clean = val.replace(/\D/g, '').slice(0, 11)
   if (clean !== val) {
     corporateRuc.value = clean
+    return
+  }
+
+  // Auto-complete from SUNAT when 11 digits are entered
+  if (clean.length === 11) {
+    const res = await iamStore.lookupRuc(clean)
+    if (res) {
+      const resRazon = res.razonSocial || (res as any).companyName || (res as any).nombreOComercial || ''
+      if (resRazon) companyName.value = resRazon
+      sunatAutocompleted.value = true
+    }
+  } else if (clean.length < 11) {
+    sunatAutocompleted.value = false
   }
 })
 
@@ -576,30 +886,56 @@ watch(username, () => {
   otpSent.value = false
 })
 
-watch(phoneNumber, () => {
-  iamStore.phoneVerified = false
-  iamStore.phoneVerificationToken = null
-  smsSent.value = false
-})
+// Step Navigation Handlers
+const goToStep = (targetStep: number) => {
+  if (targetStep === currentStep.value) return
+  if (targetStep < currentStep.value) {
+    currentStep.value = targetStep
+    iamStore.error = null
+    return
+  }
+  if (targetStep >= 2 && !iamStore.isAuthenticated) {
+    advanceFromStep1()
+    return
+  }
+  if (targetStep === 3) {
+    if (!canAdvanceStep2.value) {
+      iamStore.error = 'Por favor completa tu DNI, nombres y apellidos antes de pasar a datos de empresa.'
+      return
+    }
+  }
+  iamStore.error = null
+  currentStep.value = targetStep
+}
 
-const searchDni = async () => {
-  if (dni.value.length === 8) {
-    const res = await iamStore.lookupDni(dni.value)
-    if (res) {
-      if (res.firstNames && !firstName.value) {
-        firstName.value = res.firstNames
-      }
-      if ((res.paternalSurname || res.maternalSurname) && !lastName.value) {
-        lastName.value = `${res.paternalSurname || ''} ${res.maternalSurname || ''}`.trim()
-      }
+const nextStep = () => {
+  if (currentStep.value === 1) {
+    advanceFromStep1()
+  } else if (currentStep.value === 2) {
+    if (!canAdvanceStep2.value) {
+      iamStore.error = 'Por favor ingresa un DNI válido de 8 dígitos y completa nombres y apellidos.'
+      return
+    }
+    if (totalSteps.value > 2) {
+      currentStep.value = 3
+      iamStore.error = null
     }
   }
 }
 
+const prevStep = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--
+    iamStore.error = null
+  }
+}
+
+// OTP Handlers
 const sendOtp = async () => {
-  if (!username.value) return
+  if (!username.value || !isEmailValid.value) return
+  otpCode.value = ''
   const ok = await iamStore.sendEmailOtp(username.value)
-  if (ok) {
+  if (ok && !iamStore.emailVerified) {
     otpSent.value = true
     otpCooldown.value = 60
     const interval = setInterval(() => {
@@ -616,87 +952,17 @@ const confirmOtp = async () => {
   await iamStore.verifyEmailOtp(username.value, otpCode.value)
 }
 
-const handleSendSms = async () => {
-  if (!phoneNumber.value) return
-  try {
-    firebasePhoneAuthService.setupRecaptcha('recaptcha-phone-container')
-    const ok = await iamStore.sendPhoneSms(phoneNumber.value)
-    if (ok) {
-      smsSent.value = true
-      smsCooldown.value = 60
-      const timer = setInterval(() => {
-        smsCooldown.value--
-        if (smsCooldown.value <= 0) {
-          clearInterval(timer)
-        }
-      }, 1000)
-    }
-  } catch (err: any) {
-    console.error('Error al inicializar o enviar SMS:', err)
-  }
-}
-
-const handleVerifySms = async () => {
-  if (phoneSmsCode.value.length !== 6) return
-  await iamStore.verifyPhoneSmsCode(phoneSmsCode.value)
-}
-
-onUnmounted(() => {
-  firebasePhoneAuthService.clearRecaptcha()
-})
-
-const fillDemoData = () => {
-  iamStore.error = null
-  const randomSuffix = Math.floor(Math.random() * 100000)
-  password.value = 'Password123!'
-  iamStore.emailVerified = true
-  iamStore.phoneVerified = true
-
-  if (accountType.value === 'buyer') {
-    firstName.value = 'Juan'
-    lastName.value = 'Pérez'
-    dni.value = '72849102'
-    username.value = `comprador_${randomSuffix}@smartfinance.com`
-    phoneNumber.value = '+51 987654321'
-  } else if (accountType.value === 'dealer') {
-    firstName.value = 'Carlos'
-    lastName.value = 'Gómez'
-    username.value = `dealer_${randomSuffix}@toyota.pe`
-    corporateRuc.value = '20100138019'
-    companyName.value = 'Toyota del Perú S.A.'
-  } else if (accountType.value === 'bank') {
-    firstName.value = 'Ana'
-    lastName.value = 'Torres'
-    username.value = `banco_${randomSuffix}@bcp.com.pe`
-    corporateRuc.value = '20100047218'
-    companyName.value = 'Banco de Crédito del Perú BCP'
-  }
-}
-
-const handleSignUp = async () => {
+// Advance from Step 1: Create Account Base + Authenticate Session to obtain JWT
+const advanceFromStep1 = async () => {
   iamStore.error = null
 
-  // Capture DOM input values (resolving inner inputs if autofilled)
-  const emailInput = document.getElementById('reg-username') as HTMLInputElement | null
-  const passwordInput =
-    (document.getElementById('reg-password-input') as HTMLInputElement | null) ||
-    (document.querySelector('#reg-password input, input[type="password"]') as HTMLInputElement | null)
-  const firstNameInput = document.getElementById('reg-firstname') as HTMLInputElement | null
-  const lastNameInput = document.getElementById('reg-lastname') as HTMLInputElement | null
-  const dniInput = document.getElementById('reg-dni') as HTMLInputElement | null
+  const cleanEmail = username.value.trim()
+  const cleanPassword = password.value.trim()
 
-  const cleanEmail = (emailInput?.value || username.value || '').trim()
-  const cleanPassword = (passwordInput?.value || password.value || '').trim()
-  const cleanFirstName = (firstNameInput?.value || firstName.value || '').trim()
-  const cleanLastName = (lastNameInput?.value || lastName.value || '').trim()
-  const cleanDni = (dniInput?.value || dni.value || '').trim()
-
-  if (!cleanEmail || !cleanPassword || !cleanFirstName || !cleanLastName) {
-    iamStore.error = 'Por favor complete todos los campos obligatorios.'
+  if (!cleanEmail || !isEmailValid.value) {
+    iamStore.error = 'Por favor ingresa un correo electrónico válido.'
     return
   }
-
-  // Pre-requisite validation: Email OTP verification (Paso 1.1)
   if (!iamStore.emailVerified) {
     if (!otpSent.value) {
       await sendOtp()
@@ -704,106 +970,348 @@ const handleSignUp = async () => {
     iamStore.error = 'Por favor valida el código OTP de 6 dígitos enviado a tu correo antes de continuar.'
     return
   }
-
-  // Step 1: Execute POST /api/v1/auth/registrations (as per Section 2 / 1.2)
-  const signUpCommand = new SignUpCommand({
-    username: cleanEmail,
-    email: cleanEmail,
-    password: cleanPassword,
-    firstName: cleanFirstName,
-    lastName: cleanLastName,
-    roles: ['ROLE_USER']
-  })
-
-  const createdUser = await iamStore.signUp(signUpCommand)
-  if (!createdUser || !createdUser.id) {
+  if (!cleanPassword || !isPasswordValid.value) {
+    iamStore.error = 'La contraseña debe cumplir con los requisitos de seguridad requeridos.'
+    return
+  }
+  if (!passwordsMatch.value) {
+    iamStore.error = 'Las contraseñas ingresadas no coinciden. Por favor rectifica la confirmación.'
     return
   }
 
-  // Step 2: Auto-login to obtain session & token (POST /api/v1/auth/sessions)
-  const signInOk = await iamStore.signIn(new SignInCommand({
-    username: cleanEmail,
-    password: cleanPassword
-  }))
+  isAdvancingStep1.value = true
 
-  if (!signInOk) {
+  try {
+    // 1. Registrar cuenta base en backend como ROLE_USER (POST /api/v1/auth/registrations)
+    const emailPrefix = cleanEmail.split('@')[0] || 'Usuario'
+    const defaultFirst = firstName.value.trim() || emailPrefix
+    const defaultLast = lastName.value.trim() || 'SmartFinance'
+
+    const initialRoles = ['ROLE_USER']
+
+    const signUpCommand = new SignUpCommand({
+      username: cleanEmail,
+      email: cleanEmail,
+      password: cleanPassword,
+      firstName: defaultFirst,
+      lastName: defaultLast,
+      roles: initialRoles
+    })
+
+    let createdUser = await iamStore.signUp(signUpCommand)
+
+    // Si ya existe de un intento previo, auto-iniciar sesión
+    const errorMsg = String(iamStore.error || '')
+    if (!createdUser && errorMsg && (
+      errorMsg.includes('registrado') ||
+      errorMsg.includes('ya existe') ||
+      errorMsg.includes('alreadyExists')
+    )) {
+      iamStore.error = null
+      const signInOk = await iamStore.signIn(new SignInCommand({
+        username: cleanEmail,
+        password: cleanPassword
+      }))
+      if (!signInOk) {
+        iamStore.error = 'El correo ya está registrado con otra contraseña. Inicia sesión o restablece tu contraseña.'
+        return
+      }
+    } else if (!createdUser) {
+      return
+    }
+
+    // 2. Iniciar sesión para obtener el JWT token si aún no estamos autenticados
+    if (!iamStore.isAuthenticated) {
+      const signInOk = await iamStore.signIn(new SignInCommand({
+        username: cleanEmail,
+        password: cleanPassword
+      }))
+      if (!signInOk) {
+        return
+      }
+    }
+
+    // Avanzar al Paso 2
+    currentStep.value = 2
+    iamStore.error = null
+
+    // Si ya teníamos 8 dígitos en DNI, disparar consulta RENIEC
+    if (dni.value.length === 8) {
+      const res = await iamStore.lookupDni(dni.value)
+      if (res) {
+        if (res.firstNames) firstName.value = res.firstNames
+        const fullSurname = `${res.paternalSurname || ''} ${res.maternalSurname || ''}`.trim()
+        if (fullSurname) lastName.value = fullSurname
+        reniecAutocompleted.value = true
+      }
+    }
+  } finally {
+    isAdvancingStep1.value = false
+  }
+}
+
+// Quick Demo Data Fill
+const fillDemoData = () => {
+  iamStore.error = null
+  const randomSuffix = Math.floor(Math.random() * 100000)
+  password.value = 'Password123!'
+  confirmPassword.value = 'Password123!'
+  iamStore.emailVerified = true
+  iamStore.phoneVerified = true
+
+  if (accountType.value === 'buyer') {
+    username.value = `comprador_${randomSuffix}@smartfinance.com`
+    dni.value = '72849102'
+    firstName.value = 'Juan Carlos'
+    lastName.value = 'Pérez García'
+    phoneNumber.value = '+51 987654321'
+  } else if (accountType.value === 'dealer') {
+    username.value = `dealer_${randomSuffix}@toyota.pe`
+    dni.value = '45892014'
+    firstName.value = 'Carlos Alberto'
+    lastName.value = 'Gómez Salazar'
+    phoneNumber.value = '+51 987654321'
+    corporateRuc.value = '20100138019'
+    companyName.value = 'Toyota del Perú S.A.'
+  } else if (accountType.value === 'bank') {
+    username.value = `banco_${randomSuffix}@bcp.com.pe`
+    dni.value = '09283746'
+    firstName.value = 'Ana María'
+    lastName.value = 'Torres Mendoza'
+    phoneNumber.value = '+51 987654321'
+    corporateRuc.value = '20100047218'
+    companyName.value = 'Banco de Crédito del Perú BCP'
+  }
+}
+
+// Manual Lookups for DNI (RENIEC) and RUC (SUNAT)
+const queryDniManual = async () => {
+  const clean = dni.value.replace(/\D/g, '').slice(0, 8)
+  if (clean.length !== 8) {
+    iamStore.error = 'El DNI debe tener exactamente 8 dígitos.'
+    return
+  }
+  iamStore.error = null
+  const res = await iamStore.lookupDni(clean)
+  if (res) {
+    const resFirstNames = res.firstNames || (res as any).nombres || ''
+    const resPaternal = res.paternalSurname || (res as any).apellidoPaterno || ''
+    const resMaternal = res.maternalSurname || (res as any).apellidoMaterno || ''
+    if (resFirstNames) firstName.value = resFirstNames
+    const fullSurname = `${resPaternal} ${resMaternal}`.trim()
+    if (fullSurname) lastName.value = fullSurname
+    reniecAutocompleted.value = true
+  } else {
+    iamStore.error = 'No se encontraron datos para este DNI en RENIEC. Puedes ingresar tus nombres manualmente.'
+  }
+}
+
+const queryRucManual = async () => {
+  const clean = corporateRuc.value.replace(/\D/g, '').slice(0, 11)
+  if (clean.length !== 11) {
+    iamStore.error = 'El RUC debe tener exactamente 11 dígitos.'
+    return
+  }
+  iamStore.error = null
+  const res = await iamStore.lookupRuc(clean)
+  if (res) {
+    const resRazon = res.razonSocial || (res as any).companyName || (res as any).nombreOComercial || ''
+    if (resRazon) companyName.value = resRazon
+    sunatAutocompleted.value = true
+  } else {
+    iamStore.error = 'El RUC ingresado no existe en el padrón de SUNAT o no cuenta con la actividad económica requerida.'
+  }
+}
+
+// Final Step Submission Handler
+const handleFinalSubmit = async () => {
+  iamStore.error = null
+
+  const cleanFirstName = firstName.value.trim()
+  const cleanLastName = lastName.value.trim()
+  const cleanDni = dni.value.trim()
+  const cleanRuc = corporateRuc.value.trim()
+  const cleanCompName = companyName.value.trim()
+  const cleanEmail = username.value.trim()
+  const cleanPassword = password.value.trim()
+
+  if (!cleanDni || cleanDni.length !== 8) {
+    currentStep.value = 2
+    iamStore.error = 'El DNI debe tener exactamente 8 dígitos.'
     return
   }
 
-  const userId = iamStore.currentUser?.id || createdUser.id
-
-  // Step 3 & 4: Elevation flow based on selected account type
-  if (accountType.value === 'dealer') {
-    if (!corporateRuc.value || corporateRuc.value.length !== 11 || !companyName.value) {
-      iamStore.error = 'Por favor ingrese el RUC de 11 dígitos y la Razón Social de la concesionaria.'
-      return
-    }
-
-    const dealerRoleOk = await iamStore.requestDealerRole(new RoleRequestCommand({
-      userId,
-      ruc: corporateRuc.value.trim(),
-      companyName: companyName.value.trim()
-    }))
-
-    if (!dealerRoleOk) {
-      return
-    }
-
-    await iamStore.refreshSession()
-    successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu panel...'
-    setTimeout(() => {
-      router.push('/dealer/dashboard')
-    }, 1200)
+  if (!cleanFirstName || !cleanLastName) {
+    currentStep.value = 2
+    iamStore.error = 'Por favor complete nombres y apellidos obligatorios.'
     return
   }
 
-  if (accountType.value === 'bank') {
-    if (!corporateRuc.value || corporateRuc.value.length !== 11 || !companyName.value) {
-      iamStore.error = 'Por favor ingrese el RUC de 11 dígitos y el Nombre de la Entidad Financiera.'
+  if (accountType.value !== 'buyer') {
+    if (!cleanRuc || cleanRuc.length !== 11) {
+      currentStep.value = 3
+      iamStore.error = 'El RUC corporativo debe tener 11 dígitos numéricos.'
       return
     }
-
-    const bankRoleOk = await iamStore.requestFinancialInstitutionRole(new RoleRequestCommand({
-      userId,
-      ruc: corporateRuc.value.trim(),
-      companyName: companyName.value.trim()
-    }))
-
-    if (!bankRoleOk) {
+    if (!cleanCompName) {
+      currentStep.value = 3
+      iamStore.error = accountType.value === 'dealer'
+        ? 'Por favor ingrese la Razón Social de la concesionaria.'
+        : 'Por favor ingrese el Nombre de la Entidad Financiera.'
       return
     }
-
-    await iamStore.refreshSession()
-    successMessage.value = '¡Entidad Financiera registrada con éxito! Redirigiendo a tu panel...'
-    setTimeout(() => {
-      router.push('/bank/dashboard')
-    }, 1200)
-    return
   }
 
-  // Personal / Buyer Account
-  if (cleanDni && cleanDni.length === 8) {
+  isSubmittingFinal.value = true
+
+  try {
+    // 1. Ensure user account is registered & authenticated if session is missing
+    if (!iamStore.isAuthenticated && cleanEmail && cleanPassword) {
+      try {
+        const signUpCommand = new SignUpCommand({
+          username: cleanEmail,
+          email: cleanEmail,
+          password: cleanPassword,
+          firstName: cleanFirstName || 'Usuario',
+          lastName: cleanLastName || 'SmartFinance',
+          roles: ['ROLE_USER']
+        })
+        await iamStore.signUp(signUpCommand)
+      } catch {
+        // Continue if already registered
+      }
+
+      try {
+        await iamStore.signIn(new SignInCommand({
+          username: cleanEmail,
+          password: cleanPassword
+        }))
+      } catch {
+        // Continue
+      }
+    }
+
+    const userId = iamStore.currentUser?.id || localStorage.getItem('user_id') || '1'
+
+    // Cache user names in localStorage for immediate visual sync
+    if (cleanFirstName) localStorage.setItem('user_first_name', cleanFirstName)
+    if (cleanLastName) localStorage.setItem('user_last_name', cleanLastName)
+    const fullDisplayName = `${cleanFirstName} ${cleanLastName}`.trim()
+    if (fullDisplayName) localStorage.setItem('user_name', fullDisplayName)
+
+    // 2. ALWAYS create and persist the client Profile in backend database (POST /api/v1/profiles)
+    // for all account types (Personal Buyer, Dealer Representative, Bank Representative)
     try {
       const { useProfilesStore } = await import('@/profiles/application/profiles.store')
       const { CreateProfileCommand } = await import('@/profiles/domain/create-profile.command')
       const profilesStore = useProfilesStore()
+      const resolvedLegalName = iamStore.reniecData?.fullLegalName || fullDisplayName || cleanEmail
+      const sanitizedMobile = cleanPhoneNumber.value.length >= 9 ? cleanPhoneNumber.value.slice(-9) : (cleanPhoneNumber.value || '999999999')
+
       await profilesStore.createProfile(new CreateProfileCommand({
-        fullLegalNames: iamStore.reniecData?.fullLegalName || `${cleanFirstName} ${cleanLastName}`,
+        userId: String(userId),
+        fullLegalNames: resolvedLegalName,
         email: cleanEmail,
         nationalId: cleanDni,
-        mobilePhone: phoneNumber.value || '',
+        dateOfBirth: '2000-01-01',
+        phoneCountryCode: '+51',
+        mobilePhone: sanitizedMobile,
         monthlyIncomeAmount: 3500,
-        monthlyIncomeCurrency: 'PEN'
+        monthlyIncomeCurrency: 'PEN',
+        employmentStatus: 'EMPLOYED'
       }))
-    } catch {
-      // Continue if profile creation can be finished later
+    } catch (profileErr) {
+      console.warn('Profile creation non-blocking warning:', profileErr)
     }
-  }
 
-  successMessage.value = t('iam.signUpSuccess')
-  setTimeout(() => {
-    router.push('/catalog')
-  }, 1200)
+    // 3. Option B: Dealer Role Elevation
+    if (accountType.value === 'dealer') {
+      const dealerRoleOk = await iamStore.requestDealerRole(new RoleRequestCommand({
+        userId,
+        ruc: cleanRuc,
+        companyName: cleanCompName
+      }))
+
+      if (!dealerRoleOk) {
+        return
+      }
+
+      if (iamStore.currentUser) {
+        iamStore.currentUser.roles = ['ROLE_USER', 'ROLE_DEALER']
+      }
+      localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER', 'ROLE_DEALER']))
+      localStorage.setItem('dealer_ruc', cleanRuc)
+      localStorage.setItem('dealer_company_name', cleanCompName)
+
+      // 3.1 Initialize Dealership showroom profile in backend database (PUT /api/v1/dealerships/me)
+      try {
+        const { usePartnersStore } = await import('@/partners/application/partners.store')
+        const partnersStore = usePartnersStore()
+        await partnersStore.updateMyDealership({
+          ruc: cleanRuc,
+          name: cleanCompName || 'Concesionaria Oficial',
+          address: 'Av. Javier Prado Este 4520, Surco, Lima',
+          hours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
+          operatingHours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
+          description: 'Concesionario oficial especializado en venta y financiamiento vehicular.',
+          email: cleanEmail,
+          phone: cleanPhoneNumber.value || '+51 987654321'
+        })
+      } catch (dealerProfileErr) {
+        console.warn('Dealership initialization non-blocking warning:', dealerProfileErr)
+      }
+
+      await iamStore.refreshSession()
+      successMessage.value = '¡Concesionaria registrada y acreditada con éxito! Redirigiendo a tu inventario...'
+      iamStore.successMessage = successMessage.value
+      setTimeout(() => {
+        router.push('/dealer/inventory')
+      }, 1000)
+      return
+    }
+
+    // 4. Option C: Bank Role Elevation
+    if (accountType.value === 'bank') {
+      const bankRoleOk = await iamStore.requestFinancialInstitutionRole(new RoleRequestCommand({
+        userId,
+        ruc: cleanRuc,
+        companyName: cleanCompName
+      }))
+
+      if (!bankRoleOk) {
+        return
+      }
+
+      if (iamStore.currentUser) {
+        iamStore.currentUser.roles = ['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']
+      }
+      localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER', 'ROLE_FINANCIAL_INSTITUTION']))
+
+      await iamStore.refreshSession()
+      successMessage.value = '¡Entidad Financiera registrada con éxito! Redirigiendo a tu panel de tasas...'
+      iamStore.successMessage = successMessage.value
+      setTimeout(() => {
+        router.push('/concessionaries/entities')
+      }, 1000)
+      return
+    }
+
+    // 5. Option A: Personal / Buyer Account
+    if (iamStore.currentUser) {
+      iamStore.currentUser.roles = ['ROLE_USER']
+    }
+    localStorage.setItem('user_roles', JSON.stringify(['ROLE_USER']))
+    successMessage.value = t('iam.signUpSuccess') || '¡Cuenta creada exitosamente! Redirigiendo...'
+    iamStore.successMessage = successMessage.value
+
+    setTimeout(() => {
+      router.push('/vehicles')
+    }, 1000)
+  } catch (err: any) {
+    iamStore.error = err.message || 'Error al completar el registro.'
+  } finally {
+    isSubmittingFinal.value = false
+  }
 }
 </script>
 

@@ -38,4 +38,10 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
+# Agent Skills & Assistant Config
+.agents/
+.claude/
+.opencode/
+skills-lock.json
+
 

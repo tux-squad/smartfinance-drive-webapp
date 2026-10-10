@@ -13,13 +13,27 @@
     <!-- Success Feedback Banner -->
     <div
       v-if="savedMessage"
-      class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-800 flex items-center justify-between"
+      class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-800 flex items-center justify-between shadow-2xs"
     >
       <div class="flex items-center gap-2">
         <i class="pi pi-check-circle text-emerald-600 text-sm"></i>
-        <span>{{ savedMessage }}</span>
+        <span class="font-medium">{{ savedMessage }}</span>
       </div>
       <button type="button" @click="savedMessage = null" class="text-emerald-500 hover:text-emerald-800">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Error Feedback Banner -->
+    <div
+      v-if="errorMessage"
+      class="bg-red-50 border border-red-200 p-4 rounded-2xl text-xs text-red-800 flex items-center justify-between shadow-2xs"
+    >
+      <div class="flex items-center gap-2">
+        <i class="pi pi-exclamation-circle text-red-600 text-sm"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <button type="button" @click="errorMessage = null" class="text-red-400 hover:text-red-700">
         <i class="pi pi-times text-xs"></i>
       </button>
     </div>
@@ -173,10 +187,10 @@
             <button
               type="submit"
               :disabled="isSaving"
-              class="px-6 py-3 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2"
+              class="px-6 py-3 rounded-xl bg-[#eb8f47] hover:bg-[#d97c36] disabled:opacity-50 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
             >
               <i v-if="isSaving" class="pi pi-spin pi-spinner text-xs"></i>
-              <span>Guardar Apariencia</span>
+              <span>{{ isSaving ? 'Guardando...' : 'Guardar Apariencia' }}</span>
             </button>
           </div>
         </div>
@@ -188,17 +202,23 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { usePartnersStore } from '@/partners/application/partners.store'
+import { useIamStore } from '@/iam/application/iam.store'
 
 const partnersStore = usePartnersStore()
+const iamStore = useIamStore()
 
 const logoInputRef = ref<HTMLInputElement | null>(null)
 const bannerInputRef = ref<HTMLInputElement | null>(null)
+
+const logoFile = ref<File | null>(null)
+const bannerFile = ref<File | null>(null)
 
 const logoPreview = ref<string | null>(null)
 const bannerPreview = ref<string | null>(null)
 
 const isSaving = ref(false)
 const savedMessage = ref<string | null>(null)
+const errorMessage = ref<string | null>(null)
 
 const storeData = reactive({
   name: '',
@@ -216,10 +236,32 @@ onMounted(async () => {
     storeData.address = myDealership.address || ''
     storeData.phone = myDealership.phone || ''
     storeData.email = myDealership.email || ''
-    storeData.hours = myDealership.hours || ''
+    storeData.hours = myDealership.hours || myDealership.operatingHours || ''
     storeData.description = myDealership.description || ''
     if (myDealership.logoUrl) logoPreview.value = myDealership.logoUrl
     if (myDealership.bannerUrl) bannerPreview.value = myDealership.bannerUrl
+  } else {
+    const savedName = localStorage.getItem('dealer_company_name') || localStorage.getItem('user_name') || ''
+    storeData.name = (savedName && !savedName.includes('@')) ? savedName : 'AutoSur Motors SAC'
+    storeData.address = 'Av. Javier Prado Este 4520, Surco, Lima'
+    storeData.hours = 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM'
+    storeData.description = 'Concesionario oficial especializado en venta y financiamiento de vehículos nuevos y seminuevos garantizados.'
+    storeData.phone = '+51 987 654 321'
+    storeData.email = iamStore.currentUser?.username || localStorage.getItem('user_email') || 'contacto@concesionaria.pe'
+
+    try {
+      await partnersStore.updateMyDealership({
+        name: storeData.name,
+        address: storeData.address,
+        hours: storeData.hours,
+        operatingHours: storeData.hours,
+        description: storeData.description,
+        phone: storeData.phone,
+        email: storeData.email
+      })
+    } catch {
+      // Non-blocking auto-initialization
+    }
   }
 })
 
@@ -231,45 +273,74 @@ const triggerBannerUpload = () => {
   bannerInputRef.value?.click()
 }
 
-const handleLogoChange = async (e: Event) => {
+const handleLogoChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
+    logoFile.value = file
     logoPreview.value = URL.createObjectURL(file)
-    await partnersStore.uploadDealershipLogo(file)
   }
 }
 
-const handleBannerChange = async (e: Event) => {
+const handleBannerChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
+    bannerFile.value = file
     bannerPreview.value = URL.createObjectURL(file)
-    await partnersStore.uploadDealershipBanner(file)
   }
 }
 
 const handleSaveAppearance = async () => {
   isSaving.value = true
   savedMessage.value = null
+  errorMessage.value = null
 
-  const success = await partnersStore.updateMyDealership({
-    name: storeData.name,
-    address: storeData.address,
-    phone: storeData.phone,
-    email: storeData.email,
-    hours: storeData.hours,
-    description: storeData.description
-  })
+  try {
+    const success = await partnersStore.updateMyDealership({
+      name: storeData.name.trim(),
+      address: storeData.address.trim(),
+      phone: storeData.phone?.trim() || '+51 987654321',
+      email: storeData.email?.trim() || iamStore.currentUser?.username || localStorage.getItem('user_email') || 'contacto@concesionaria.pe',
+      hours: storeData.hours.trim(),
+      operatingHours: storeData.hours.trim(),
+      description: storeData.description.trim()
+    })
 
-  isSaving.value = false
-  if (success) {
+    if (!success) {
+      errorMessage.value = partnersStore.error || 'No se pudieron guardar los cambios en el servidor.'
+      return
+    }
+
+    if (logoFile.value) {
+      await partnersStore.uploadDealershipLogo(logoFile.value)
+      logoFile.value = null
+    }
+
+    if (bannerFile.value) {
+      await partnersStore.uploadDealershipBanner(bannerFile.value)
+      bannerFile.value = null
+    }
+
+    const refreshed = await partnersStore.fetchMyDealership()
+    if (refreshed) {
+      storeData.name = refreshed.name || storeData.name
+      storeData.address = refreshed.address || storeData.address
+      storeData.hours = refreshed.hours || refreshed.operatingHours || storeData.hours
+      storeData.description = refreshed.description || storeData.description
+      if (refreshed.logoUrl) logoPreview.value = refreshed.logoUrl
+      if (refreshed.bannerUrl) bannerPreview.value = refreshed.bannerUrl
+    }
+
     savedMessage.value = '¡Configuración de apariencia guardada exitosamente! Los cambios ya son visibles en tu tienda pública.'
-  } else {
-    savedMessage.value = 'Cambios guardados localmente para la sesión actual.'
+  } catch (err: any) {
+    errorMessage.value = err?.response?.data?.message || 'Error al guardar la apariencia de la concesionaria.'
+  } finally {
+    isSaving.value = false
   }
 }
 </script>
 
 <style scoped>
 </style>
+

@@ -39,6 +39,8 @@ export const iamResponseErrorInterceptor = async (error: AxiosError) => {
     localStorage.removeItem('user_name')
     localStorage.removeItem('user_id')
     localStorage.removeItem('user_roles')
+    localStorage.removeItem('user_first_name')
+    localStorage.removeItem('user_last_name')
   }
   return Promise.reject(error)
 }

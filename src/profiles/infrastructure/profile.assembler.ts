@@ -19,16 +19,26 @@ function normalizeEmploymentStatus(status?: string): string {
 function extractPhoneParts(rawPhone?: string): { code: string, mobile: string } {
   if (!rawPhone) return { code: '+51', mobile: '999999999' }
   const clean = rawPhone.trim()
+  let code = '+51'
+  let mobile = clean.replace(/\D/g, '')
+
   if (clean.startsWith('+')) {
     const spaceIdx = clean.indexOf(' ')
     if (spaceIdx > 0) {
-      const code = clean.substring(0, spaceIdx)
-      const mobile = clean.substring(spaceIdx + 1).replace(/\D/g, '')
-      return { code: code || '+51', mobile: mobile || '999999999' }
+      code = clean.substring(0, spaceIdx)
+      mobile = clean.substring(spaceIdx + 1).replace(/\D/g, '')
     }
   }
-  const digits = clean.replace(/\D/g, '')
-  return { code: '+51', mobile: digits || '999999999' }
+
+  if (code === '+51' && mobile.startsWith('51') && mobile.length === 11) {
+    mobile = mobile.substring(2)
+  }
+
+  if (mobile.length > 9) {
+    mobile = mobile.slice(-9)
+  }
+
+  return { code: code || '+51', mobile: mobile || '999999999' }
 }
 
 /**
@@ -51,7 +61,7 @@ export class ProfileAssembler {
       email: command.email,
       nationalId: command.nationalId || command.dni || '',
       fullLegalNames: legalNames,
-      dateOfBirth: command.dateOfBirth || '',
+      dateOfBirth: command.dateOfBirth || '2000-01-01',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(command.monthlyIncomeAmount) || 0,
@@ -88,11 +98,26 @@ export class ProfileAssembler {
    */
   public static toEntityFromResource(resource: ProfileResponseResource): Profile {
     const nationalId = resource.nationalId || resource.dni || ''
-    const fullLegalNames = resource.fullLegalNames || `${resource.firstName || ''} ${resource.lastName || ''}`.trim()
+    const fullLegalNames = (resource.fullLegalNames || `${resource.firstName || ''} ${resource.lastName || ''}`).trim()
     const currency = resource.monthlyIncomeCurrency || resource.currency || 'PEN'
     const phone = resource.phoneNumber ? extractPhoneParts(resource.phoneNumber) : { code: '+51', mobile: '' }
     const phoneCountryCode = resource.phoneCountryCode || phone.code
     const mobilePhone = resource.mobilePhone || phone.mobile
+
+    let firstName = resource.firstName || ''
+    let lastName = resource.lastName || ''
+    if (!firstName && fullLegalNames) {
+      const parts = fullLegalNames.split(/\s+/)
+      if (parts.length === 1) {
+        firstName = parts[0] || ''
+      } else if (parts.length === 2) {
+        firstName = parts[0] || ''
+        lastName = parts[1] || ''
+      } else {
+        firstName = parts.slice(0, parts.length - 2).join(' ') || parts[0] || ''
+        lastName = parts.slice(-2).join(' ')
+      }
+    }
 
     return new Profile({
       id: String(resource.id),
@@ -100,14 +125,14 @@ export class ProfileAssembler {
       email: resource.email,
       nationalId,
       fullLegalNames,
-      dateOfBirth: resource.dateOfBirth || '1995-01-01',
+      dateOfBirth: resource.dateOfBirth || '',
       phoneCountryCode,
       mobilePhone,
       monthlyIncomeAmount: Number(resource.monthlyIncomeAmount) || 0,
       monthlyIncomeCurrency: currency,
       employmentStatus: resource.employmentStatus || 'EMPLOYED',
-      firstName: resource.firstName,
-      lastName: resource.lastName,
+      firstName,
+      lastName,
       dni: nationalId,
       phoneNumber: resource.phoneNumber || `${phoneCountryCode} ${mobilePhone}`.trim(),
       currency

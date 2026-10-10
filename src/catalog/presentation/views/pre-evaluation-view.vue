@@ -236,7 +236,7 @@ const handleSubmit = async () => {
       annualEffectiveRate: 8.9,
       monthlyCreditLifeInsuranceRate: 0.05,
       vehicleInsuranceFeeAmount: 80.0,
-      vehicleInsuranceType: 'FULL_COVERAGE',
+      vehicleInsuranceType: 'MENSUAL',
       loanTermMonths: 48,
       gracePeriodType: 'NONE',
       gracePeriodMonths: 0,

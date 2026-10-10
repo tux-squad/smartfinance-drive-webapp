@@ -1,39 +1,29 @@
 <template>
-  <div class="flex items-center space-x-3">
-    <!-- Authenticated State -->
+  <div class="flex items-center space-x-2">
+    <!-- Authenticated State: Clean Sign Out Button -->
     <template v-if="iamStore.isAuthenticated">
-      <div class="flex items-center space-x-3">
-        <div class="text-right hidden sm:block">
-          <p class="font-semibold text-gray-800 text-sm leading-tight">{{ iamStore.username }}</p>
-          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-900">
-            {{ primaryRole }}
-          </span>
-        </div>
-        <div class="w-9 h-9 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold text-sm shadow-xs uppercase">
-          {{ userInitials }}
-        </div>
-        <button
-          type="button"
-          @click="handleSignOut"
-          class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          :title="t('iam.signOut')"
-        >
-          <i class="pi pi-sign-out text-base"></i>
-        </button>
-      </div>
+      <button
+        type="button"
+        @click="handleSignOut"
+        class="w-9 h-9 rounded-xl border border-surface-200 dark:border-surface-700 text-surface-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-200 dark:hover:border-red-900 flex items-center justify-center transition-all shadow-xs"
+        :title="t('iam.signOut')"
+        v-tooltip.bottom="t('iam.signOut')"
+      >
+        <i class="pi pi-sign-out text-sm"></i>
+      </button>
     </template>
 
-    <!-- Guest State -->
+    <!-- Guest State: Login / Register Actions -->
     <template v-else>
       <router-link
         to="/iam/sign-in"
-        class="px-3.5 py-1.5 text-xs font-semibold text-blue-900 border border-blue-900/30 hover:bg-blue-50 rounded-lg transition-colors"
+        class="px-3.5 py-1.5 text-xs font-semibold text-primary border border-primary/30 hover:bg-primary-50 dark:hover:bg-primary-950/30 rounded-xl transition-colors"
       >
         {{ t('iam.signInBtn') }}
       </router-link>
       <router-link
         to="/iam/sign-up"
-        class="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg shadow-xs transition-colors"
+        class="px-3.5 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary-600 rounded-xl shadow-xs transition-colors"
       >
         {{ t('iam.signUpBtn') }}
       </router-link>

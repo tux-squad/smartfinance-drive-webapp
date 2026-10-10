@@ -56,7 +56,7 @@ const handleEvaluate = async () => {
       annualEffectiveRate: 11.5,
       monthlyCreditLifeInsuranceRate: 0.05,
       vehicleInsuranceFeeAmount: 70,
-      vehicleInsuranceType: 'FULL_COVERAGE',
+      vehicleInsuranceType: 'MENSUAL',
       loanTermMonths: 36,
       gracePeriodType: 'NONE',
       gracePeriodMonths: 0,
