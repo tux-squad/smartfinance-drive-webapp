@@ -482,13 +482,19 @@
             </div>
 
             <div class="relative">
-              <i class="pi pi-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400 text-xs pointer-events-none z-10"></i>
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center gap-1.5 pointer-events-none z-10 text-xs font-bold text-surface-500 dark:text-surface-400 select-none">
+                <i class="pi pi-phone text-xs text-surface-400"></i>
+                <span>+51</span>
+                <span class="text-surface-300 dark:text-surface-600">|</span>
+              </div>
               <InputText
                 id="reg-phone"
                 v-model="phoneNumber"
                 @input="handlePhoneInput"
-                placeholder="+51 987 654 321"
-                class="w-full !pl-9 !py-2.5 !text-xs !rounded-xl font-mono"
+                type="tel"
+                maxlength="11"
+                placeholder="987 654 321"
+                class="w-full !pl-20 !py-2.5 !text-xs !rounded-xl font-mono"
               />
             </div>
             <p class="text-[10px] text-surface-500">
@@ -788,25 +794,23 @@ const cleanPhoneNumber = computed(() => {
 const isPhoneValid = computed(() => {
   const digits = cleanPhoneNumber.value
   if (!digits) return true
-  if (digits.length === 9 && digits.startsWith('9')) return true
-  if (digits.length === 11 && digits.startsWith('519')) return true
-  return false
+  return digits.length === 9 && digits.startsWith('9')
 })
 
-const handlePhoneInput = () => {
-  let digits = phoneNumber.value.replace(/\D/g, '')
+const handlePhoneInput = (event?: Event) => {
+  const target = event?.target as HTMLInputElement | null
+  const rawValue = target ? target.value : phoneNumber.value
+  let digits = rawValue.replace(/\D/g, '')
   if (digits.startsWith('51') && digits.length > 9) {
     digits = digits.slice(2)
   }
   digits = digits.slice(0, 9)
   if (digits.length > 6) {
-    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+    phoneNumber.value = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
   } else if (digits.length > 3) {
-    phoneNumber.value = `+51 ${digits.slice(0, 3)} ${digits.slice(3)}`
-  } else if (digits.length > 0) {
-    phoneNumber.value = `+51 ${digits}`
+    phoneNumber.value = `${digits.slice(0, 3)} ${digits.slice(3)}`
   } else {
-    phoneNumber.value = ''
+    phoneNumber.value = digits
   }
 }
 
@@ -1064,13 +1068,13 @@ const fillDemoData = () => {
     dni.value = '72849102'
     firstName.value = 'Juan Carlos'
     lastName.value = 'Pérez García'
-    phoneNumber.value = '+51 987654321'
+    phoneNumber.value = '987 654 321'
   } else if (accountType.value === 'dealer') {
     username.value = `dealer_${randomSuffix}@toyota.pe`
     dni.value = '45892014'
     firstName.value = 'Carlos Alberto'
     lastName.value = 'Gómez Salazar'
-    phoneNumber.value = '+51 987654321'
+    phoneNumber.value = '987 654 321'
     corporateRuc.value = '20100138019'
     companyName.value = 'Toyota del Perú S.A.'
   } else if (accountType.value === 'bank') {
@@ -1078,7 +1082,7 @@ const fillDemoData = () => {
     dni.value = '09283746'
     firstName.value = 'Ana María'
     lastName.value = 'Torres Mendoza'
-    phoneNumber.value = '+51 987654321'
+    phoneNumber.value = '987 654 321'
     corporateRuc.value = '20100047218'
     companyName.value = 'Banco de Crédito del Perú BCP'
   }
@@ -1255,7 +1259,7 @@ const handleFinalSubmit = async () => {
           operatingHours: 'Lunes a Sábado: 9:00 AM - 7:00 PM | Domingos: 10:00 AM - 2:00 PM',
           description: 'Concesionario oficial especializado en venta y financiamiento vehicular.',
           email: cleanEmail,
-          phone: cleanPhoneNumber.value || '+51 987654321'
+          phone: cleanPhoneNumber.value ? `+51 ${cleanPhoneNumber.value}` : '+51 987654321'
         })
       } catch (dealerProfileErr) {
         console.warn('Dealership initialization non-blocking warning:', dealerProfileErr)
